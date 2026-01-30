@@ -13,7 +13,7 @@ export default class UnifiedPowerManager extends Extension {
     enable() {
         this._settings = this.getSettings();
         this._initializing = false;
-        this._this._powerManager = null;
+        this._powerManager = null;
         this._builtinPowerProfile = null;
         this._builtinPowerProfileIndex = -1;
         this._hideBuiltinId = null;
