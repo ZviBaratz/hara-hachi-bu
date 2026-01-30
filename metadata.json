@@ -1,12 +1,11 @@
 {
     "uuid": "unified-power-manager@zvi",
     "name": "Unified Power Manager",
-    "description": "Unified Quick Settings control for power profiles and battery charging modes with profile presets (Docked/Travel)",
-    "version": "1.0.0",
+    "description": "ThinkPad power management for GNOME. Control power profiles and battery charging thresholds from Quick Settings. Features Docked/Travel profiles, force discharge, and external change detection.",
+    "version": 1,
     "shell-version": ["46", "47", "48"],
     "settings-schema": "org.gnome.shell.extensions.unified-power-manager",
     "gettext-domain": "unified-power-manager",
     "url": "https://github.com/zvi/unified-power-manager",
-    "session-modes": ["user"],
-    "license": "GPL-3.0-or-later"
+    "session-modes": ["user"]
 }

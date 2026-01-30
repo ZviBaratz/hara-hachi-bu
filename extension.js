@@ -1,3 +1,8 @@
+/*
+ * Unified Power Manager - GNOME Shell Extension
+ * Copyright (C) 2024 zvi
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 'use strict';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -78,8 +83,9 @@ export default class UnifiedPowerManager extends Extension {
 
             console.log('Unified Power Manager: Extension initialized successfully');
         } catch (e) {
-            console.log(`Unified Power Manager: Failed to initialize: ${e}`);
-            console.log(e.stack);
+            console.error(`Unified Power Manager: Failed to initialize: ${e}`);
+            console.error(e.stack);
+            Main.notify('Unified Power Manager', 'Failed to initialize. Check logs for details.');
         } finally {
             this._initializing = false;
         }

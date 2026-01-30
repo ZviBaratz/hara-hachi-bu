@@ -1,3 +1,8 @@
+/*
+ * Unified Power Manager - GNOME Shell Extension
+ * Copyright (C) 2024 zvi
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 'use strict';
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
@@ -277,18 +282,82 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
         aboutGroup.add(aboutRow);
 
-        // Installation info
+        // System Status group
+        const statusGroup = new Adw.PreferencesGroup({
+            title: 'System Status',
+            description: 'Component installation and hardware support status',
+        });
+        aboutPage.add(statusGroup);
+
+        // Check helper script
+        const helperInstalled = this._checkFileExists('/usr/local/bin/unified-power-ctl');
+        const helperRow = new Adw.ActionRow({
+            title: 'Helper Script',
+            subtitle: helperInstalled
+                ? 'Installed at /usr/local/bin/unified-power-ctl'
+                : 'Not installed - battery threshold control unavailable',
+        });
+        const helperIcon = new Gtk.Image({
+            icon_name: helperInstalled ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic',
+            valign: Gtk.Align.CENTER,
+        });
+        helperRow.add_suffix(helperIcon);
+        statusGroup.add(helperRow);
+
+        // Check polkit rules
+        const polkitRules = this._checkFileExists('/etc/polkit-1/rules.d/10-unified-power-manager.rules');
+        const polkitPolicy = this._checkFileExists('/usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy');
+        const polkitInstalled = polkitRules || polkitPolicy;
+        const polkitRow = new Adw.ActionRow({
+            title: 'Polkit Configuration',
+            subtitle: polkitInstalled
+                ? (polkitRules ? 'Rules installed' : 'Legacy policy installed')
+                : 'Not installed - may require password for each change',
+        });
+        const polkitIcon = new Gtk.Image({
+            icon_name: polkitInstalled ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic',
+            valign: Gtk.Align.CENTER,
+        });
+        polkitRow.add_suffix(polkitIcon);
+        statusGroup.add(polkitRow);
+
+        // Check ThinkPad support
+        const thinkpadSupport = this._checkFileExists('/sys/devices/platform/thinkpad_acpi');
+        const thresholdSupport = this._checkFileExists('/sys/class/power_supply/BAT0/charge_control_end_threshold');
+        const thinkpadRow = new Adw.ActionRow({
+            title: 'Battery Threshold Support',
+            subtitle: thinkpadSupport && thresholdSupport
+                ? 'ThinkPad detected with threshold support'
+                : (thinkpadSupport ? 'ThinkPad detected but threshold files not found' : 'Not a ThinkPad - battery features unavailable'),
+        });
+        const thinkpadIcon = new Gtk.Image({
+            icon_name: (thinkpadSupport && thresholdSupport) ? 'emblem-ok-symbolic' : 'dialog-information-symbolic',
+            valign: Gtk.Align.CENTER,
+        });
+        thinkpadRow.add_suffix(thinkpadIcon);
+        statusGroup.add(thinkpadRow);
+
+        // Installation instructions
         const installGroup = new Adw.PreferencesGroup({
             title: 'Installation',
-            description: 'For battery threshold control, install the helper script',
+            description: 'Run install-helper.sh or see README.md for manual installation',
         });
         aboutPage.add(installGroup);
 
         const installRow = new Adw.ActionRow({
-            title: 'Helper Script',
-            subtitle: 'Copy unified-power-ctl to /usr/local/bin and polkit rules to /etc/polkit-1/rules.d',
+            title: 'Helper Installation',
+            subtitle: 'sudo ./install-helper.sh (in extension directory)',
         });
         installGroup.add(installRow);
+    }
+
+    _checkFileExists(path) {
+        try {
+            const file = Gio.File.new_for_path(path);
+            return file.query_exists(null);
+        } catch {
+            return false;
+        }
     }
 
     _refreshProfileList(window, settings) {
