@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- Docked icon: monitor/dock station representing stationary use -->
+  <g fill="currentColor">
+    <!-- Monitor body -->
+    <rect x="2" y="2" width="12" height="9" rx="1" ry="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    <!-- Monitor stand -->
+    <path d="M6 12 L6 14 L4 14 L4 15 L12 15 L12 14 L10 14 L10 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+    <!-- Power plug indicator -->
+    <circle cx="8" cy="6.5" r="1.5"/>
+  </g>
+</svg>
