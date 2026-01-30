@@ -1,0 +1,10 @@
+// Polkit rules for Unified Power Manager extension
+// This file allows users in the wheel group to run unified-power-ctl without password
+
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.policykit.exec" &&
+        action.lookup("program") == "/usr/local/bin/unified-power-ctl" &&
+        subject.isInGroup("wheel")) {
+        return polkit.Result.YES;
+    }
+});

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.unified-power-manager" path="/org/gnome/shell/extensions/unified-power-manager/">
+
+    <!-- UI Settings -->
+    <key name="show-system-indicator" type="b">
+      <default>true</default>
+      <summary>Show system indicator</summary>
+      <description>Show indicator icon in the system tray</description>
+    </key>
+
+    <key name="show-force-discharge" type="b">
+      <default>true</default>
+      <summary>Show force discharge toggle</summary>
+      <description>Show force discharge toggle in the menu</description>
+    </key>
+
+    <key name="indicator-position" type="i">
+      <default>0</default>
+      <summary>Indicator position</summary>
+      <description>Position of the indicator in system tray</description>
+    </key>
+
+    <key name="indicator-position-index" type="i">
+      <default>0</default>
+      <summary>Indicator position index</summary>
+      <description>Internal index for indicator positioning</description>
+    </key>
+
+    <key name="indicator-position-max" type="i">
+      <default>0</default>
+      <summary>Maximum indicator position</summary>
+      <description>Maximum indicator position value</description>
+    </key>
+
+    <!-- Current State -->
+    <key name="current-power-mode" type="s">
+      <default>'balanced'</default>
+      <summary>Current power mode</summary>
+      <description>Currently active power profile (performance, balanced, power-saver)</description>
+    </key>
+
+    <key name="current-battery-mode" type="s">
+      <default>'balanced'</default>
+      <summary>Current battery mode</summary>
+      <description>Currently active battery mode (full-capacity, balanced, max-lifespan)</description>
+    </key>
+
+    <key name="force-discharge-enabled" type="b">
+      <default>false</default>
+      <summary>Force discharge enabled</summary>
+      <description>Whether force discharge is currently active</description>
+    </key>
+
+    <key name="hide-builtin-power-profile" type="b">
+      <default>true</default>
+      <summary>Hide built-in power profile indicator</summary>
+      <description>Hide GNOME Shell's built-in power profile quick settings indicator</description>
+    </key>
+
+    <!-- Custom Profiles (v2.0+) -->
+    <key name="custom-profiles" type="s">
+      <default>'[]'</default>
+      <summary>Custom profile definitions</summary>
+      <description>JSON array of custom profile objects with structure: [{id, name, powerMode, batteryMode, icon, builtin}]</description>
+    </key>
+
+    <!-- Battery Mode Thresholds -->
+    <key name="threshold-full-start" type="i">
+      <range min="80" max="99"/>
+      <default>95</default>
+      <summary>Full capacity start threshold</summary>
+      <description>Start charging threshold for full capacity mode</description>
+    </key>
+
+    <key name="threshold-full-end" type="i">
+      <range min="85" max="100"/>
+      <default>100</default>
+      <summary>Full capacity end threshold</summary>
+      <description>Stop charging threshold for full capacity mode</description>
+    </key>
+
+    <key name="threshold-balanced-start" type="i">
+      <range min="60" max="80"/>
+      <default>75</default>
+      <summary>Balanced mode start threshold</summary>
+      <description>Start charging threshold for balanced mode</description>
+    </key>
+
+    <key name="threshold-balanced-end" type="i">
+      <range min="65" max="90"/>
+      <default>80</default>
+      <summary>Balanced mode end threshold</summary>
+      <description>Stop charging threshold for balanced mode</description>
+    </key>
+
+    <key name="threshold-lifespan-start" type="i">
+      <range min="40" max="60"/>
+      <default>55</default>
+      <summary>Max lifespan start threshold</summary>
+      <description>Start charging threshold for max lifespan mode</description>
+    </key>
+
+    <key name="threshold-lifespan-end" type="i">
+      <range min="45" max="70"/>
+      <default>60</default>
+      <summary>Max lifespan end threshold</summary>
+      <description>Stop charging threshold for max lifespan mode</description>
+    </key>
+
+    <!-- Profile Definitions -->
+    <key name="profile-docked" type="s">
+      <default>'{"powerMode":"performance","batteryMode":"max-lifespan"}'</default>
+      <summary>Docked profile configuration</summary>
+      <description>JSON configuration for the docked profile</description>
+    </key>
+
+    <key name="profile-travel" type="s">
+      <default>'{"powerMode":"balanced","batteryMode":"full-capacity"}'</default>
+      <summary>Travel profile configuration</summary>
+      <description>JSON configuration for the travel profile</description>
+    </key>
+
+  </schema>
+</schemalist>

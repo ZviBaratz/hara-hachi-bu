@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+
+# unified-power-ctl - Helper script for Unified Power Manager extension
+# Handles privileged operations: setting battery thresholds, force-discharge
+
+BAT0_END_PATH='/sys/class/power_supply/BAT0/charge_control_end_threshold'
+BAT0_START_PATH='/sys/class/power_supply/BAT0/charge_control_start_threshold'
+BAT1_END_PATH='/sys/class/power_supply/BAT1/charge_control_end_threshold'
+BAT1_START_PATH='/sys/class/power_supply/BAT1/charge_control_start_threshold'
+BAT0_FORCE_DISCHARGE_PATH='/sys/class/power_supply/BAT0/charge_behaviour'
+BAT1_FORCE_DISCHARGE_PATH='/sys/class/power_supply/BAT1/charge_behaviour'
+
+EXIT_SUCCESS=0
+EXIT_ERROR=1
+EXIT_NEEDS_UPDATE=2
+
+TOOLCMD=$1
+ARG1=${2:-0}
+ARG2=${3:-0}
+
+# Helper validation function
+is_int() {
+    [[ "$1" =~ ^[0-9]+$ ]]
+}
+
+validate_threshold() {
+    if ! is_int "$1"; then
+        echo "Error: Threshold must be an integer."
+        exit "$EXIT_ERROR"
+    fi
+    if [ "$1" -lt 0 ] || [ "$1" -gt 100 ]; then
+        echo "Error: Threshold must be between 0 and 100."
+        exit "$EXIT_ERROR"
+    fi
+}
+
+case "$TOOLCMD" in
+    BAT0_END)
+        validate_threshold "$ARG1"
+        echo "$ARG1" >"$BAT0_END_PATH" &&
+            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        ;;
+    BAT0_START)
+        validate_threshold "$ARG1"
+        echo "$ARG1" >"$BAT0_START_PATH" &&
+            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        ;;
+    BAT0_END_START)
+        validate_threshold "$ARG1"
+        validate_threshold "$ARG2"
+        # Write END first, then START (for increasing thresholds)
+        echo "$ARG1" >"$BAT0_END_PATH" &&
+            echo "$ARG2" >"$BAT0_START_PATH" &&
+            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        ;;
+    BAT0_START_END)
+        validate_threshold "$ARG1"
+        validate_threshold "$ARG2"
+        # Write START first, then END (for decreasing thresholds)
+        echo "$ARG2" >"$BAT0_START_PATH" &&
+            echo "$ARG1" >"$BAT0_END_PATH" &&
+            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        ;;
+    BAT1_END_START)
+        validate_threshold "$ARG1"
+        validate_threshold "$ARG2"
+        echo "$ARG1" >"$BAT1_END_PATH" &&
+            echo "$ARG2" >"$BAT1_START_PATH" &&
+            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        ;;
+    BAT1_START_END)
+        validate_threshold "$ARG1"
+        validate_threshold "$ARG2"
+        echo "$ARG2" >"$BAT1_START_PATH" &&
+            echo "$ARG1" >"$BAT1_END_PATH" &&
+            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        ;;
+    FORCE_DISCHARGE_BAT0)
+        if [[ "$ARG1" != "force-discharge" && "$ARG1" != "auto" ]]; then
+            echo "Error: Invalid force discharge mode."
+            exit "$EXIT_ERROR"
+        fi
+        echo "$ARG1" >"$BAT0_FORCE_DISCHARGE_PATH" &&
+            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        ;;
+    FORCE_DISCHARGE_BAT1)
+         if [[ "$ARG1" != "force-discharge" && "$ARG1" != "auto" ]]; then
+            echo "Error: Invalid force discharge mode."
+            exit "$EXIT_ERROR"
+        fi
+        echo "$ARG1" >"$BAT1_FORCE_DISCHARGE_PATH" &&
+            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        ;;
+    *)
+        echo "Unknown Command: $TOOLCMD"
+        exit ${EXIT_ERROR}
+        ;;
+esac

@@ -1,0 +1,20 @@
+/* Unified Power Manager - Quick Settings Styles */
+
+/* Section headers in the popup menu */
+.popup-menu-section-header {
+    font-weight: bold;
+    font-size: 0.85em;
+    color: #888888;
+    padding: 8px 12px 4px 12px;
+}
+
+/* Status item styling */
+.popup-menu-status-item {
+    font-style: italic;
+    color: #aaaaaa;
+}
+
+/* Ensure proper spacing for menu items */
+.popup-menu-item {
+    padding: 8px 12px;
+}
