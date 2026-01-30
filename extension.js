@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 'use strict';
+import GLib from 'gi://GLib';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
@@ -21,7 +22,9 @@ export default class UnifiedPowerManager extends Extension {
         this._powerManager = null;
         this._builtinPowerProfile = null;
         this._builtinPowerProfileIndex = -1;
+        this._hiddenMenuItems = null;
         this._hideBuiltinId = null;
+        this._hideRetryTimeout = null;
 
         // Run migration on first load
         ProfileMatcher.migrateProfilesToCustomFormat(this._settings);
@@ -81,10 +84,10 @@ export default class UnifiedPowerManager extends Extension {
                     this._showBuiltinPowerProfile();
             });
 
-            console.log('Unified Power Manager: Extension initialized successfully');
+            log('Unified Power Manager: Extension initialized successfully');
         } catch (e) {
-            console.error(`Unified Power Manager: Failed to initialize: ${e}`);
-            console.error(e.stack);
+            logError(`Unified Power Manager: Failed to initialize: ${e}`);
+            logError(e.stack);
             Main.notify('Unified Power Manager', 'Failed to initialize. Check logs for details.');
         } finally {
             this._initializing = false;
@@ -117,40 +120,137 @@ export default class UnifiedPowerManager extends Extension {
         if (this._builtinPowerProfile)
             return; // Already hidden
 
+        const found = this._tryHideBuiltinPowerProfile();
+
+        if (!found && !this._hideRetryTimeout) {
+            // Retry after 500ms in case indicator loads after extension
+            log('UPM: Built-in indicator not found, will retry in 500ms');
+            this._hideRetryTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+                this._hideRetryTimeout = null;
+                const retryFound = this._tryHideBuiltinPowerProfile();
+                if (!retryFound) {
+                    log('UPM: Built-in power profile indicator not found after retry');
+                }
+                return GLib.SOURCE_REMOVE;
+            });
+        }
+    }
+
+    _tryHideBuiltinPowerProfile() {
         const QuickSettingsMenu = Main.panel.statusArea.quickSettings;
+
+        log('UPM: Attempting to hide built-in power profile indicator');
+        log(`UPM: Found ${QuickSettingsMenu._indicators.get_n_children()} indicators`);
 
         // Search through indicators to find built-in power profile
         for (let i = 0; i < QuickSettingsMenu._indicators.get_n_children(); i++) {
             const indicator = QuickSettingsMenu._indicators.get_child_at_index(i);
 
-            // Identify by class name or by examining menu items
+            log(`UPM: Indicator ${i}:`);
+            log(`  - Class: ${indicator.constructor.name}`);
+            log(`  - Has quickSettingsItems: ${!!indicator.quickSettingsItems}`);
+
+            if (indicator.quickSettingsItems) {
+                log(`  - Items count: ${indicator.quickSettingsItems.length}`);
+                indicator.quickSettingsItems.forEach((item, idx) => {
+                    log(`    - Item ${idx}: title="${item.title}", class=${item.constructor.name}`);
+                });
+            }
+
+            // Primary detection: exact title match for 'Power Mode'
             if (indicator.constructor.name === 'Indicator' &&
                 indicator.quickSettingsItems &&
-                indicator.quickSettingsItems.some(item =>
-                    item.title === 'Power Mode' ||
-                    item.title === 'Power Profile')) {
+                indicator.quickSettingsItems.some(item => item.title === 'Power Mode')) {
+
+                log(`UPM: Found built-in power profile at index ${i}, hiding it`);
 
                 // Store reference and position for restoration
                 this._builtinPowerProfile = indicator;
                 this._builtinPowerProfileIndex = i;
 
-                // Hide by setting visible to false
+                // Hide the indicator container
                 indicator.visible = false;
-                return;
+
+                // Remove each menu item from the Quick Settings menu grid
+                // Store them so we can re-add them later if needed
+                this._hiddenMenuItems = [];
+                indicator.quickSettingsItems.forEach(item => {
+                    log(`UPM: Removing menu item from grid: ${item.title}`);
+                    const parent = item.get_parent();
+                    if (parent) {
+                        parent.remove_child(item);
+                        this._hiddenMenuItems.push({item, parent});
+                    }
+                });
+
+                return true;
+            }
+
+            // Fallback detection: check for D-Bus proxy connection
+            if (indicator.constructor.name === 'Indicator' &&
+                indicator.quickSettingsItems &&
+                indicator.quickSettingsItems.length > 0) {
+
+                const toggle = indicator.quickSettingsItems[0];
+
+                // Check if it has a _proxy connected to PowerProfiles service
+                if (toggle._proxy && toggle._proxy.g_name === 'net.hadess.PowerProfiles') {
+                    log(`UPM: Found built-in power profile via D-Bus proxy at index ${i}, hiding it`);
+
+                    this._builtinPowerProfile = indicator;
+                    this._builtinPowerProfileIndex = i;
+
+                    // Hide the indicator container
+                    indicator.visible = false;
+
+                    // Remove each menu item from the Quick Settings menu grid
+                    this._hiddenMenuItems = [];
+                    indicator.quickSettingsItems.forEach(item => {
+                        log(`UPM: Removing menu item via D-Bus detection`);
+                        const parent = item.get_parent();
+                        if (parent) {
+                            parent.remove_child(item);
+                            this._hiddenMenuItems.push({item, parent});
+                        }
+                    });
+
+                    return true;
+                }
             }
         }
+
+        return false;
     }
 
     _showBuiltinPowerProfile() {
         if (this._builtinPowerProfile) {
+            // Restore the indicator container
             this._builtinPowerProfile.visible = true;
+
+            // Re-add menu items to Quick Settings
+            if (this._hiddenMenuItems && this._hiddenMenuItems.length > 0) {
+                this._hiddenMenuItems.forEach(({item, parent}) => {
+                    log(`UPM: Restoring menu item to grid: ${item.title}`);
+                    if (parent && !item.get_parent()) {
+                        parent.add_child(item);
+                    }
+                });
+                this._hiddenMenuItems = null;
+            }
+
             this._builtinPowerProfile = null;
             this._builtinPowerProfileIndex = -1;
         }
     }
 
     disable() {
-        console.log('Unified Power Manager: Disabling extension');
+        log('Unified Power Manager: Disabling extension');
+
+        // Cancel retry timeout if pending
+        if (this._hideRetryTimeout) {
+            GLib.source_remove(this._hideRetryTimeout);
+            this._hideRetryTimeout = null;
+        }
 
         // Disconnect hide-builtin setting watcher
         if (this._hideBuiltinId) {
@@ -169,6 +269,7 @@ export default class UnifiedPowerManager extends Extension {
         this._destroyPowerManager();
         Helper.destroyExecCheck();
 
+        this._hiddenMenuItems = null;
         this._settings = null;
     }
 }
