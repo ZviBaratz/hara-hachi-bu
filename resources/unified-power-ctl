@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -eu
 
 # unified-power-ctl - Helper script for Unified Power Manager extension
 # Handles privileged operations: setting battery thresholds, force-discharge
@@ -14,7 +15,12 @@ EXIT_SUCCESS=0
 EXIT_ERROR=1
 EXIT_NEEDS_UPDATE=2
 
-TOOLCMD=$1
+# Validate that a sysfs path exists before writing
+validate_sysfs_path() {
+    [[ -f "$1" ]] || { echo "Error: Path does not exist: $1" >&2; exit "$EXIT_ERROR"; }
+}
+
+TOOLCMD=${1:-}
 ARG1=${2:-0}
 ARG2=${3:-0}
 
@@ -92,7 +98,7 @@ case "$TOOLCMD" in
             exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
         ;;
     *)
-        echo "Unknown Command: $TOOLCMD"
-        exit ${EXIT_ERROR}
+        echo "Unknown Command: '$TOOLCMD'"
+        exit "$EXIT_ERROR"
         ;;
 esac
