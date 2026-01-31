@@ -18,3 +18,8 @@
 .popup-menu-item {
     padding: 8px 12px;
 }
+
+/* Scrollable section for the menu content */
+.upm-menu-scroll-section {
+    max-height: 300px;
+}
