@@ -27,9 +27,9 @@ help:
 dev: schemas nested
 
 nested:
-	@echo "Starting nested GNOME Shell ($(NESTED_SIZE))..."
+	@echo "Starting nested GNOME Shell..."
 	@echo "Press Ctrl+C in this terminal to kill the session if closing the window doesn't work."
-	@dbus-run-session gnome-shell --nested --wayland --virtual-monitor=$(NESTED_SIZE)
+	@dbus-run-session gnome-shell --nested --wayland
 
 schemas:
 	@echo "Compiling schemas..."
