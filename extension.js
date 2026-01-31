@@ -139,23 +139,9 @@ export default class UnifiedPowerManager extends Extension {
     _tryHideBuiltinPowerProfile() {
         const QuickSettingsMenu = Main.panel.statusArea.quickSettings;
 
-        log('UPM: Attempting to hide built-in power profile indicator');
-        log(`UPM: Found ${QuickSettingsMenu._indicators.get_n_children()} indicators`);
-
         // Search through indicators to find built-in power profile
         for (let i = 0; i < QuickSettingsMenu._indicators.get_n_children(); i++) {
             const indicator = QuickSettingsMenu._indicators.get_child_at_index(i);
-
-            log(`UPM: Indicator ${i}:`);
-            log(`  - Class: ${indicator.constructor.name}`);
-            log(`  - Has quickSettingsItems: ${!!indicator.quickSettingsItems}`);
-
-            if (indicator.quickSettingsItems) {
-                log(`  - Items count: ${indicator.quickSettingsItems.length}`);
-                indicator.quickSettingsItems.forEach((item, idx) => {
-                    log(`    - Item ${idx}: title="${item.title}", class=${item.constructor.name}`);
-                });
-            }
 
             // Primary detection: exact title match for 'Power Mode'
             if (indicator.constructor.name === 'Indicator' &&
@@ -175,7 +161,6 @@ export default class UnifiedPowerManager extends Extension {
                 // Store them so we can re-add them later if needed
                 this._hiddenMenuItems = [];
                 indicator.quickSettingsItems.forEach(item => {
-                    log(`UPM: Removing menu item from grid: ${item.title}`);
                     const parent = item.get_parent();
                     if (parent) {
                         parent.remove_child(item);
@@ -206,7 +191,6 @@ export default class UnifiedPowerManager extends Extension {
                     // Remove each menu item from the Quick Settings menu grid
                     this._hiddenMenuItems = [];
                     indicator.quickSettingsItems.forEach(item => {
-                        log(`UPM: Removing menu item via D-Bus detection`);
                         const parent = item.get_parent();
                         if (parent) {
                             parent.remove_child(item);
@@ -230,7 +214,6 @@ export default class UnifiedPowerManager extends Extension {
             // Re-add menu items to Quick Settings
             if (this._hiddenMenuItems && this._hiddenMenuItems.length > 0) {
                 this._hiddenMenuItems.forEach(({item, parent}) => {
-                    log(`UPM: Restoring menu item to grid: ${item.title}`);
                     if (parent && !item.get_parent()) {
                         parent.add_child(item);
                     }

@@ -22,7 +22,7 @@ A GNOME Shell extension providing unified Quick Settings control for power profi
 
 1. Visit [Unified Power Manager](https://extensions.gnome.org/extension/unified-power-manager/) on EGO
 2. Click "Install"
-3. Follow the helper script installation below for battery threshold control
+3. **Important:** After installation, you must install the helper script to enable battery threshold control (see below).
 
 ### Manual Installation
 
@@ -42,13 +42,17 @@ Then log out and log back in, or restart GNOME Shell (Alt+F2, type `r`, press En
 
 ### Helper Script Installation (Required for Battery Control)
 
-Battery threshold control requires root privileges. Install the helper components:
+Battery threshold control requires root privileges. Because GNOME Extensions cannot install system files automatically, you must run a one-time setup script.
 
-```bash
-# Using the install script
-cd ~/.local/share/gnome-shell/extensions/unified-power-manager@zvi
-sudo ./install-helper.sh
-```
+1. Open a terminal
+2. Navigate to the extension directory:
+   ```bash
+   cd ~/.local/share/gnome-shell/extensions/unified-power-manager@zvi
+   ```
+3. Run the installer:
+   ```bash
+   sudo ./install-helper.sh
+   ```
 
 Or manually:
 

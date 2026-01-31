@@ -24,6 +24,7 @@ zip -r "$OUTPUT_FILE" \
     schemas/org.gnome.shell.extensions.unified-power-manager.gschema.xml \
     icons/ \
     lib/ \
+    resources/ \
     -x "*.pyc" \
     -x "*__pycache__*" \
     -x "*.swp" \
