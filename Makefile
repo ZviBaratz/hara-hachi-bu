@@ -7,8 +7,7 @@ INSTALL_BASE = $(HOME)/.local/share/gnome-shell/extensions
 INSTALL_DIR = $(INSTALL_BASE)/$(EXTENSION_UUID)
 
 # Flags for nested session
-NESTED_WIDTH = 1280
-NESTED_HEIGHT = 720
+NESTED_SIZE = 1600x900
 
 .PHONY: all dev nested schemas install pack clean logs help
 
@@ -28,9 +27,9 @@ help:
 dev: schemas nested
 
 nested:
-	@echo "Starting nested GNOME Shell..."
+	@echo "Starting nested GNOME Shell ($(NESTED_SIZE))..."
 	@echo "Press Ctrl+C in this terminal to kill the session if closing the window doesn't work."
-	@dbus-run-session gnome-shell --nested --wayland
+	@dbus-run-session gnome-shell --nested --wayland --virtual-monitor=$(NESTED_SIZE)
 
 schemas:
 	@echo "Compiling schemas..."
