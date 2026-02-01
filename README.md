@@ -68,6 +68,15 @@ sudo cp resources/10-unified-power-manager.rules /etc/polkit-1/rules.d/
 sudo cp resources/org.gnome.shell.extensions.unified-power-manager.policy /usr/share/polkit-1/actions/
 ```
 
+### Uninstallation
+
+To remove the helper script and polkit rules:
+
+```bash
+cd ~/.local/share/gnome-shell/extensions/unified-power-manager@zvi
+sudo ./install-helper.sh --uninstall
+```
+
 ## Security Model
 
 This extension uses polkit for privilege escalation when modifying battery thresholds.
