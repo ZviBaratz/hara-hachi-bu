@@ -10,7 +10,7 @@
     </key>
 
     <key name="show-force-discharge" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Show force discharge toggle</summary>
       <description>Show force discharge toggle in the menu</description>
     </key>
