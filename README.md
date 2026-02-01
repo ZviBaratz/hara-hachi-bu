@@ -1,6 +1,6 @@
 # Unified Power Manager
 
-A GNOME Shell extension providing unified Quick Settings control for power profiles and battery charging modes on ThinkPad laptops.
+A GNOME Shell extension providing unified Quick Settings control for power profiles and battery charging modes on supported laptops (ThinkPad, Framework, etc.).
 
 ## Features
 
@@ -13,7 +13,7 @@ A GNOME Shell extension providing unified Quick Settings control for power profi
 ## Compatibility
 
 - **GNOME Shell**: 46, 47, 48
-- **Hardware**: Lenovo ThinkPad laptops with battery threshold support
+- **Hardware**: Laptops with battery charge threshold support via standard Linux sysfs (e.g., ThinkPad, Framework, some ASUS/Dell)
 - **Power Profiles**: Requires `power-profiles-daemon`
 
 ## Installation
@@ -156,14 +156,11 @@ journalctl -f -o cat /usr/bin/gnome-shell
 3. Test manually: `pkexec unified-power-ctl BAT0_END_START 60 55`
 4. Check if your ThinkPad supports thresholds: `ls /sys/class/power_supply/BAT0/charge_control_*`
 
+### Device Support
+
+Battery threshold control works on any laptop that exposes standard charge control attributes in `/sys/class/power_supply/BAT0/` (specifically `charge_control_start_threshold` and `charge_control_end_threshold`). This is common on ThinkPads (via `thinkpad_acpi`), Framework laptops, and others running modern kernels.
+
 ### Power profiles not working
-
-1. Check power-profiles-daemon is running: `systemctl status power-profiles-daemon`
-2. Test with: `powerprofilesctl list`
-
-### Non-ThinkPad laptops
-
-Battery threshold control only works on ThinkPad laptops with the `thinkpad_acpi` kernel module. Power profile switching works on any system with `power-profiles-daemon`.
 
 ## Building from Source
 
