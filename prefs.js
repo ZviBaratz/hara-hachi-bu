@@ -8,8 +8,11 @@ import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import Gtk from 'gi://Gtk';
 import GObject from 'gi://GObject';
+import Gettext from 'gettext';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import * as ProfileMatcher from './lib/profileMatcher.js';
+
+const _ = s => Gettext.dgettext('unified-power-manager', s);
 
 // ProfileRow widget for displaying profile in the list
 const ProfileRow = GObject.registerClass(
@@ -41,7 +44,7 @@ class ProfileRow extends Adw.ActionRow {
         } else {
             // Builtin badge
             const badge = new Gtk.Label({
-                label: 'Default',
+                label: _('Default'),
                 css_classes: ['dim-label', 'caption'],
                 margin_start: 6,
             });
@@ -59,59 +62,59 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // General Settings Page
         const generalPage = new Adw.PreferencesPage({
-            title: 'General',
+            title: _('General'),
             icon_name: 'preferences-system-symbolic',
         });
         window.add(generalPage);
 
         // UI Settings Group
         const uiGroup = new Adw.PreferencesGroup({
-            title: 'User Interface',
-            description: 'Configure the appearance of the extension',
+            title: _('User Interface'),
+            description: _('Configure the appearance of the extension'),
         });
         generalPage.add(uiGroup);
 
         // Show system indicator
         const indicatorRow = new Adw.SwitchRow({
-            title: 'Show System Indicator',
-            subtitle: 'Display indicator icon in the system tray',
+            title: _('Show System Indicator'),
+            subtitle: _('Display indicator icon in the system tray'),
         });
         settings.bind('show-system-indicator', indicatorRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(indicatorRow);
 
         // Show force discharge toggle
         const forceDischargeRow = new Adw.SwitchRow({
-            title: 'Show Force Discharge Toggle',
-            subtitle: 'Display force discharge toggle in the menu',
+            title: _('Show Force Discharge Toggle'),
+            subtitle: _('Display force discharge toggle in the menu'),
         });
         settings.bind('show-force-discharge', forceDischargeRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(forceDischargeRow);
 
         // Hide built-in power profile indicator
         const hideBuiltinRow = new Adw.SwitchRow({
-            title: 'Hide Built-in Power Profile',
-            subtitle: 'Replace GNOME Shell\'s power profile quick settings with this extension',
+            title: _('Hide Built-in Power Profile'),
+            subtitle: _('Replace GNOME Shell\'s power profile quick settings with this extension'),
         });
         settings.bind('hide-builtin-power-profile', hideBuiltinRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(hideBuiltinRow);
 
         // Battery Thresholds Page
         const thresholdsPage = new Adw.PreferencesPage({
-            title: 'Thresholds',
+            title: _('Thresholds'),
             icon_name: 'battery-symbolic',
         });
         window.add(thresholdsPage);
 
         // Full Capacity Mode Group
         const fullGroup = new Adw.PreferencesGroup({
-            title: 'Full Capacity Mode',
-            description: 'Maximum battery capacity for travel',
+            title: _('Full Capacity Mode'),
+            description: _('Maximum battery capacity for travel'),
         });
         thresholdsPage.add(fullGroup);
 
         const fullStartRow = new Adw.SpinRow({
-            title: 'Start Charging At',
-            subtitle: 'Begin charging when battery drops below this level',
+            title: _('Start Charging At'),
+            subtitle: _('Begin charging when battery drops below this level'),
             adjustment: new Gtk.Adjustment({
                 lower: 80,
                 upper: 99,
@@ -124,8 +127,8 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         fullGroup.add(fullStartRow);
 
         const fullEndRow = new Adw.SpinRow({
-            title: 'Stop Charging At',
-            subtitle: 'Stop charging when battery reaches this level',
+            title: _('Stop Charging At'),
+            subtitle: _('Stop charging when battery reaches this level'),
             adjustment: new Gtk.Adjustment({
                 lower: 85,
                 upper: 100,
@@ -139,14 +142,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Balanced Mode Group
         const balancedGroup = new Adw.PreferencesGroup({
-            title: 'Balanced Mode',
-            description: 'Balance between capacity and battery lifespan',
+            title: _('Balanced Mode'),
+            description: _('Balance between capacity and battery lifespan'),
         });
         thresholdsPage.add(balancedGroup);
 
         const balancedStartRow = new Adw.SpinRow({
-            title: 'Start Charging At',
-            subtitle: 'Begin charging when battery drops below this level',
+            title: _('Start Charging At'),
+            subtitle: _('Begin charging when battery drops below this level'),
             adjustment: new Gtk.Adjustment({
                 lower: 60,
                 upper: 80,
@@ -159,8 +162,8 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         balancedGroup.add(balancedStartRow);
 
         const balancedEndRow = new Adw.SpinRow({
-            title: 'Stop Charging At',
-            subtitle: 'Stop charging when battery reaches this level',
+            title: _('Stop Charging At'),
+            subtitle: _('Stop charging when battery reaches this level'),
             adjustment: new Gtk.Adjustment({
                 lower: 65,
                 upper: 90,
@@ -174,14 +177,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Max Lifespan Mode Group
         const lifespanGroup = new Adw.PreferencesGroup({
-            title: 'Max Lifespan Mode',
-            description: 'Maximize battery lifespan for desk work',
+            title: _('Max Lifespan Mode'),
+            description: _('Maximize battery lifespan for desk work'),
         });
         thresholdsPage.add(lifespanGroup);
 
         const lifespanStartRow = new Adw.SpinRow({
-            title: 'Start Charging At',
-            subtitle: 'Begin charging when battery drops below this level',
+            title: _('Start Charging At'),
+            subtitle: _('Begin charging when battery drops below this level'),
             adjustment: new Gtk.Adjustment({
                 lower: 40,
                 upper: 60,
@@ -194,8 +197,8 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         lifespanGroup.add(lifespanStartRow);
 
         const lifespanEndRow = new Adw.SpinRow({
-            title: 'Stop Charging At',
-            subtitle: 'Stop charging when battery reaches this level',
+            title: _('Stop Charging At'),
+            subtitle: _('Stop charging when battery reaches this level'),
             adjustment: new Gtk.Adjustment({
                 lower: 45,
                 upper: 70,
@@ -209,15 +212,15 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Profiles Page
         const profilesPage = new Adw.PreferencesPage({
-            title: 'Profiles',
+            title: _('Profiles'),
             icon_name: 'view-list-symbolic',
         });
         window.add(profilesPage);
 
         // Profile List Group
         const profileListGroup = new Adw.PreferencesGroup({
-            title: 'Power Profiles',
-            description: 'Manage custom power and battery mode combinations',
+            title: _('Power Profiles'),
+            description: _('Manage custom power and battery mode combinations'),
         });
         profilesPage.add(profileListGroup);
 
@@ -240,7 +243,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Add Profile button
         const addButton = new Gtk.Button({
-            label: 'Add Profile',
+            label: _('Add Profile'),
             halign: Gtk.Align.CENTER,
             margin_top: 12,
             css_classes: ['pill'],
@@ -268,7 +271,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // About Page
         const aboutPage = new Adw.PreferencesPage({
-            title: 'About',
+            title: _('About'),
             icon_name: 'help-about-symbolic',
         });
         window.add(aboutPage);
@@ -277,25 +280,25 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         aboutPage.add(aboutGroup);
 
         const aboutRow = new Adw.ActionRow({
-            title: 'Unified Power Manager',
-            subtitle: 'Version 1.0\nManage power profiles and battery charging modes',
+            title: _('Unified Power Manager'),
+            subtitle: _('Version 1.0\nManage power profiles and battery charging modes'),
         });
         aboutGroup.add(aboutRow);
 
         // System Status group
         const statusGroup = new Adw.PreferencesGroup({
-            title: 'System Status',
-            description: 'Component installation and hardware support status',
+            title: _('System Status'),
+            description: _('Component installation and hardware support status'),
         });
         aboutPage.add(statusGroup);
 
         // Check helper script
         const helperInstalled = this._checkFileExists('/usr/local/bin/unified-power-ctl');
         const helperRow = new Adw.ActionRow({
-            title: 'Helper Script',
+            title: _('Helper Script'),
             subtitle: helperInstalled
-                ? 'Installed at /usr/local/bin/unified-power-ctl'
-                : 'Not installed - battery threshold control unavailable',
+                ? _('Installed at /usr/local/bin/unified-power-ctl')
+                : _('Not installed - battery threshold control unavailable'),
         });
         const helperIcon = new Gtk.Image({
             icon_name: helperInstalled ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic',
@@ -309,10 +312,10 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const polkitPolicy = this._checkFileExists('/usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy');
         const polkitInstalled = polkitRules || polkitPolicy;
         const polkitRow = new Adw.ActionRow({
-            title: 'Polkit Configuration',
+            title: _('Polkit Configuration'),
             subtitle: polkitInstalled
-                ? (polkitRules ? 'Rules installed' : 'Legacy policy installed')
-                : 'Not installed - may require password for each change',
+                ? (polkitRules ? _('Rules installed') : _('Legacy policy installed'))
+                : _('Not installed - may require password for each change'),
         });
         const polkitIcon = new Gtk.Image({
             icon_name: polkitInstalled ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic',
@@ -325,10 +328,10 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const thinkpadSupport = this._checkFileExists('/sys/devices/platform/thinkpad_acpi');
         const thresholdSupport = this._checkFileExists('/sys/class/power_supply/BAT0/charge_control_end_threshold');
         const thinkpadRow = new Adw.ActionRow({
-            title: 'Battery Threshold Support',
+            title: _('Battery Threshold Support'),
             subtitle: thinkpadSupport && thresholdSupport
-                ? 'ThinkPad detected with threshold support'
-                : (thinkpadSupport ? 'ThinkPad detected but threshold files not found' : 'Not a ThinkPad - battery features unavailable'),
+                ? _('ThinkPad detected with threshold support')
+                : (thinkpadSupport ? _('ThinkPad detected but threshold files not found') : _('Not a ThinkPad - battery features unavailable')),
         });
         const thinkpadIcon = new Gtk.Image({
             icon_name: (thinkpadSupport && thresholdSupport) ? 'emblem-ok-symbolic' : 'dialog-information-symbolic',
@@ -339,14 +342,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Installation instructions
         const installGroup = new Adw.PreferencesGroup({
-            title: 'Installation',
-            description: 'Run install-helper.sh or see README.md for manual installation',
+            title: _('Installation'),
+            description: _('Run install-helper.sh or see README.md for manual installation'),
         });
         aboutPage.add(installGroup);
 
         const installRow = new Adw.ActionRow({
-            title: 'Helper Installation',
-            subtitle: 'sudo ./install-helper.sh (in extension directory)',
+            title: _('Helper Installation'),
+            subtitle: _('sudo ./install-helper.sh (in extension directory)'),
         });
         installGroup.add(installRow);
     }
@@ -385,7 +388,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const isEdit = existingProfile !== null;
 
         const dialog = new Gtk.Dialog({
-            title: isEdit ? 'Edit Profile' : 'Create Profile',
+            title: isEdit ? _('Edit Profile') : _('Create Profile'),
             transient_for: window,
             modal: true,
             use_header_bar: true,
@@ -403,10 +406,10 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Profile name entry
         const nameEntry = new Gtk.Entry({
-            placeholder_text: 'Profile Name (e.g., Gaming)',
+            placeholder_text: _('Profile Name (e.g., Gaming)'),
             text: isEdit ? existingProfile.name : '',
         });
-        content.append(new Gtk.Label({label: 'Profile Name', halign: Gtk.Align.START}));
+        content.append(new Gtk.Label({label: _('Profile Name'), halign: Gtk.Align.START}));
         content.append(nameEntry);
 
         // Disable name editing for builtin profiles
@@ -415,20 +418,28 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Power mode dropdown
         const powerModes = ['performance', 'balanced', 'power-saver'];
+        const powerModeLabels = {
+            'performance': _('Performance'),
+            'balanced': _('Balanced'),
+            'power-saver': _('Power Saver'),
+        };
         const powerCombo = new Gtk.ComboBoxText();
-        powerModes.forEach(mode => powerCombo.append_text(mode));
-        powerCombo.set_active(isEdit ?
-            powerModes.indexOf(existingProfile.powerMode) : 1);
-        content.append(new Gtk.Label({label: 'Power Mode', halign: Gtk.Align.START, margin_top: 6}));
+        powerModes.forEach(mode => powerCombo.append(mode, powerModeLabels[mode]));
+        powerCombo.set_active_id(isEdit ? existingProfile.powerMode : 'balanced');
+        content.append(new Gtk.Label({label: _('Power Mode'), halign: Gtk.Align.START, margin_top: 6}));
         content.append(powerCombo);
 
         // Battery mode dropdown
         const batteryModes = ['full-capacity', 'balanced', 'max-lifespan'];
+        const batteryModeLabels = {
+            'full-capacity': _('Full Capacity'),
+            'balanced': _('Balanced'),
+            'max-lifespan': _('Max Lifespan'),
+        };
         const batteryCombo = new Gtk.ComboBoxText();
-        batteryModes.forEach(mode => batteryCombo.append_text(mode));
-        batteryCombo.set_active(isEdit ?
-            batteryModes.indexOf(existingProfile.batteryMode) : 1);
-        content.append(new Gtk.Label({label: 'Battery Mode', halign: Gtk.Align.START, margin_top: 6}));
+        batteryModes.forEach(mode => batteryCombo.append(mode, batteryModeLabels[mode]));
+        batteryCombo.set_active_id(isEdit ? existingProfile.batteryMode : 'balanced');
+        content.append(new Gtk.Label({label: _('Battery Mode'), halign: Gtk.Align.START, margin_top: 6}));
         content.append(batteryCombo);
 
         // Error label
@@ -440,18 +451,23 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         content.append(errorLabel);
 
         // Dialog buttons
-        dialog.add_button('Cancel', Gtk.ResponseType.CANCEL);
+        dialog.add_button(_('Cancel'), Gtk.ResponseType.CANCEL);
         const saveButton = dialog.add_button(
-            isEdit ? 'Save' : 'Create',
+            isEdit ? _('Save') : _('Create'),
             Gtk.ResponseType.OK
         );
         saveButton.add_css_class('suggested-action');
 
+        // Set initial focus and keyboard navigation
+        nameEntry.grab_focus();
+        dialog.set_default_response(Gtk.ResponseType.OK);
+        nameEntry.activates_default = true;
+
         dialog.connect('response', (dialog, response) => {
             if (response === Gtk.ResponseType.OK) {
                 const name = nameEntry.get_text().trim();
-                const powerMode = powerModes[powerCombo.get_active()];
-                const batteryMode = batteryModes[batteryCombo.get_active()];
+                const powerMode = powerCombo.get_active_id();
+                const batteryMode = batteryCombo.get_active_id();
 
                 // Generate ID from name
                 const id = isEdit ?
@@ -460,13 +476,13 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
                 // Validate
                 if (!name) {
-                    errorLabel.set_text('Profile name is required');
+                    errorLabel.set_text(_('Profile name is required'));
                     errorLabel.show();
                     return;
                 }
 
                 if (!isEdit && !ProfileMatcher.isValidProfileId(id)) {
-                    errorLabel.set_text('Invalid name (use letters, numbers, hyphens)');
+                    errorLabel.set_text(_('Invalid name (use letters, numbers, hyphens)'));
                     errorLabel.show();
                     return;
                 }
@@ -481,7 +497,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 }
 
                 if (!success) {
-                    errorLabel.set_text('Profile already exists or limit reached');
+                    errorLabel.set_text(_('Profile already exists or limit reached'));
                     errorLabel.show();
                     return;
                 }
@@ -498,12 +514,12 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             modal: true,
             buttons: Gtk.ButtonsType.NONE,
             message_type: Gtk.MessageType.WARNING,
-            text: `Delete "${profile.name}"?`,
-            secondary_text: 'This action cannot be undone.',
+            text: _('Delete "%s"?').format(profile.name),
+            secondary_text: _('This action cannot be undone.'),
         });
 
-        dialog.add_button('Cancel', Gtk.ResponseType.CANCEL);
-        const deleteButton = dialog.add_button('Delete', Gtk.ResponseType.OK);
+        dialog.add_button(_('Cancel'), Gtk.ResponseType.CANCEL);
+        const deleteButton = dialog.add_button(_('Delete'), Gtk.ResponseType.OK);
         deleteButton.add_css_class('destructive-action');
 
         dialog.connect('response', (dialog, response) => {

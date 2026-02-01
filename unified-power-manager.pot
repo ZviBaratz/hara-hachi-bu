@@ -1,0 +1,104 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-01 13:47+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: lib/quickSettingsPanel.js:30 lib/quickSettingsPanel.js:34
+#: lib/quickSettingsPanel.js:378
+msgid "Power"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:120
+msgid "PROFILE"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:159
+msgid "POWER MODE"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:185
+msgid "BATTERY MODE"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:194
+msgid "Setup Required (Click for Info)"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:198 lib/stateManager.js:173
+#: lib/stateManager.js:218 lib/stateManager.js:250
+msgid "Unified Power Manager"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:199
+msgid ""
+"Run \"sudo ./install-helper.sh\" in the extension directory to enable "
+"battery control."
+msgstr ""
+
+#: lib/quickSettingsPanel.js:229
+msgid "Force Discharge"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:248
+msgid "Extension Settings"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:306 lib/quickSettingsPanel.js:366
+msgid " • Charging"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:309 lib/quickSettingsPanel.js:369
+msgid " • Force discharging"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:311 lib/quickSettingsPanel.js:371
+msgid " • Discharging"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:313 lib/quickSettingsPanel.js:373
+msgid " • Charging inhibited"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:315 lib/quickSettingsPanel.js:375
+msgid " • Full"
+msgstr ""
+
+#: lib/stateManager.js:174 lib/stateManager.js:219
+#, javascript-format
+msgid "Switched to %s profile"
+msgstr ""
+
+#: lib/stateManager.js:181 lib/stateManager.js:226
+msgid "Automatic Profile Switch"
+msgstr ""
+
+#: lib/stateManager.js:182
+msgid "Failed to switch to docked profile. See logs for details."
+msgstr ""
+
+#: lib/stateManager.js:227
+msgid "Failed to switch to undocked profile. See logs for details."
+msgstr ""
+
+#: lib/stateManager.js:338
+msgid "Profile Switch Failed"
+msgstr ""
+
+#: lib/stateManager.js:339
+#, javascript-format
+msgid "Profile \"%s\" does not exist."
+msgstr ""

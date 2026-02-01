@@ -5,8 +5,11 @@
  */
 'use strict';
 import GLib from 'gi://GLib';
+import Gettext from 'gettext';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
+
+const _ = s => Gettext.dgettext('unified-power-manager', s);
 
 import {PowerProfileController} from './lib/powerProfileController.js';
 import {BatteryThresholdController} from './lib/batteryThresholdController.js';
@@ -84,11 +87,11 @@ export default class UnifiedPowerManager extends Extension {
                     this._showBuiltinPowerProfile();
             });
 
-            log('Unified Power Manager: Extension initialized successfully');
+            console.log('Unified Power Manager: Extension initialized successfully');
         } catch (e) {
-            logError(`Unified Power Manager: Failed to initialize: ${e}`);
-            logError(e.stack);
-            Main.notify('Unified Power Manager', 'Failed to initialize. Check logs for details.');
+            console.error(`Unified Power Manager: Failed to initialize: ${e}`);
+            console.error(e.stack);
+            Main.notify(_('Unified Power Manager'), _('Failed to initialize. Check logs for details.'));
         } finally {
             this._initializing = false;
         }
@@ -124,12 +127,12 @@ export default class UnifiedPowerManager extends Extension {
 
         if (!found && !this._hideRetryTimeout) {
             // Retry after 500ms in case indicator loads after extension
-            log('UPM: Built-in indicator not found, will retry in 500ms');
+            console.log('UPM: Built-in indicator not found, will retry in 500ms');
             this._hideRetryTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
                 this._hideRetryTimeout = null;
                 const retryFound = this._tryHideBuiltinPowerProfile();
                 if (!retryFound) {
-                    log('UPM: Built-in power profile indicator not found after retry');
+                    console.log('UPM: Built-in power profile indicator not found after retry');
                 }
                 return GLib.SOURCE_REMOVE;
             });
@@ -148,7 +151,7 @@ export default class UnifiedPowerManager extends Extension {
                 indicator.quickSettingsItems &&
                 indicator.quickSettingsItems.some(item => item.title === 'Power Mode')) {
 
-                log(`UPM: Found built-in power profile at index ${i}, hiding it`);
+                console.log(`UPM: Found built-in power profile at index ${i}, hiding it`);
 
                 // Store reference and position for restoration
                 this._builtinPowerProfile = indicator;
@@ -180,7 +183,7 @@ export default class UnifiedPowerManager extends Extension {
 
                 // Check if it has a _proxy connected to PowerProfiles service
                 if (toggle._proxy && toggle._proxy.g_name === 'net.hadess.PowerProfiles') {
-                    log(`UPM: Found built-in power profile via D-Bus proxy at index ${i}, hiding it`);
+                    console.log(`UPM: Found built-in power profile via D-Bus proxy at index ${i}, hiding it`);
 
                     this._builtinPowerProfile = indicator;
                     this._builtinPowerProfileIndex = i;
@@ -227,7 +230,7 @@ export default class UnifiedPowerManager extends Extension {
     }
 
     disable() {
-        log('Unified Power Manager: Disabling extension');
+        console.log('Unified Power Manager: Disabling extension');
 
         // Cancel retry timeout if pending
         if (this._hideRetryTimeout) {
