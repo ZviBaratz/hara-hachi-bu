@@ -11,8 +11,6 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const _ = s => Gettext.dgettext('unified-power-manager', s);
 
-const BUILTIN_INDICATOR_RETRY_MS = 500;
-
 import {PowerProfileController} from './lib/powerProfileController.js';
 import {BatteryThresholdController} from './lib/batteryThresholdController.js';
 import {StateManager} from './lib/stateManager.js';
