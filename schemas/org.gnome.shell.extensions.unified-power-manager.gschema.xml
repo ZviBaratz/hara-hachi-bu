@@ -121,6 +121,13 @@
       <description>JSON configuration for the travel profile</description>
     </key>
 
+    <!-- Migration Tracking -->
+    <key name="migration-version" type="i">
+      <default>0</default>
+      <summary>Migration version</summary>
+      <description>Internal tracking of completed data migrations.</description>
+    </key>
+
     <!-- Docking Detection -->
     <key name="docking-detection-enabled" type="b">
       <default>false</default>

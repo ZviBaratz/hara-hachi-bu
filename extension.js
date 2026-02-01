@@ -31,8 +31,8 @@ export default class UnifiedPowerManager extends Extension {
         this._hideBuiltinId = null;
         this._hideRetryTimeout = null;
 
-        // Run migration on first load
-        ProfileMatcher.migrateProfilesToCustomFormat(this._settings);
+        // Run pending migrations
+        ProfileMatcher.runMigrations(this._settings);
 
         // Do not create panel if enable is triggered in lockscreen state
         if (!Main.sessionMode.isLocked && this._powerManager === null)
