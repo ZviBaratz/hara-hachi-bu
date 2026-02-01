@@ -174,15 +174,12 @@ export default class UnifiedPowerManager extends Extension {
                 // Hide the indicator container
                 indicator.visible = false;
 
-                // Remove each menu item from the Quick Settings menu grid
-                // Store them so we can re-add them later if needed
+                // Hide each menu item from the Quick Settings menu grid
+                // Store them so we can restore visibility later
                 this._hiddenMenuItems = [];
                 indicator.quickSettingsItems.forEach(item => {
-                    const parent = item.get_parent();
-                    if (parent) {
-                        parent.remove_child(item);
-                        this._hiddenMenuItems.push({item, parent});
-                    }
+                    item.visible = false;
+                    this._hiddenMenuItems.push(item);
                 });
 
                 return true;
@@ -205,14 +202,11 @@ export default class UnifiedPowerManager extends Extension {
                     // Hide the indicator container
                     indicator.visible = false;
 
-                    // Remove each menu item from the Quick Settings menu grid
+                    // Hide each menu item from the Quick Settings menu grid
                     this._hiddenMenuItems = [];
                     indicator.quickSettingsItems.forEach(item => {
-                        const parent = item.get_parent();
-                        if (parent) {
-                            parent.remove_child(item);
-                            this._hiddenMenuItems.push({item, parent});
-                        }
+                        item.visible = false;
+                        this._hiddenMenuItems.push(item);
                     });
 
                     return true;
@@ -228,12 +222,10 @@ export default class UnifiedPowerManager extends Extension {
             // Restore the indicator container
             this._builtinPowerProfile.visible = true;
 
-            // Re-add menu items to Quick Settings
+            // Restore menu items visibility
             if (this._hiddenMenuItems && this._hiddenMenuItems.length > 0) {
-                this._hiddenMenuItems.forEach(({item, parent}) => {
-                    if (parent && !item.get_parent()) {
-                        parent.add_child(item);
-                    }
+                this._hiddenMenuItems.forEach(item => {
+                    item.visible = true;
                 });
                 this._hiddenMenuItems = null;
             }
