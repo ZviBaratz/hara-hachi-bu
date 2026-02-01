@@ -128,15 +128,27 @@ export default class UnifiedPowerManager extends Extension {
         const found = this._tryHideBuiltinPowerProfile();
 
         if (!found && !this._hideRetryTimeout) {
+            let retryCount = 0;
+            const maxRetries = 10;
+
             // Retry in case indicator loads after extension
-            console.log(`Unified Power Manager: Built-in indicator not found, will retry in ${BUILTIN_INDICATOR_RETRY_MS}ms`);
+            console.log(`Unified Power Manager: Built-in indicator not found, starting retry loop (${maxRetries} attempts)`);
             this._hideRetryTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, BUILTIN_INDICATOR_RETRY_MS, () => {
-                this._hideRetryTimeout = null;
+                retryCount++;
                 const retryFound = this._tryHideBuiltinPowerProfile();
-                if (!retryFound) {
-                    console.log('Unified Power Manager: Built-in power profile indicator not found after retry');
+                
+                if (retryFound) {
+                    this._hideRetryTimeout = null;
+                    return GLib.SOURCE_REMOVE;
                 }
-                return GLib.SOURCE_REMOVE;
+
+                if (retryCount >= maxRetries) {
+                    console.log('Unified Power Manager: Built-in power profile indicator not found after maximum retries');
+                    this._hideRetryTimeout = null;
+                    return GLib.SOURCE_REMOVE;
+                }
+
+                return GLib.SOURCE_CONTINUE;
             });
         }
     }
