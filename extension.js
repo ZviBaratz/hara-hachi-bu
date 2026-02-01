@@ -19,17 +19,15 @@ import {StateManager} from './lib/stateManager.js';
 import {PowerManagerIndicator} from './lib/quickSettingsPanel.js';
 import * as Helper from './lib/helper.js';
 import * as ProfileMatcher from './lib/profileMatcher.js';
+import {UIPatcher} from './lib/uiPatcher.js';
 
 export default class UnifiedPowerManager extends Extension {
     enable() {
         this._settings = this.getSettings();
         this._initializing = false;
         this._powerManager = null;
-        this._builtinPowerProfile = null;
-        this._builtinPowerProfileIndex = -1;
-        this._hiddenMenuItems = null;
+        this._uiPatcher = null;
         this._hideBuiltinId = null;
-        this._hideRetryTimeout = null;
 
         // Run pending migrations
         ProfileMatcher.runMigrations(this._settings);
@@ -77,16 +75,19 @@ export default class UnifiedPowerManager extends Extension {
                 this._stateManager
             );
 
+            // Initialize UI Patcher
+            this._uiPatcher = new UIPatcher();
+
             // Hide built-in power profile if configured
             if (this._settings.get_boolean('hide-builtin-power-profile'))
-                this._hideBuiltinPowerProfile();
+                this._uiPatcher.hideBuiltinPowerProfile();
 
             // Watch for setting changes
             this._hideBuiltinId = this._settings.connect('changed::hide-builtin-power-profile', () => {
                 if (this._settings.get_boolean('hide-builtin-power-profile'))
-                    this._hideBuiltinPowerProfile();
+                    this._uiPatcher.hideBuiltinPowerProfile();
                 else
-                    this._showBuiltinPowerProfile();
+                    this._uiPatcher.showBuiltinPowerProfile();
             });
 
             console.log('Unified Power Manager: Extension initialized successfully');
@@ -121,128 +122,8 @@ export default class UnifiedPowerManager extends Extension {
         }
     }
 
-    _hideBuiltinPowerProfile() {
-        if (this._builtinPowerProfile)
-            return; // Already hidden
-
-        const found = this._tryHideBuiltinPowerProfile();
-
-        if (!found && !this._hideRetryTimeout) {
-            let retryCount = 0;
-            const maxRetries = 10;
-
-            // Retry in case indicator loads after extension
-            console.log(`Unified Power Manager: Built-in indicator not found, starting retry loop (${maxRetries} attempts)`);
-            this._hideRetryTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, BUILTIN_INDICATOR_RETRY_MS, () => {
-                retryCount++;
-                const retryFound = this._tryHideBuiltinPowerProfile();
-                
-                if (retryFound) {
-                    this._hideRetryTimeout = null;
-                    return GLib.SOURCE_REMOVE;
-                }
-
-                if (retryCount >= maxRetries) {
-                    console.log('Unified Power Manager: Built-in power profile indicator not found after maximum retries');
-                    this._hideRetryTimeout = null;
-                    return GLib.SOURCE_REMOVE;
-                }
-
-                return GLib.SOURCE_CONTINUE;
-            });
-        }
-    }
-
-    _tryHideBuiltinPowerProfile() {
-        const QuickSettingsMenu = Main.panel.statusArea.quickSettings;
-
-        // Search through indicators to find built-in power profile
-        for (let i = 0; i < QuickSettingsMenu._indicators.get_n_children(); i++) {
-            const indicator = QuickSettingsMenu._indicators.get_child_at_index(i);
-
-            // Primary detection: exact title match for 'Power Mode'
-            if (indicator.constructor.name === 'Indicator' &&
-                indicator.quickSettingsItems &&
-                indicator.quickSettingsItems.some(item => item.title === 'Power Mode')) {
-
-                console.log(`Unified Power Manager: Found built-in power profile at index ${i}, hiding it`);
-
-                // Store reference and position for restoration
-                this._builtinPowerProfile = indicator;
-                this._builtinPowerProfileIndex = i;
-
-                // Hide the indicator container
-                indicator.visible = false;
-
-                // Hide each menu item from the Quick Settings menu grid
-                // Store them so we can restore visibility later
-                this._hiddenMenuItems = [];
-                indicator.quickSettingsItems.forEach(item => {
-                    item.visible = false;
-                    this._hiddenMenuItems.push(item);
-                });
-
-                return true;
-            }
-
-            // Fallback detection: check for D-Bus proxy connection
-            if (indicator.constructor.name === 'Indicator' &&
-                indicator.quickSettingsItems &&
-                indicator.quickSettingsItems.length > 0) {
-
-                const toggle = indicator.quickSettingsItems[0];
-
-                // Check if it has a _proxy connected to PowerProfiles service
-                if (toggle._proxy && toggle._proxy.g_name === 'net.hadess.PowerProfiles') {
-                    console.log(`Unified Power Manager: Found built-in power profile via D-Bus proxy at index ${i}, hiding it`);
-
-                    this._builtinPowerProfile = indicator;
-                    this._builtinPowerProfileIndex = i;
-
-                    // Hide the indicator container
-                    indicator.visible = false;
-
-                    // Hide each menu item from the Quick Settings menu grid
-                    this._hiddenMenuItems = [];
-                    indicator.quickSettingsItems.forEach(item => {
-                        item.visible = false;
-                        this._hiddenMenuItems.push(item);
-                    });
-
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    _showBuiltinPowerProfile() {
-        if (this._builtinPowerProfile) {
-            // Restore the indicator container
-            this._builtinPowerProfile.visible = true;
-
-            // Restore menu items visibility
-            if (this._hiddenMenuItems && this._hiddenMenuItems.length > 0) {
-                this._hiddenMenuItems.forEach(item => {
-                    item.visible = true;
-                });
-                this._hiddenMenuItems = null;
-            }
-
-            this._builtinPowerProfile = null;
-            this._builtinPowerProfileIndex = -1;
-        }
-    }
-
     disable() {
         console.log('Unified Power Manager: Disabling extension');
-
-        // Cancel retry timeout if pending
-        if (this._hideRetryTimeout) {
-            GLib.source_remove(this._hideRetryTimeout);
-            this._hideRetryTimeout = null;
-        }
 
         // Disconnect hide-builtin setting watcher
         if (this._hideBuiltinId) {
@@ -250,8 +131,10 @@ export default class UnifiedPowerManager extends Extension {
             this._hideBuiltinId = null;
         }
 
-        // Always restore built-in indicator when extension disables
-        this._showBuiltinPowerProfile();
+        if (this._uiPatcher) {
+            this._uiPatcher.destroy();
+            this._uiPatcher = null;
+        }
 
         if (this._sessionId) {
             Main.sessionMode.disconnect(this._sessionId);
@@ -261,7 +144,6 @@ export default class UnifiedPowerManager extends Extension {
         this._destroyPowerManager();
         Helper.destroyExecCheck();
 
-        this._hiddenMenuItems = null;
         this._settings = null;
     }
 }
