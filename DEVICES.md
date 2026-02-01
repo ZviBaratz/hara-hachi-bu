@@ -8,20 +8,24 @@ The extension uses a `DeviceManager` to detect and instantiate the appropriate d
 
 - **`lib/device/BaseDevice.js`**: The abstract base class defining the interface.
 - **`lib/device/DeviceManager.js`**: The factory that selects the correct driver.
-- **`lib/device/<Vendor>.js`**: Specific implementations (e.g., `ThinkPad.js`).
+- **`lib/device/GenericSysfsDevice.js`**: The default implementation for devices using standard Linux kernel battery interfaces (e.g., ThinkPads, Framework, ASUS).
 
 ## Steps to Add a New Device
 
-1.  **Create a new device file** in `lib/device/`, e.g., `MyLaptop.js`.
-2.  **Inherit from `BaseDevice`** and implement the required methods:
+1.  **Check if you need a new device file**:
+    - If your device exposes `/sys/class/power_supply/BAT0/charge_control_start_threshold` and `..._end_threshold`, it is likely already supported by `GenericSysfsDevice.js`.
+    - Only create a new file if your device uses a completely different mechanism (e.g., a specific kernel module with non-standard paths).
+
+2.  **Create a new device file** in `lib/device/` (if needed), e.g., `MyLegacyLaptop.js`.
+3.  **Inherit from `BaseDevice`** and implement the required methods:
     - `initialize()`: Check if hardware is compatible. Return `true` if successful.
     - `static isSupported()`: Fast check (synchronous) if this driver applies to the current hardware.
     - `getThresholds()`: Return current start/end values.
     - `setThresholds(start, end)`: Write new values to hardware.
     - `getForceDischarge()` / `setForceDischarge(enabled)`: Optional, if supported.
-3.  **Register the device** in `lib/device/DeviceManager.js`:
+4.  **Register the device** in `lib/device/DeviceManager.js`:
     - Import your new class.
-    - Add a check in `DeviceManager.getDevice()` to return your device if `MyLaptop.isSupported()` returns true.
+    - Add a check in `DeviceManager.getDevice()` to return your device. Note: `GenericSysfsDevice` is checked last as a catch-all for standard devices. Insert your specific check before it if needed.
 
 ## Example Implementation
 
