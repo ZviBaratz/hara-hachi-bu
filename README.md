@@ -87,7 +87,7 @@ The policy file allows active local users to run the helper without authenticati
 ### Helper Script Security
 
 The `unified-power-ctl` script:
-- Only accepts specific commands (BAT0_END, BAT0_START, etc.)
+- Only accepts specific commands (BAT0_END, BAT0_START, BAT1_END, BAT1_START, etc.)
 - Validates all threshold values (must be integers 0-100)
 - Uses `set -eu` to fail fast on errors
 - Only writes to specific sysfs paths
@@ -153,12 +153,14 @@ journalctl -f -o cat /usr/bin/gnome-shell
 
 1. Verify the helper is installed: `which unified-power-ctl`
 2. Check polkit rules are in place: `ls /etc/polkit-1/rules.d/`
-3. Test manually: `pkexec unified-power-ctl BAT0_END_START 60 55`
-4. Check if your ThinkPad supports thresholds: `ls /sys/class/power_supply/BAT0/charge_control_*`
+3. Test manually: `pkexec unified-power-ctl BAT0_END_START 60 55` (or `BAT1_END_START` for BAT1)
+4. Check if your laptop supports thresholds: `ls /sys/class/power_supply/BAT*/charge_control_*`
 
 ### Device Support
 
-Battery threshold control works on any laptop that exposes standard charge control attributes in `/sys/class/power_supply/BAT0/`. At minimum, `charge_control_end_threshold` is required; `charge_control_start_threshold` is optional (some devices like ASUS only support end threshold). This is common on ThinkPads (via `thinkpad_acpi`), Framework laptops, ASUS, and others running modern kernels.
+Battery threshold control works on any laptop that exposes standard charge control attributes in `/sys/class/power_supply/BAT0/` or `/sys/class/power_supply/BAT1/`. The extension automatically detects which battery is available (checking BAT0 first, then BAT1).
+
+At minimum, `charge_control_end_threshold` is required; `charge_control_start_threshold` is optional (some devices like ASUS only support end threshold). This is common on ThinkPads (via `thinkpad_acpi`), Framework laptops, ASUS, and others running modern kernels.
 
 ### Power profiles not working
 

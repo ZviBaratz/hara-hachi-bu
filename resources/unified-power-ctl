@@ -43,17 +43,21 @@ validate_threshold() {
 case "$TOOLCMD" in
     BAT0_END)
         validate_threshold "$ARG1"
+        validate_sysfs_path "$BAT0_END_PATH"
         echo "$ARG1" >"$BAT0_END_PATH" &&
             exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
         ;;
     BAT0_START)
         validate_threshold "$ARG1"
+        validate_sysfs_path "$BAT0_START_PATH"
         echo "$ARG1" >"$BAT0_START_PATH" &&
             exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
         ;;
     BAT0_END_START)
         validate_threshold "$ARG1"
         validate_threshold "$ARG2"
+        validate_sysfs_path "$BAT0_END_PATH"
+        validate_sysfs_path "$BAT0_START_PATH"
         # Write END first, then START (for increasing thresholds)
         echo "$ARG1" >"$BAT0_END_PATH" &&
             echo "$ARG2" >"$BAT0_START_PATH" &&
@@ -62,6 +66,8 @@ case "$TOOLCMD" in
     BAT0_START_END)
         validate_threshold "$ARG1"
         validate_threshold "$ARG2"
+        validate_sysfs_path "$BAT0_START_PATH"
+        validate_sysfs_path "$BAT0_END_PATH"
         # Write START first, then END (for decreasing thresholds)
         echo "$ARG2" >"$BAT0_START_PATH" &&
             echo "$ARG1" >"$BAT0_END_PATH" &&
@@ -70,6 +76,8 @@ case "$TOOLCMD" in
     BAT1_END_START)
         validate_threshold "$ARG1"
         validate_threshold "$ARG2"
+        validate_sysfs_path "$BAT1_END_PATH"
+        validate_sysfs_path "$BAT1_START_PATH"
         echo "$ARG1" >"$BAT1_END_PATH" &&
             echo "$ARG2" >"$BAT1_START_PATH" &&
             exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
@@ -77,17 +85,21 @@ case "$TOOLCMD" in
     BAT1_START_END)
         validate_threshold "$ARG1"
         validate_threshold "$ARG2"
+        validate_sysfs_path "$BAT1_START_PATH"
+        validate_sysfs_path "$BAT1_END_PATH"
         echo "$ARG2" >"$BAT1_START_PATH" &&
             echo "$ARG1" >"$BAT1_END_PATH" &&
             exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
         ;;
     BAT1_END)
         validate_threshold "$ARG1"
+        validate_sysfs_path "$BAT1_END_PATH"
         echo "$ARG1" >"$BAT1_END_PATH" &&
             exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
         ;;
     BAT1_START)
         validate_threshold "$ARG1"
+        validate_sysfs_path "$BAT1_START_PATH"
         echo "$ARG1" >"$BAT1_START_PATH" &&
             exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
         ;;
@@ -96,14 +108,16 @@ case "$TOOLCMD" in
             echo "Error: Invalid force discharge mode."
             exit "$EXIT_ERROR"
         fi
+        validate_sysfs_path "$BAT0_FORCE_DISCHARGE_PATH"
         echo "$ARG1" >"$BAT0_FORCE_DISCHARGE_PATH" &&
             exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
         ;;
     FORCE_DISCHARGE_BAT1)
-         if [[ "$ARG1" != "force-discharge" && "$ARG1" != "auto" ]]; then
+        if [[ "$ARG1" != "force-discharge" && "$ARG1" != "auto" ]]; then
             echo "Error: Invalid force discharge mode."
             exit "$EXIT_ERROR"
         fi
+        validate_sysfs_path "$BAT1_FORCE_DISCHARGE_PATH"
         echo "$ARG1" >"$BAT1_FORCE_DISCHARGE_PATH" &&
             exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
         ;;

@@ -105,6 +105,7 @@ cat /sys/class/power_supply/BAT0/capacity
 
 **lib/device/DeviceManager.js** - Device detection and instantiation
 - Factory class that detects hardware and returns appropriate device backend
+- Auto-detects battery: checks BAT0 first, falls back to BAT1 if not found
 - Checks for mock trigger file for testing scenarios
 - Falls back through device implementations in priority order
 
@@ -154,7 +155,7 @@ cat /sys/class/power_supply/BAT0/capacity
 **resources/unified-power-ctl** - Privileged helper script
 - Bash script that accepts validated commands for sysfs writes
 - BAT0 Commands: BAT0_END, BAT0_START, BAT0_END_START, BAT0_START_END, FORCE_DISCHARGE_BAT0
-- BAT1 Commands: BAT1_END_START, BAT1_START_END, FORCE_DISCHARGE_BAT1
+- BAT1 Commands: BAT1_END, BAT1_START, BAT1_END_START, BAT1_START_END, FORCE_DISCHARGE_BAT1
 - Validates all input (integers 0-100, valid modes)
 - Uses `set -eu` for error handling
 - Exit codes: 0=success, 1=error (EXIT_NEEDS_UPDATE=2 reserved for future use)
@@ -176,7 +177,7 @@ Battery threshold changes must be written in the correct order to avoid kernel e
 
 **External Change Detection**
 - Power profiles: D-Bus property monitoring via g-properties-changed
-- Battery thresholds: Gio.FileMonitor on BAT0_END_PATH with CHANGES_DONE_HINT
+- Battery thresholds: Gio.FileMonitor on charge_control_end_threshold with CHANGES_DONE_HINT
 - Force discharge: Monitored via UPower Percentage property
 
 **Privilege Escalation**
@@ -212,11 +213,12 @@ Key settings:
 **Power Profiles**: Works on any system with power-profiles-daemon
 
 **Battery Thresholds**: Works on laptops with standard Linux sysfs battery control:
-- Minimum requirement: /sys/class/power_supply/BAT0/charge_control_end_threshold exists
-- Full support (start+end): Also requires /sys/class/power_supply/BAT0/charge_control_start_threshold
+- Auto-detects battery: checks BAT0 first, falls back to BAT1
+- Minimum requirement: charge_control_end_threshold exists for the detected battery
+- Full support (start+end): Also requires charge_control_start_threshold
 - Known compatible: ThinkPad (thinkpad_acpi), Framework, ASUS, and others with standard kernel interfaces
 
-**Force Discharge**: Requires /sys/class/power_supply/BAT0/charge_behaviour support (typically ThinkPad)
+**Force Discharge**: Requires charge_behaviour support for the detected battery (typically ThinkPad)
 
 ## Error Handling Patterns
 
