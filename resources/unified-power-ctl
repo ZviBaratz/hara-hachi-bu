@@ -81,6 +81,16 @@ case "$TOOLCMD" in
             echo "$ARG1" >"$BAT1_END_PATH" &&
             exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
         ;;
+    BAT1_END)
+        validate_threshold "$ARG1"
+        echo "$ARG1" >"$BAT1_END_PATH" &&
+            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        ;;
+    BAT1_START)
+        validate_threshold "$ARG1"
+        echo "$ARG1" >"$BAT1_START_PATH" &&
+            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        ;;
     FORCE_DISCHARGE_BAT0)
         if [[ "$ARG1" != "force-discharge" && "$ARG1" != "auto" ]]; then
             echo "Error: Invalid force discharge mode."

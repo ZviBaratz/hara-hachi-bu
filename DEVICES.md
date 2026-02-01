@@ -9,6 +9,7 @@ The extension uses a `DeviceManager` to detect and instantiate the appropriate d
 - **`lib/device/BaseDevice.js`**: The abstract base class defining the interface.
 - **`lib/device/DeviceManager.js`**: The factory that selects the correct driver.
     - `lib/device/GenericSysfsDevice.js`: The default implementation for devices using standard Linux kernel battery interfaces (e.g., ThinkPads, Framework, ASUS). It supports devices with both start/end thresholds, as well as devices with only end thresholds.
+      - **Auto-detection**: Automatically checks for `BAT0` and `BAT1` (in that order), using the first one that supports charge thresholds.
 
 ## Steps to Add a New Device
 

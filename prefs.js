@@ -377,21 +377,38 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         polkitRow.add_suffix(polkitIcon);
         statusGroup.add(polkitRow);
 
-        // Check ThinkPad support
-        const thinkpadSupport = this._checkFileExists('/sys/devices/platform/thinkpad_acpi');
-        const thresholdSupport = this._checkFileExists('/sys/class/power_supply/BAT0/charge_control_end_threshold');
-        const thinkpadRow = new Adw.ActionRow({
+        // Check Battery Threshold Support
+        const bat0End = this._checkFileExists('/sys/class/power_supply/BAT0/charge_control_end_threshold');
+        const bat0Start = this._checkFileExists('/sys/class/power_supply/BAT0/charge_control_start_threshold');
+        const bat1End = this._checkFileExists('/sys/class/power_supply/BAT1/charge_control_end_threshold');
+        const bat1Start = this._checkFileExists('/sys/class/power_supply/BAT1/charge_control_start_threshold');
+        
+        let statusSubtitle = _('No compatible battery detected');
+        let iconName = 'dialog-warning-symbolic';
+
+        if (bat0End || bat1End) {
+            const bat = bat0End ? 'BAT0' : 'BAT1';
+            const hasStart = bat0End ? bat0Start : bat1Start;
+            
+            if (hasStart) {
+                statusSubtitle = _('Compatible battery detected (%s) - Full threshold control').format(bat);
+                iconName = 'emblem-ok-symbolic';
+            } else {
+                statusSubtitle = _('Compatible battery detected (%s) - End threshold only (Start threshold ignored)').format(bat);
+                iconName = 'emblem-ok-symbolic';
+            }
+        }
+
+        const batteryRow = new Adw.ActionRow({
             title: _('Battery Threshold Support'),
-            subtitle: thinkpadSupport && thresholdSupport
-                ? _('ThinkPad detected with threshold support')
-                : (thinkpadSupport ? _('ThinkPad detected but threshold files not found') : _('Not a ThinkPad - battery features unavailable')),
+            subtitle: statusSubtitle,
         });
-        const thinkpadIcon = new Gtk.Image({
-            icon_name: (thinkpadSupport && thresholdSupport) ? 'emblem-ok-symbolic' : 'dialog-information-symbolic',
+        const batteryIcon = new Gtk.Image({
+            icon_name: iconName,
             valign: Gtk.Align.CENTER,
         });
-        thinkpadRow.add_suffix(thinkpadIcon);
-        statusGroup.add(thinkpadRow);
+        batteryRow.add_suffix(batteryIcon);
+        statusGroup.add(batteryRow);
 
         // Installation instructions
         const installGroup = new Adw.PreferencesGroup({
