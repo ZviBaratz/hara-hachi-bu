@@ -96,12 +96,11 @@ cat /sys/class/power_supply/BAT0/capacity
 - Supports three modes: performance, balanced, power-saver
 - Emits 'power-profile-changed' signal
 
-**lib/batteryThresholdController.js** - Battery threshold management
-- Facade over device-specific implementations via DeviceManager
-- Delegates to the appropriate device backend for hardware operations
-- Monitors battery status via UPower D-Bus proxy
-- Auto-disables force discharge when battery reaches threshold
-- Emits 'threshold-changed', 'force-discharge-changed', and 'battery-status-changed' signals
+**lib/batteryThresholdController.js** - High-level controller
+- Manages battery state monitoring (UPower + sysfs fallback)
+- Delegates threshold control to the active device instance
+- Smart fallback: If no control device found, auto-detects BAT0/BAT1 for basic monitoring
+- Signals: `threshold-changed`, `battery-status-changed`, `force-discharge-changed`
 
 **lib/device/DeviceManager.js** - Device detection and instantiation
 - Factory class that detects hardware and returns appropriate device backend
