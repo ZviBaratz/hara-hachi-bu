@@ -11,6 +11,8 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const _ = s => Gettext.dgettext('unified-power-manager', s);
 
+const BUILTIN_INDICATOR_RETRY_MS = 500;
+
 import {PowerProfileController} from './lib/powerProfileController.js';
 import {BatteryThresholdController} from './lib/batteryThresholdController.js';
 import {StateManager} from './lib/stateManager.js';
@@ -126,13 +128,13 @@ export default class UnifiedPowerManager extends Extension {
         const found = this._tryHideBuiltinPowerProfile();
 
         if (!found && !this._hideRetryTimeout) {
-            // Retry after 500ms in case indicator loads after extension
-            console.log('UPM: Built-in indicator not found, will retry in 500ms');
-            this._hideRetryTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+            // Retry in case indicator loads after extension
+            console.log(`Unified Power Manager: Built-in indicator not found, will retry in ${BUILTIN_INDICATOR_RETRY_MS}ms`);
+            this._hideRetryTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, BUILTIN_INDICATOR_RETRY_MS, () => {
                 this._hideRetryTimeout = null;
                 const retryFound = this._tryHideBuiltinPowerProfile();
                 if (!retryFound) {
-                    console.log('UPM: Built-in power profile indicator not found after retry');
+                    console.log('Unified Power Manager: Built-in power profile indicator not found after retry');
                 }
                 return GLib.SOURCE_REMOVE;
             });
@@ -151,7 +153,7 @@ export default class UnifiedPowerManager extends Extension {
                 indicator.quickSettingsItems &&
                 indicator.quickSettingsItems.some(item => item.title === 'Power Mode')) {
 
-                console.log(`UPM: Found built-in power profile at index ${i}, hiding it`);
+                console.log(`Unified Power Manager: Found built-in power profile at index ${i}, hiding it`);
 
                 // Store reference and position for restoration
                 this._builtinPowerProfile = indicator;
@@ -183,7 +185,7 @@ export default class UnifiedPowerManager extends Extension {
 
                 // Check if it has a _proxy connected to PowerProfiles service
                 if (toggle._proxy && toggle._proxy.g_name === 'net.hadess.PowerProfiles') {
-                    console.log(`UPM: Found built-in power profile via D-Bus proxy at index ${i}, hiding it`);
+                    console.log(`Unified Power Manager: Found built-in power profile via D-Bus proxy at index ${i}, hiding it`);
 
                     this._builtinPowerProfile = indicator;
                     this._builtinPowerProfileIndex = i;
