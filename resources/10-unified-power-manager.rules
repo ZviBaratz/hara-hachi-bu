@@ -1,11 +1,11 @@
 // Polkit rules for Unified Power Manager extension
-// This file allows users in the wheel group to run unified-power-ctl without password
+// This file allows users in the sudo group to run unified-power-ctl without password
 // Security: Only allows local, active sessions (not remote or background)
 
 polkit.addRule(function(action, subject) {
     if (action.id == "org.freedesktop.policykit.exec" &&
         action.lookup("program") == "/usr/local/bin/unified-power-ctl" &&
-        subject.isInGroup("wheel") &&
+        subject.isInGroup("sudo") &&
         subject.local &&
         subject.active) {
         return polkit.Result.YES;

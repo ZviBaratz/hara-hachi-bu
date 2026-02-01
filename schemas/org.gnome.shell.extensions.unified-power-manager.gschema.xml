@@ -121,5 +121,24 @@
       <description>JSON configuration for the travel profile</description>
     </key>
 
+    <!-- Docking Detection -->
+    <key name="docking-detection-enabled" type="b">
+      <default>false</default>
+      <summary>Enable automatic profile switching on docking</summary>
+      <description>Automatically switch profiles when external displays are connected or disconnected</description>
+    </key>
+
+    <key name="docked-profile-id" type="s">
+      <default>'docked'</default>
+      <summary>Profile to use when docked</summary>
+      <description>Profile ID to switch to when external display is connected</description>
+    </key>
+
+    <key name="undocked-profile-id" type="s">
+      <default>'travel'</default>
+      <summary>Profile to use when undocked</summary>
+      <description>Profile ID to switch to when all external displays are disconnected</description>
+    </key>
+
   </schema>
 </schemalist>

@@ -156,7 +156,7 @@ Battery threshold changes must be written in the correct order to avoid kernel e
 **Privilege Escalation**
 - Uses pkexec (polkit) for battery threshold writes
 - Helper script installed in /usr/local/bin/ or extension resources/
-- Polkit rules allow passwordless execution for wheel group in active local sessions
+- Polkit rules allow passwordless execution for sudo group in active local sessions
 - Security: helper script validates all inputs, only writes to specific sysfs paths
 
 **Session Management**

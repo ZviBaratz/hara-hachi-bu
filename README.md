@@ -74,7 +74,7 @@ This extension uses polkit for privilege escalation when modifying battery thres
 
 ### Polkit Rules (Modern)
 
-The rules file (`10-unified-power-manager.rules`) allows users in the `wheel` group to run the helper script without password prompts, but **only** for:
+The rules file (`10-unified-power-manager.rules`) allows users in the `sudo` group to run the helper script without password prompts, but **only** for:
 - Local sessions (not remote/SSH)
 - Active sessions (currently logged in)
 
