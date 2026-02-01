@@ -98,6 +98,59 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         settings.bind('hide-builtin-power-profile', hideBuiltinRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(hideBuiltinRow);
 
+        // Docking Detection Group
+        const dockingGroup = new Adw.PreferencesGroup({
+            title: _('Automatic Profile Switching'),
+            description: _('Automatically change profiles based on external displays'),
+        });
+        generalPage.add(dockingGroup);
+
+        const dockingEnabledRow = new Adw.SwitchRow({
+            title: _('Enable Docking Detection'),
+            subtitle: _('Switch profiles when external displays connect/disconnect'),
+        });
+        settings.bind('docking-detection-enabled', dockingEnabledRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        dockingGroup.add(dockingEnabledRow);
+
+        // Docked profile selector
+        const profiles = ProfileMatcher.getCustomProfiles(settings);
+        const dockedCombo = new Adw.ComboRow({
+            title: _('Docked Profile'),
+            subtitle: _('Profile to use when external display is connected'),
+        });
+        const dockedModel = Gtk.StringList.new(profiles.map(p => p.name));
+        dockedCombo.model = dockedModel;
+        // Set initial selection based on current setting
+        const dockedId = settings.get_string('docked-profile-id');
+        const dockedIndex = profiles.findIndex(p => p.id === dockedId);
+        if (dockedIndex >= 0)
+            dockedCombo.selected = dockedIndex;
+        // Save on change
+        dockedCombo.connect('notify::selected', () => {
+            const selectedProfile = profiles[dockedCombo.selected];
+            if (selectedProfile)
+                settings.set_string('docked-profile-id', selectedProfile.id);
+        });
+        dockingGroup.add(dockedCombo);
+
+        // Undocked profile selector
+        const undockedCombo = new Adw.ComboRow({
+            title: _('Undocked Profile'),
+            subtitle: _('Profile to use when external displays disconnect'),
+        });
+        const undockedModel = Gtk.StringList.new(profiles.map(p => p.name));
+        undockedCombo.model = undockedModel;
+        const undockedId = settings.get_string('undocked-profile-id');
+        const undockedIndex = profiles.findIndex(p => p.id === undockedId);
+        if (undockedIndex >= 0)
+            undockedCombo.selected = undockedIndex;
+        undockedCombo.connect('notify::selected', () => {
+            const selectedProfile = profiles[undockedCombo.selected];
+            if (selectedProfile)
+                settings.set_string('undocked-profile-id', selectedProfile.id);
+        });
+        dockingGroup.add(undockedCombo);
+
         // Battery Thresholds Page
         const thresholdsPage = new Adw.PreferencesPage({
             title: _('Thresholds'),
