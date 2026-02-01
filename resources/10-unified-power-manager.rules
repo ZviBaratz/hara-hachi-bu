@@ -3,8 +3,7 @@
 // Security: Only allows local, active sessions (not remote or background)
 
 polkit.addRule(function(action, subject) {
-    if (action.id == "org.freedesktop.policykit.exec" &&
-        action.lookup("program") == "/usr/local/bin/unified-power-ctl" &&
+    if (action.id == "org.gnome.shell.extensions.unified-power-manager.setthreshold" &&
         (subject.isInGroup("sudo") || subject.isInGroup("wheel")) &&
         subject.local &&
         subject.active) {

@@ -65,18 +65,12 @@ POLKIT_VERSION=$(pkaction --version 2>/dev/null | cut -d' ' -f3 || echo "0.100")
 if printf '%s\n%s' "0.106" "$POLKIT_VERSION" | sort -V | head -n1 | grep -q "0.106"; then
     echo "Using modern polkit rules format..."
     cp "${SCRIPT_DIR}/resources/10-unified-power-manager.rules" /etc/polkit-1/rules.d/
-    
-    # Clean up legacy policy if it exists (from previous installs)
-    if [ -f "/usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy" ]; then
-        echo "Removing legacy policy file..."
-        rm -f "/usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy"
-    fi
-else
-    echo "Using legacy polkit policy format..."
-    # For legacy polkit, use the policy file
-    cp "${SCRIPT_DIR}/resources/org.gnome.shell.extensions.unified-power-manager.policy" \
-        /usr/share/polkit-1/actions/
 fi
+
+# Always install the policy file (defines the Action ID and path mapping)
+echo "Installing policy action..."
+cp "${SCRIPT_DIR}/resources/org.gnome.shell.extensions.unified-power-manager.policy" \
+    /usr/share/polkit-1/actions/
 
 echo ""
 echo "Installation complete!"
