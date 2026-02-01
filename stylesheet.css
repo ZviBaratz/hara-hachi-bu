@@ -4,14 +4,16 @@
 .popup-menu-section-header {
     font-weight: bold;
     font-size: 0.85em;
-    color: #888888;
+    color: inherit;
+    opacity: 0.6;
     padding: 8px 12px 4px 12px;
 }
 
 /* Status item styling */
 .popup-menu-status-item {
     font-style: italic;
-    color: #aaaaaa;
+    color: inherit;
+    opacity: 0.7;
 }
 
 /* Ensure proper spacing for menu items */

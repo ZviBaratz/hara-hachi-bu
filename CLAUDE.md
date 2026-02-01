@@ -42,7 +42,8 @@ gnome-extensions prefs unified-power-manager@zvi
 ./package.sh
 
 # Output: unified-power-manager@zvi.zip
-# Note: Does NOT include resources/ directory (requires manual installation)
+# Note: The resources/ directory IS included in the zip, but the helper script
+# and polkit files require manual installation to system paths.
 ```
 
 ### Helper Script Installation
@@ -129,9 +130,11 @@ cat /sys/class/power_supply/BAT0/capacity
 
 **resources/unified-power-ctl** - Privileged helper script
 - Bash script that accepts validated commands for sysfs writes
-- Commands: BAT0_END, BAT0_START, BAT0_END_START, BAT0_START_END, FORCE_DISCHARGE_BAT0
+- BAT0 Commands: BAT0_END, BAT0_START, BAT0_END_START, BAT0_START_END, FORCE_DISCHARGE_BAT0
+- BAT1 Commands: BAT1_END_START, BAT1_START_END, FORCE_DISCHARGE_BAT1
 - Validates all input (integers 0-100, valid modes)
 - Uses `set -eu` for error handling
+- Exit codes: 0=success, 1=error (EXIT_NEEDS_UPDATE=2 reserved for future use)
 
 ### Critical Implementation Details
 
