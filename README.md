@@ -158,7 +158,7 @@ journalctl -f -o cat /usr/bin/gnome-shell
 
 ### Device Support
 
-Battery threshold control works on any laptop that exposes standard charge control attributes in `/sys/class/power_supply/BAT0/` (specifically `charge_control_start_threshold` and `charge_control_end_threshold`). This is common on ThinkPads (via `thinkpad_acpi`), Framework laptops, and others running modern kernels.
+Battery threshold control works on any laptop that exposes standard charge control attributes in `/sys/class/power_supply/BAT0/`. At minimum, `charge_control_end_threshold` is required; `charge_control_start_threshold` is optional (some devices like ASUS only support end threshold). This is common on ThinkPads (via `thinkpad_acpi`), Framework laptops, ASUS, and others running modern kernels.
 
 ### Power profiles not working
 

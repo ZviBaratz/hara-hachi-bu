@@ -4,14 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Unified Power Manager is a GNOME Shell extension for ThinkPad laptops that provides unified Quick Settings control for power profiles and battery charging thresholds. It integrates with GNOME Shell's extension system and uses privileged operations via polkit for battery threshold control.
+Unified Power Manager is a GNOME Shell extension that provides unified Quick Settings control for power profiles and battery charging thresholds. It supports any laptop with standard Linux sysfs battery control interfaces (ThinkPad, Framework, ASUS, etc.). It integrates with GNOME Shell's extension system and uses privileged operations via polkit for battery threshold control.
 
 **Key Features:**
 - Power profile management (Performance/Balanced/Power Saver) via power-profiles-daemon
-- Battery charging threshold control (ThinkPad-specific via sysfs)
+- Battery charging threshold control via standard sysfs interface (supports devices with start+end thresholds or end-only)
 - Predefined profiles (Docked, Travel) with auto-detection
-- Force discharge control for ThinkPads
+- Force discharge control (on supported hardware)
 - External change detection via file monitoring
+- Modular device backend architecture for hardware-specific implementations
 
 ## Development Commands
 
@@ -96,12 +97,34 @@ cat /sys/class/power_supply/BAT0/capacity
 - Emits 'power-profile-changed' signal
 
 **lib/batteryThresholdController.js** - Battery threshold management
-- ThinkPad-specific: reads/writes to sysfs charge_control_* files
+- Facade over device-specific implementations via DeviceManager
+- Delegates to the appropriate device backend for hardware operations
+- Monitors battery status via UPower D-Bus proxy
+- Auto-disables force discharge when battery reaches threshold
+- Emits 'threshold-changed', 'force-discharge-changed', and 'battery-status-changed' signals
+
+**lib/device/DeviceManager.js** - Device detection and instantiation
+- Factory class that detects hardware and returns appropriate device backend
+- Checks for mock trigger file for testing scenarios
+- Falls back through device implementations in priority order
+
+**lib/device/BaseDevice.js** - Abstract device interface
+- GObject-based class defining the device API contract
+- Signals: 'threshold-changed', 'force-discharge-changed'
+- Methods: initialize(), getThresholds(), setThresholds(), getForceDischarge(), setForceDischarge()
+- Properties: supportsForceDischarge, needsHelper, hasStartThreshold
+
+**lib/device/GenericSysfsDevice.js** - Standard sysfs battery control
+- Implements battery threshold control via standard Linux sysfs paths
+- Supports devices with both start+end thresholds (ThinkPad, Framework) or end-only (ASUS)
 - Uses privileged helper script via pkexec for writes
 - Monitors threshold files for external changes (Gio.FileMonitor)
 - Handles threshold write ordering to avoid kernel errors
 - Supports force discharge via charge_behaviour sysfs file
-- Emits 'threshold-changed' and 'force-discharge-changed' signals
+
+**lib/device/MockDevice.js** - Testing device
+- In-memory implementation for UI testing without hardware
+- Enabled by creating `~/.config/unified-power-manager/use_mock` file
 
 **lib/profileMatcher.js** - Profile detection and management
 - Defines battery modes (full-capacity, balanced, max-lifespan) with threshold ranges
@@ -142,7 +165,7 @@ cat /sys/class/power_supply/BAT0/capacity
 Battery threshold changes must be written in the correct order to avoid kernel errors:
 - If increasing thresholds (new start >= current end): write END first, then START
 - If decreasing thresholds: write START first, then END
-- Implementation: batteryThresholdController.js:190-192
+- Implementation: lib/device/GenericSysfsDevice.js setThresholds() method
 
 **Signal Flow**
 1. Controller detects change (D-Bus property change or file monitor event)
@@ -188,13 +211,12 @@ Key settings:
 
 **Power Profiles**: Works on any system with power-profiles-daemon
 
-**Battery Thresholds**: ThinkPad-specific requirements:
-- thinkpad_acpi kernel module loaded
-- /sys/devices/platform/thinkpad_acpi exists
-- /sys/class/power_supply/BAT0/charge_control_start_threshold exists
-- /sys/class/power_supply/BAT0/charge_control_end_threshold exists
+**Battery Thresholds**: Works on laptops with standard Linux sysfs battery control:
+- Minimum requirement: /sys/class/power_supply/BAT0/charge_control_end_threshold exists
+- Full support (start+end): Also requires /sys/class/power_supply/BAT0/charge_control_start_threshold
+- Known compatible: ThinkPad (thinkpad_acpi), Framework, ASUS, and others with standard kernel interfaces
 
-**Force Discharge**: Requires /sys/class/power_supply/BAT0/charge_behaviour support
+**Force Discharge**: Requires /sys/class/power_supply/BAT0/charge_behaviour support (typically ThinkPad)
 
 ## Error Handling Patterns
 
@@ -206,8 +228,11 @@ Key settings:
 
 ## Testing Considerations
 
-- Extension must work without battery threshold support (non-ThinkPad systems)
+- Extension must work without battery threshold support (unsupported hardware)
+- Extension must handle devices with only end threshold (no start threshold)
+  - Known limitation: battery mode auto-detection doesn't work for end-only devices
 - Power profile daemon may not be available (graceful degradation)
-- Helper script may not be installed (show appropriate error)
+- Helper script may not be installed (show appropriate error, read-only mode)
 - polkit rules may not be configured (operation fails with permission error)
 - Handle external changes to thresholds and profiles correctly
+- Use MockDevice for UI testing: create `~/.config/unified-power-manager/use_mock` file

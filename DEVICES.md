@@ -14,6 +14,9 @@ The extension uses a `DeviceManager` to detect and instantiate the appropriate d
 
 1.  **Check if you need a new device file**:
     - If your device exposes `/sys/class/power_supply/BAT0/charge_control_end_threshold`, it is likely already supported by `GenericSysfsDevice.js`.
+    - Devices with both `charge_control_start_threshold` and `charge_control_end_threshold` get full threshold control.
+    - Devices with only `charge_control_end_threshold` (e.g., some ASUS laptops) are supported with end-only control.
+      - **Note**: Battery mode auto-detection is not available for end-only devices (the mode indicator may not reflect the current state until manually selected).
     - Only create a new file if your device uses a completely different mechanism (e.g., a specific kernel module with non-standard paths).
 
 2.  **Create a new device file** in `lib/device/` (if needed), e.g., `MyLegacyLaptop.js`.
