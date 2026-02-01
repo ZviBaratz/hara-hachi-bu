@@ -8,12 +8,12 @@ The extension uses a `DeviceManager` to detect and instantiate the appropriate d
 
 - **`lib/device/BaseDevice.js`**: The abstract base class defining the interface.
 - **`lib/device/DeviceManager.js`**: The factory that selects the correct driver.
-- **`lib/device/GenericSysfsDevice.js`**: The default implementation for devices using standard Linux kernel battery interfaces (e.g., ThinkPads, Framework, ASUS).
+    - `lib/device/GenericSysfsDevice.js`: The default implementation for devices using standard Linux kernel battery interfaces (e.g., ThinkPads, Framework, ASUS). It supports devices with both start/end thresholds, as well as devices with only end thresholds.
 
 ## Steps to Add a New Device
 
 1.  **Check if you need a new device file**:
-    - If your device exposes `/sys/class/power_supply/BAT0/charge_control_start_threshold` and `..._end_threshold`, it is likely already supported by `GenericSysfsDevice.js`.
+    - If your device exposes `/sys/class/power_supply/BAT0/charge_control_end_threshold`, it is likely already supported by `GenericSysfsDevice.js`.
     - Only create a new file if your device uses a completely different mechanism (e.g., a specific kernel module with non-standard paths).
 
 2.  **Create a new device file** in `lib/device/` (if needed), e.g., `MyLegacyLaptop.js`.
