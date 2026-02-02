@@ -1,7 +1,7 @@
 {
     "uuid": "unified-power-manager@baratzz",
     "name": "Unified Power Manager",
-    "description": "ThinkPad power management for GNOME. Control power profiles and battery charging thresholds from Quick Settings. Features Docked/Travel profiles, force discharge, and external change detection.",
+    "description": "Unified power management for GNOME. Control power profiles and battery charging thresholds from Quick Settings. Supports ThinkPad, Framework, ASUS, and other laptops with standard Linux sysfs battery control. Features automatic profile switching, force discharge, and external change detection.",
     "version": 1,
     "shell-version": ["46", "47", "48"],
     "settings-schema": "org.gnome.shell.extensions.unified-power-manager",
