@@ -4,7 +4,7 @@
 
 set -eu
 
-EXTENSION_UUID="unified-power-manager@zvi"
+EXTENSION_UUID="unified-power-manager@baratzz"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUTPUT_FILE="${SCRIPT_DIR}/${EXTENSION_UUID}.zip"
 

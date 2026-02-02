@@ -29,13 +29,13 @@ A GNOME Shell extension providing unified Quick Settings control for power profi
 ```bash
 # Clone or download to extensions directory
 git clone https://github.com/zvi/unified-power-manager.git \
-    ~/.local/share/gnome-shell/extensions/unified-power-manager@zvi
+    ~/.local/share/gnome-shell/extensions/unified-power-manager@baratzz
 
 # Compile schemas
-glib-compile-schemas ~/.local/share/gnome-shell/extensions/unified-power-manager@zvi/schemas/
+glib-compile-schemas ~/.local/share/gnome-shell/extensions/unified-power-manager@baratzz/schemas/
 
 # Enable the extension
-gnome-extensions enable unified-power-manager@zvi
+gnome-extensions enable unified-power-manager@baratzz
 ```
 
 Then log out and log back in, or restart GNOME Shell (Alt+F2, type `r`, press Enter on X11).
@@ -47,7 +47,7 @@ Battery threshold control requires root privileges. Because GNOME Extensions can
 1. Open a terminal
 2. Navigate to the extension directory:
    ```bash
-   cd ~/.local/share/gnome-shell/extensions/unified-power-manager@zvi
+   cd ~/.local/share/gnome-shell/extensions/unified-power-manager@baratzz
    ```
 3. Run the installer:
    ```bash
@@ -73,7 +73,7 @@ sudo cp resources/org.gnome.shell.extensions.unified-power-manager.policy /usr/s
 To remove the helper script and polkit rules:
 
 ```bash
-cd ~/.local/share/gnome-shell/extensions/unified-power-manager@zvi
+cd ~/.local/share/gnome-shell/extensions/unified-power-manager@baratzz
 sudo ./install-helper.sh --uninstall
 ```
 
@@ -141,7 +141,7 @@ Profiles are auto-detected when you manually set matching power and battery mode
 
 Open preferences with:
 ```bash
-gnome-extensions prefs unified-power-manager@zvi
+gnome-extensions prefs unified-power-manager@baratzz
 ```
 
 Configure:

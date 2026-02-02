@@ -101,7 +101,7 @@ echo ""
 echo "Installation complete!"
 echo ""
 echo "To enable the extension, run:"
-echo "  gnome-extensions enable unified-power-manager@zvi"
+echo "  gnome-extensions enable unified-power-manager@baratzz"
 
 echo "" 
 

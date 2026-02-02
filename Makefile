@@ -1,6 +1,6 @@
 # Makefile for Unified Power Manager extension
 
-EXTENSION_UUID = unified-power-manager@zvi
+EXTENSION_UUID = unified-power-manager@baratzz
 # Detect if we are running in the installation directory
 CURRENT_DIR = $(shell pwd)
 INSTALL_BASE = $(HOME)/.local/share/gnome-shell/extensions

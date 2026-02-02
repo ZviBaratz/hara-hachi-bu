@@ -22,10 +22,10 @@ Unified Power Manager is a GNOME Shell extension that provides unified Quick Set
 glib-compile-schemas schemas/
 
 # Enable the extension
-gnome-extensions enable unified-power-manager@zvi
+gnome-extensions enable unified-power-manager@baratzz
 
 # Disable the extension
-gnome-extensions disable unified-power-manager@zvi
+gnome-extensions disable unified-power-manager@baratzz
 
 # Restart GNOME Shell to reload extension (X11 only)
 # Alt+F2, type 'r', press Enter
@@ -34,7 +34,7 @@ gnome-extensions disable unified-power-manager@zvi
 journalctl -f -o cat /usr/bin/gnome-shell
 
 # Open preferences UI
-gnome-extensions prefs unified-power-manager@zvi
+gnome-extensions prefs unified-power-manager@baratzz
 ```
 
 ### Package for Distribution
@@ -42,7 +42,7 @@ gnome-extensions prefs unified-power-manager@zvi
 # Create release zip for extensions.gnome.org
 ./package.sh
 
-# Output: unified-power-manager@zvi.zip
+# Output: unified-power-manager@baratzz.zip
 # Note: The resources/ directory IS included in the zip, but the helper script
 # and polkit files require manual installation to system paths.
 ```
