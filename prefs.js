@@ -625,15 +625,12 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     existingProfile.id :
                     name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
 
-                // Validate
-                if (!name) {
-                    errorLabel.set_text(_('Profile name is required'));
-                    errorLabel.show();
-                    return;
-                }
-
-                if (!isEdit && !ProfileMatcher.isValidProfileId(id)) {
-                    errorLabel.set_text(_('Invalid name (use letters, numbers, hyphens)'));
+                // Validate using centralized validation
+                const validation = ProfileMatcher.validateProfileInput(
+                    settings, id, name, powerMode, batteryMode, isEdit
+                );
+                if (!validation.valid) {
+                    errorLabel.set_text(_(validation.error));
                     errorLabel.show();
                     return;
                 }
