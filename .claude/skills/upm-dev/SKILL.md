@@ -69,6 +69,7 @@ When reviewing or refactoring, check for:
 3. **Race conditions** — Look for unguarded async gaps; use `_writeInProgress` pattern
 4. **Missing cleanup** — Every `connectObject` needs matching `disconnectObject`
 5. **Type safety** — Validate sysfs output before arithmetic (`readFileInt` returns `null` on failure)
+6. **Event debouncing** — Rapid events (display changes, battery level) need debouncing (see pattern below)
 
 ## Debouncing Pattern
 
@@ -87,15 +88,21 @@ _scheduleEvent() {
 
 ## Testing
 
-**Use MockDevice** for rapid UI iteration without hardware dependencies:
+**When testing UI changes** → Use MockDevice for rapid iteration:
 
 ```bash
 touch ~/.config/unified-power-manager/use_mock
 ```
 
-Good for: Quick Settings layout, profile switching logic, preferences UI, state transitions.
+Good for: Quick Settings layout, profile switching logic, preferences UI, state transitions, signal flow.
 
-**Use real hardware** for: Device backend validation, privilege escalation testing, sysfs interaction, file monitor behavior, threshold write ordering.
+**When testing hardware interaction** → Use real hardware:
+
+Required for: Device backend validation, privilege escalation testing, sysfs file I/O, file monitor behavior, threshold write ordering, force discharge modes.
+
+**When testing controller logic** → Either works depending on what you're testing:
+- StateManager coordination: MockDevice sufficient
+- Actual D-Bus/sysfs calls: Real hardware required
 
 Development commands: `make schemas`, `make nested`, `make logs`
 
@@ -103,7 +110,10 @@ Development commands: `make schemas`, `make nested`, `make logs`
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Fails after disable/enable | Resource leak | Audit `destroy()` methods |
-| UI not updating | Missing signal | Check controller → StateManager chain |
-| Permission denied | Polkit missing | Run `sudo ./install-helper.sh` |
-| Thresholds revert | Wrong write order | Check `_END_START` vs `_START_END` |
+| Fails after disable/enable | Resource leak | Audit `destroy()` methods for uncancelled monitors/timeouts |
+| UI not updating after mode change | Missing signal emission | Check controller → StateManager signal chain |
+| Thresholds not applying | Wrong write order | Check `_END_START` vs `_START_END` in device class |
+| Permission denied on threshold write | Polkit missing | Run `sudo ./install-helper.sh` |
+| High memory usage over time | Leaked timeouts/monitors | Add cleanup in `destroy()` and check `_destroyed` flag |
+| Panel appears then disappears | UI created during lock | Check session mode in `_onSessionModeChanged` |
+| Force discharge not working | Unsupported hardware or wrong sysfs path | Verify `charge_behaviour` file exists and accepts mode |
