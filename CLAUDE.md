@@ -155,6 +155,8 @@ cat /sys/class/power_supply/BAT0/capacity
 - Bash script that accepts validated commands for sysfs writes
 - BAT0 Commands: BAT0_END, BAT0_START, BAT0_END_START, BAT0_START_END, FORCE_DISCHARGE_BAT0
 - BAT1 Commands: BAT1_END, BAT1_START, BAT1_END_START, BAT1_START_END, FORCE_DISCHARGE_BAT1
+- BAT2 Commands: BAT2_END, BAT2_START, BAT2_END_START, BAT2_START_END, FORCE_DISCHARGE_BAT2
+- BAT3 Commands: BAT3_END, BAT3_START, BAT3_END_START, BAT3_START_END, FORCE_DISCHARGE_BAT3
 - Validates all input (integers 0-100, valid modes)
 - Uses `set -eu` for error handling
 - Exit codes: 0=success, 1=error (EXIT_NEEDS_UPDATE=2 reserved for future use)
@@ -219,6 +221,85 @@ Key settings:
 
 **Force Discharge**: Requires charge_behaviour support for the detected battery (typically ThinkPad)
 
+## Recent Improvements (Commit 517cd2b)
+
+### Critical Bug Fixes
+
+**PowerProfileController Signal Emission**
+- Fixed missing signal emission after D-Bus profile assignment
+- Ensures UI updates immediately after profile changes via D-Bus
+
+**UPower Proxy Race Condition**
+- BatteryThresholdController now initializes `_onBattery` from sysfs to prevent race condition
+- Resolves issues where battery status was unavailable during early initialization
+
+**Command Queue Reset**
+- Helper now resets global command queue on extension disable
+- Prevents stale commands from executing after extension reload
+
+**Battery Health Calculation**
+- Fixed energy_* and charge_* metric mixing in GenericSysfsDevice
+- Health percentage now calculated correctly for all battery types
+
+**Force Discharge Parsing**
+- Improved parsing with robust fallback handling for various charge_behaviour formats
+- Better compatibility across different kernel/hardware implementations
+
+**Display Event Debouncing**
+- StateManager now debounces display events (500ms) to prevent race conditions
+- Fixes issues with rapid display on/off cycles triggering duplicate operations
+
+### Hardware Support Enhancements
+
+**Multi-Battery Systems**
+- unified-power-ctl now supports BAT2 and BAT3 in addition to BAT0 and BAT1
+- Commands: BAT2_END, BAT2_START, BAT2_END_START, BAT2_START_END, FORCE_DISCHARGE_BAT2
+- Commands: BAT3_END, BAT3_START, BAT3_END_START, BAT3_START_END, FORCE_DISCHARGE_BAT3
+- Full support for systems with 3-4 batteries
+
+**End-Only Device Support**
+- ProfileMatcher now supports battery mode detection on devices with only end threshold
+- Previously, devices like ASUS laptops couldn't auto-detect battery modes
+- Uses end threshold value and range matching for mode detection
+
+**Polkit Installation Validation**
+- install-helper.sh now checks if polkit rules were installed successfully
+- Shows warnings if polkit installation fails (e.g., polkit not installed or custom location)
+
+### Error Handling and Diagnostics
+
+**Stderr Logging**
+- execCheck() now returns stderr in result tuple `[status, stdout, stderr]`
+- Better diagnostic information when commands fail
+- Used in GenericSysfsDevice and PowerProfileController for troubleshooting
+
+**User Notifications**
+- StateManager now notifies users when auto-switch profiles are misconfigured
+- Displays helpful error messages for partial profile application failures
+- Improves discoverability of configuration issues
+
+**Enhanced Profile Validation**
+- ProfileMatcher validates icon field in custom profiles
+- Enforces builtin flag for system profiles
+- Trims whitespace from profile names during validation
+
+### UX Improvements
+
+**Clipboard Feedback Animation**
+- QuickSettingsPanel shows visual feedback when copying install command
+- Label temporarily changes to "Copied! Paste in terminal" with success styling
+- Provides immediate confirmation without waiting for notification
+
+**Loading States**
+- Quick Settings now shows loading messages during profile/mode application
+- Subtitle displays "Applying [profile name]..." or "Setting [mode]..."
+- Prevents confusion during async operations
+
+**Profile ID Preview**
+- Preferences UI now shows live preview of profile ID during creation
+- Helps users understand how profile names are converted to IDs
+- Prevents surprises with auto-generated IDs
+
 ## Error Handling Patterns
 
 - Controllers return boolean success/failure for operations
@@ -231,9 +312,10 @@ Key settings:
 
 - Extension must work without battery threshold support (unsupported hardware)
 - Extension must handle devices with only end threshold (no start threshold)
-  - Known limitation: battery mode auto-detection doesn't work for end-only devices
+  - End-only devices now support battery mode auto-detection via end threshold range matching
 - Power profile daemon may not be available (graceful degradation)
 - Helper script may not be installed (show appropriate error, read-only mode)
 - polkit rules may not be configured (operation fails with permission error)
 - Handle external changes to thresholds and profiles correctly
 - Use MockDevice for UI testing: create `~/.config/unified-power-manager/use_mock` file
+- Test multi-battery systems (BAT2, BAT3 support added in commit 517cd2b)
