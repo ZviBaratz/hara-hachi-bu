@@ -147,5 +147,24 @@
       <description>Profile ID to switch to when all external displays are disconnected</description>
     </key>
 
+    <!-- Power Source Detection -->
+    <key name="power-source-detection-enabled" type="b">
+      <default>false</default>
+      <summary>Enable automatic profile switching on power source change</summary>
+      <description>Automatically switch profiles when AC adapter is plugged in or removed</description>
+    </key>
+
+    <key name="ac-profile-id" type="s">
+      <default>'docked'</default>
+      <summary>Profile to use on AC power</summary>
+      <description>Profile ID to switch to when connected to AC power</description>
+    </key>
+
+    <key name="battery-profile-id" type="s">
+      <default>'travel'</default>
+      <summary>Profile to use on battery power</summary>
+      <description>Profile ID to switch to when running on battery power</description>
+    </key>
+
   </schema>
 </schemalist>

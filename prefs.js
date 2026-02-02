@@ -151,6 +151,56 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
         dockingGroup.add(undockedCombo);
 
+        // Power Source Detection Group
+        const powerSourceGroup = new Adw.PreferencesGroup({
+            title: _('Power Source Switching'),
+            description: _('Automatically change profiles based on AC/Battery power'),
+        });
+        generalPage.add(powerSourceGroup);
+
+        const powerSourceEnabledRow = new Adw.SwitchRow({
+            title: _('Enable Power Source Detection'),
+            subtitle: _('Switch profiles when plugging in or out'),
+        });
+        settings.bind('power-source-detection-enabled', powerSourceEnabledRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        powerSourceGroup.add(powerSourceEnabledRow);
+
+        // AC profile selector
+        const acCombo = new Adw.ComboRow({
+            title: _('AC Profile'),
+            subtitle: _('Profile to use when connected to power'),
+        });
+        const acModel = Gtk.StringList.new(profiles.map(p => p.name));
+        acCombo.model = acModel;
+        const acId = settings.get_string('ac-profile-id');
+        const acIndex = profiles.findIndex(p => p.id === acId);
+        if (acIndex >= 0)
+            acCombo.selected = acIndex;
+        acCombo.connect('notify::selected', () => {
+            const selectedProfile = profiles[acCombo.selected];
+            if (selectedProfile)
+                settings.set_string('ac-profile-id', selectedProfile.id);
+        });
+        powerSourceGroup.add(acCombo);
+
+        // Battery profile selector
+        const batteryCombo = new Adw.ComboRow({
+            title: _('Battery Profile'),
+            subtitle: _('Profile to use when running on battery'),
+        });
+        const batteryModel = Gtk.StringList.new(profiles.map(p => p.name));
+        batteryCombo.model = batteryModel;
+        const batteryId = settings.get_string('battery-profile-id');
+        const batteryIndex = profiles.findIndex(p => p.id === batteryId);
+        if (batteryIndex >= 0)
+            batteryCombo.selected = batteryIndex;
+        batteryCombo.connect('notify::selected', () => {
+            const selectedProfile = profiles[batteryCombo.selected];
+            if (selectedProfile)
+                settings.set_string('battery-profile-id', selectedProfile.id);
+        });
+        powerSourceGroup.add(batteryCombo);
+
         // Battery Thresholds Page
         const thresholdsPage = new Adw.PreferencesPage({
             title: _('Thresholds'),
