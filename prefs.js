@@ -532,6 +532,37 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         content.append(new Gtk.Label({label: _('Profile Name'), halign: Gtk.Align.START}));
         content.append(nameEntry);
 
+        // Live ID preview (only for new profiles)
+        let idPreviewLabel = null;
+        if (!isEdit) {
+            idPreviewLabel = new Gtk.Label({
+                label: _('ID: (enter name above)'),
+                halign: Gtk.Align.START,
+                css_classes: ['dim-label', 'caption'],
+                margin_top: 4,
+            });
+            content.append(idPreviewLabel);
+
+            // Update ID preview as user types
+            nameEntry.connect('changed', () => {
+                const name = nameEntry.get_text().trim();
+                if (name.length === 0) {
+                    idPreviewLabel.set_text(_('ID: (enter name above)'));
+                } else {
+                    const generatedId = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+                    if (generatedId.length === 0) {
+                        idPreviewLabel.set_text(_('ID: (invalid characters)'));
+                        idPreviewLabel.add_css_class('error');
+                        idPreviewLabel.remove_css_class('dim-label');
+                    } else {
+                        idPreviewLabel.set_text(_('ID: %s').format(generatedId));
+                        idPreviewLabel.remove_css_class('error');
+                        idPreviewLabel.add_css_class('dim-label');
+                    }
+                }
+            });
+        }
+
         // Disable name editing for builtin profiles
         if (isEdit && existingProfile.builtin)
             nameEntry.sensitive = false;
