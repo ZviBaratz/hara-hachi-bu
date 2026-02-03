@@ -44,3 +44,46 @@
 .health-poor {
     color: #ed333b; /* GNOME red */
 }
+
+/* Auto badge for profiles with rules */
+.upm-auto-badge {
+    font-size: 0.75em;
+    font-weight: bold;
+    color: #62a0ea; /* GNOME blue */
+    background-color: rgba(98, 160, 234, 0.15);
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-start: 8px;
+}
+
+/* Collapsible header styling */
+.upm-collapsible-header {
+    font-weight: bold;
+}
+
+.upm-collapsible-header .popup-menu-arrow {
+    margin-start: auto;
+}
+
+/* Paused indicator styling */
+.upm-paused-indicator {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.upm-paused-indicator .upm-resume-button {
+    margin-start: auto;
+    background-color: rgba(98, 160, 234, 0.2);
+    border-radius: 12px;
+    padding: 4px 12px;
+    font-size: 0.9em;
+}
+
+.upm-paused-indicator .upm-resume-button:hover {
+    background-color: rgba(98, 160, 234, 0.4);
+}
+
+/* Success feedback styling */
+.success {
+    color: #57e389; /* GNOME green */
+}

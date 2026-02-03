@@ -11,6 +11,8 @@ import GObject from 'gi://GObject';
 import Gettext from 'gettext';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import * as ProfileMatcher from './lib/profileMatcher.js';
+import {PARAMETERS, OPERATORS} from './lib/parameterDetector.js';
+import * as RuleEvaluator from './lib/ruleEvaluator.js';
 
 const _ = s => Gettext.dgettext('unified-power-manager', s);
 
@@ -18,10 +20,27 @@ const _ = s => Gettext.dgettext('unified-power-manager', s);
 const ProfileRow = GObject.registerClass(
 class ProfileRow extends Adw.ActionRow {
     _init(profile, onEdit, onDelete) {
+        // Build subtitle with mode info and rule summary
+        let subtitle = `${profile.powerMode} + ${profile.batteryMode}`;
+        if (profile.forceDischarge && profile.forceDischarge !== 'unspecified') {
+            subtitle += ` · FD: ${profile.forceDischarge}`;
+        }
+
         super._init({
             title: profile.name,
-            subtitle: `${profile.powerMode} + ${profile.batteryMode}`,
+            subtitle: subtitle,
         });
+
+        // Add "auto" badge if profile has rules
+        if (ProfileMatcher.hasAutoRules(profile)) {
+            const autoBadge = new Gtk.Label({
+                label: _('Auto'),
+                css_classes: ['accent', 'caption'],
+                margin_start: 6,
+                valign: Gtk.Align.CENTER,
+            });
+            this.add_suffix(autoBadge);
+        }
 
         // Edit button
         const editButton = new Gtk.Button({
@@ -106,14 +125,6 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         settings.bind('hide-builtin-power-profile', hideBuiltinRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(hideBuiltinRow);
 
-        // Auto-switch profiles
-        const autoSwitchRow = new Adw.SwitchRow({
-            title: _('Automatically Switch Profiles'),
-            subtitle: _('Switch profiles based on power source (docking/undocking)'),
-        });
-        settings.bind('auto-switch-enabled', autoSwitchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-        uiGroup.add(autoSwitchRow);
-
         // Battery health display
         const healthDisplayRow = new Adw.SwitchRow({
             title: _('Show Battery Health in Quick Settings'),
@@ -139,108 +150,43 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Bind threshold row sensitivity to show-battery-health toggle
         settings.bind('show-battery-health', healthThresholdRow, 'sensitive', Gio.SettingsBindFlags.DEFAULT);
 
-        // Docking Detection Group
-        const dockingGroup = new Adw.PreferencesGroup({
+        // Auto-Management Group
+        const autoManageGroup = new Adw.PreferencesGroup({
             title: _('Automatic Profile Switching'),
-            description: _('Automatically change profiles based on external displays'),
+            description: _('Profiles with rules automatically activate when conditions match'),
         });
-        generalPage.add(dockingGroup);
+        generalPage.add(autoManageGroup);
 
-        const dockingEnabledRow = new Adw.SwitchRow({
-            title: _('Enable Docking Detection'),
-            subtitle: _('Switch profiles when external displays connect/disconnect'),
+        // Auto-switch profiles master toggle
+        const autoSwitchRow = new Adw.SwitchRow({
+            title: _('Auto-switch Profiles'),
+            subtitle: _('Automatically switch profiles based on their configured rules'),
         });
-        settings.bind('docking-detection-enabled', dockingEnabledRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-        dockingGroup.add(dockingEnabledRow);
+        settings.bind('auto-switch-enabled', autoSwitchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        autoManageGroup.add(autoSwitchRow);
 
-        // Docked profile selector
-        const profiles = ProfileMatcher.getCustomProfiles(settings);
-        const dockedCombo = new Adw.ComboRow({
-            title: _('Docked Profile'),
-            subtitle: _('Profile to use when external display is connected'),
+        // Resume on state change toggle
+        const resumeRow = new Adw.SwitchRow({
+            title: _('Resume on State Change'),
+            subtitle: _('When paused, resume auto-switching when display/power changes'),
         });
-        const dockedModel = Gtk.StringList.new(profiles.map(p => p.name));
-        dockedCombo.model = dockedModel;
-        // Set initial selection based on current setting
-        const dockedId = settings.get_string('docked-profile-id');
-        const dockedIndex = profiles.findIndex(p => p.id === dockedId);
-        if (dockedIndex >= 0)
-            dockedCombo.selected = dockedIndex;
-        // Save on change
-        dockedCombo.connect('notify::selected', () => {
-            const selectedProfile = profiles[dockedCombo.selected];
-            if (selectedProfile)
-                settings.set_string('docked-profile-id', selectedProfile.id);
-        });
-        dockingGroup.add(dockedCombo);
+        settings.bind('resume-on-state-change', resumeRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        autoManageGroup.add(resumeRow);
 
-        // Undocked profile selector
-        const undockedCombo = new Adw.ComboRow({
-            title: _('Undocked Profile'),
-            subtitle: _('Profile to use when external displays disconnect'),
-        });
-        const undockedModel = Gtk.StringList.new(profiles.map(p => p.name));
-        undockedCombo.model = undockedModel;
-        const undockedId = settings.get_string('undocked-profile-id');
-        const undockedIndex = profiles.findIndex(p => p.id === undockedId);
-        if (undockedIndex >= 0)
-            undockedCombo.selected = undockedIndex;
-        undockedCombo.connect('notify::selected', () => {
-            const selectedProfile = profiles[undockedCombo.selected];
-            if (selectedProfile)
-                settings.set_string('undocked-profile-id', selectedProfile.id);
-        });
-        dockingGroup.add(undockedCombo);
+        // Bind resume row sensitivity to auto-switch toggle
+        settings.bind('auto-switch-enabled', resumeRow, 'sensitive', Gio.SettingsBindFlags.DEFAULT);
 
-        // Power Source Detection Group
-        const powerSourceGroup = new Adw.PreferencesGroup({
-            title: _('Power Source Switching'),
-            description: _('Automatically change profiles based on AC/Battery power'),
+        // Info about rules
+        const rulesInfoRow = new Adw.ActionRow({
+            title: _('Configure Rules'),
+            subtitle: _('Edit profiles to add auto-activation rules'),
         });
-        generalPage.add(powerSourceGroup);
-
-        const powerSourceEnabledRow = new Adw.SwitchRow({
-            title: _('Enable Power Source Detection'),
-            subtitle: _('Switch profiles when plugging in or out'),
+        const rulesInfoIcon = new Gtk.Image({
+            icon_name: 'dialog-information-symbolic',
+            valign: Gtk.Align.CENTER,
         });
-        settings.bind('power-source-detection-enabled', powerSourceEnabledRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-        powerSourceGroup.add(powerSourceEnabledRow);
-
-        // AC profile selector
-        const acCombo = new Adw.ComboRow({
-            title: _('AC Profile'),
-            subtitle: _('Profile to use when connected to power'),
-        });
-        const acModel = Gtk.StringList.new(profiles.map(p => p.name));
-        acCombo.model = acModel;
-        const acId = settings.get_string('ac-profile-id');
-        const acIndex = profiles.findIndex(p => p.id === acId);
-        if (acIndex >= 0)
-            acCombo.selected = acIndex;
-        acCombo.connect('notify::selected', () => {
-            const selectedProfile = profiles[acCombo.selected];
-            if (selectedProfile)
-                settings.set_string('ac-profile-id', selectedProfile.id);
-        });
-        powerSourceGroup.add(acCombo);
-
-        // Battery profile selector
-        const batteryCombo = new Adw.ComboRow({
-            title: _('Battery Profile'),
-            subtitle: _('Profile to use when running on battery'),
-        });
-        const batteryModel = Gtk.StringList.new(profiles.map(p => p.name));
-        batteryCombo.model = batteryModel;
-        const batteryId = settings.get_string('battery-profile-id');
-        const batteryIndex = profiles.findIndex(p => p.id === batteryId);
-        if (batteryIndex >= 0)
-            batteryCombo.selected = batteryIndex;
-        batteryCombo.connect('notify::selected', () => {
-            const selectedProfile = profiles[batteryCombo.selected];
-            if (selectedProfile)
-                settings.set_string('battery-profile-id', selectedProfile.id);
-        });
-        powerSourceGroup.add(batteryCombo);
+        rulesInfoRow.add_suffix(rulesInfoIcon);
+        autoManageGroup.add(rulesInfoRow);
 
         // Battery Thresholds Page
         const thresholdsPage = new Adw.PreferencesPage({
@@ -619,6 +565,15 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             transient_for: window,
             modal: true,
             use_header_bar: true,
+            default_width: 450,
+            default_height: 600,
+        });
+
+        // Wrap in scrolled window for better usability
+        const scrolled = new Gtk.ScrolledWindow({
+            hscrollbar_policy: Gtk.PolicyType.NEVER,
+            vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+            propagate_natural_height: true,
         });
 
         const content = new Gtk.Box({
@@ -629,7 +584,8 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             margin_start: 18,
             margin_end: 18,
         });
-        dialog.get_content_area().append(content);
+        scrolled.set_child(content);
+        dialog.get_content_area().append(scrolled);
 
         // Profile name entry
         const nameEntry = new Gtk.Entry({
@@ -700,11 +656,132 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         content.append(new Gtk.Label({label: _('Battery Mode'), halign: Gtk.Align.START, margin_top: 6}));
         content.append(batteryCombo);
 
+        // Force discharge dropdown
+        const forceDischargeOptions = ['unspecified', 'on', 'off'];
+        const forceDischargeLabels = {
+            'unspecified': _('Unspecified (no change)'),
+            'on': _('On'),
+            'off': _('Off'),
+        };
+        const forceDischargeCombo = new Gtk.ComboBoxText();
+        forceDischargeOptions.forEach(opt => forceDischargeCombo.append(opt, forceDischargeLabels[opt]));
+        forceDischargeCombo.set_active_id(isEdit && existingProfile.forceDischarge ? existingProfile.forceDischarge : 'unspecified');
+        content.append(new Gtk.Label({label: _('Force Discharge'), halign: Gtk.Align.START, margin_top: 6}));
+        content.append(forceDischargeCombo);
+
+        // Separator
+        content.append(new Gtk.Separator({margin_top: 12, margin_bottom: 6}));
+
+        // Auto-activation rules section
+        const rulesLabel = new Gtk.Label({
+            label: _('Auto-Activation Rules'),
+            halign: Gtk.Align.START,
+            css_classes: ['heading'],
+        });
+        content.append(rulesLabel);
+
+        const rulesDescription = new Gtk.Label({
+            label: _('When all conditions match, this profile activates automatically.'),
+            halign: Gtk.Align.START,
+            css_classes: ['dim-label', 'caption'],
+            wrap: true,
+        });
+        content.append(rulesDescription);
+
+        // Rules container
+        const rulesBox = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 6,
+            margin_top: 6,
+        });
+        content.append(rulesBox);
+
+        // Track rule rows
+        const ruleRows = [];
+        const initialRules = isEdit && existingProfile.rules ? [...existingProfile.rules] : [];
+
+        // Function to add a rule row
+        const addRuleRow = (rule = null) => {
+            const rowBox = new Gtk.Box({
+                orientation: Gtk.Orientation.HORIZONTAL,
+                spacing: 6,
+            });
+
+            // Parameter dropdown
+            const paramCombo = new Gtk.ComboBoxText();
+            Object.values(PARAMETERS).forEach(p => paramCombo.append(p.name, p.label));
+            if (rule)
+                paramCombo.set_active_id(rule.param);
+            else
+                paramCombo.set_active(0);
+            rowBox.append(paramCombo);
+
+            // Operator dropdown
+            const opCombo = new Gtk.ComboBoxText();
+            Object.values(OPERATORS).forEach(o => opCombo.append(o.name, o.label));
+            if (rule)
+                opCombo.set_active_id(rule.op);
+            else
+                opCombo.set_active(0);
+            rowBox.append(opCombo);
+
+            // Value dropdown (populated based on parameter)
+            const valueCombo = new Gtk.ComboBoxText();
+            const updateValueOptions = () => {
+                valueCombo.remove_all();
+                const paramName = paramCombo.get_active_id();
+                const param = PARAMETERS[paramName];
+                if (param) {
+                    param.values.forEach(v => valueCombo.append(v, param.valueLabels[v]));
+                }
+                if (rule && rule.param === paramName) {
+                    valueCombo.set_active_id(rule.value);
+                } else {
+                    valueCombo.set_active(0);
+                }
+            };
+            updateValueOptions();
+            paramCombo.connect('changed', updateValueOptions);
+            rowBox.append(valueCombo);
+
+            // Remove button
+            const removeBtn = new Gtk.Button({
+                icon_name: 'list-remove-symbolic',
+                css_classes: ['flat', 'circular'],
+            });
+            removeBtn.connect('clicked', () => {
+                const index = ruleRows.indexOf(rowData);
+                if (index > -1) {
+                    ruleRows.splice(index, 1);
+                    rulesBox.remove(rowBox);
+                }
+            });
+            rowBox.append(removeBtn);
+
+            const rowData = {box: rowBox, paramCombo, opCombo, valueCombo};
+            ruleRows.push(rowData);
+            rulesBox.append(rowBox);
+        };
+
+        // Add existing rules
+        initialRules.forEach(rule => addRuleRow(rule));
+
+        // Add rule button
+        const addRuleBtn = new Gtk.Button({
+            label: _('Add Condition'),
+            halign: Gtk.Align.START,
+            margin_top: 6,
+        });
+        addRuleBtn.connect('clicked', () => addRuleRow());
+        content.append(addRuleBtn);
+
         // Error label
         const errorLabel = new Gtk.Label({
             css_classes: ['error'],
             halign: Gtk.Align.START,
             visible: false,
+            wrap: true,
+            margin_top: 12,
         });
         content.append(errorLabel);
 
@@ -721,11 +798,19 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         dialog.set_default_response(Gtk.ResponseType.OK);
         nameEntry.activates_default = true;
 
-        dialog.connect('response', (dialog, response) => {
+        dialog.connect('response', (dlg, response) => {
             if (response === Gtk.ResponseType.OK) {
                 const name = nameEntry.get_text().trim();
                 const powerMode = powerCombo.get_active_id();
                 const batteryMode = batteryCombo.get_active_id();
+                const forceDischarge = forceDischargeCombo.get_active_id();
+
+                // Collect rules
+                const rules = ruleRows.map(row => ({
+                    param: row.paramCombo.get_active_id(),
+                    op: row.opCombo.get_active_id(),
+                    value: row.valueCombo.get_active_id(),
+                })).filter(r => r.param && r.op && r.value);
 
                 // Generate ID from name
                 const id = isEdit ?
@@ -742,22 +827,40 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     return;
                 }
 
+                // Validate rules
+                const rulesValidation = RuleEvaluator.validateRules(rules);
+                if (!rulesValidation.valid) {
+                    errorLabel.set_text(rulesValidation.errors.join('\n'));
+                    errorLabel.show();
+                    return;
+                }
+
+                // Check for conflicts
+                const profiles = ProfileMatcher.getCustomProfiles(settings);
+                const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules};
+                const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
+                if (conflict) {
+                    errorLabel.set_text(_('Rule conflict with profile "%s": same conditions at same specificity').format(conflict.name));
+                    errorLabel.show();
+                    return;
+                }
+
                 // Save
                 let success;
                 if (isEdit) {
                     success = ProfileMatcher.updateProfile(settings, existingProfile.id,
-                        {name, powerMode, batteryMode});
+                        {name, powerMode, batteryMode, forceDischarge, rules});
                 } else {
-                    success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode);
+                    success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, forceDischarge, rules);
                 }
 
                 if (!success) {
-                    errorLabel.set_text(_('Profile already exists or limit reached'));
+                    errorLabel.set_text(_('Failed to save profile. Check for conflicts or limit reached.'));
                     errorLabel.show();
                     return;
                 }
             }
-            dialog.close();
+            dlg.close();
         });
 
         dialog.present();

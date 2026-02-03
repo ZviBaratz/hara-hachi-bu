@@ -35,8 +35,20 @@
 
     <key name="auto-switch-enabled" type="b">
       <default>true</default>
-      <summary>Automatically switch profiles based on power source</summary>
-      <description>When enabled, profiles switch automatically when docking/undocking</description>
+      <summary>Automatically switch profiles based on rules</summary>
+      <description>When enabled, profiles switch automatically based on their configured rules</description>
+    </key>
+
+    <key name="auto-manage-paused" type="b">
+      <default>false</default>
+      <summary>Auto-management paused</summary>
+      <description>True when user has manually overridden auto-switching, pausing automatic profile changes</description>
+    </key>
+
+    <key name="resume-on-state-change" type="b">
+      <default>true</default>
+      <summary>Resume auto-management on state change</summary>
+      <description>When paused, automatically resume auto-management when system state changes (display connect/disconnect, power source change)</description>
     </key>
 
     <key name="show-battery-health" type="b">
@@ -87,7 +99,7 @@
     <key name="custom-profiles" type="s">
       <default>'[]'</default>
       <summary>Custom profile definitions</summary>
-      <description>JSON array of custom profile objects with structure: [{id, name, powerMode, batteryMode, icon, builtin}]</description>
+      <description>JSON array of custom profile objects with structure: [{id, name, powerMode, batteryMode, forceDischarge, rules, icon, builtin}]. Rules are arrays of conditions: [{param, op, value}].</description>
     </key>
 
     <!-- Battery Mode Thresholds -->
