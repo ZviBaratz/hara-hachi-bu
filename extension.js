@@ -64,7 +64,7 @@ export default class UnifiedPowerManager extends Extension {
                 this._powerController,
                 this._batteryController
             );
-            this._stateManager.initialize();
+            await this._stateManager.initialize();
 
             // Create UI
             this._powerManager = new PowerManagerIndicator(
