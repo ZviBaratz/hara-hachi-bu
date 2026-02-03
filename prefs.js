@@ -176,18 +176,6 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Bind resume row sensitivity to auto-switch toggle
         settings.bind('auto-switch-enabled', resumeRow, 'sensitive', Gio.SettingsBindFlags.DEFAULT);
 
-        // Info about rules
-        const rulesInfoRow = new Adw.ActionRow({
-            title: _('Configure Rules'),
-            subtitle: _('Edit profiles to add auto-activation rules'),
-        });
-        const rulesInfoIcon = new Gtk.Image({
-            icon_name: 'dialog-information-symbolic',
-            valign: Gtk.Align.CENTER,
-        });
-        rulesInfoRow.add_suffix(rulesInfoIcon);
-        autoManageGroup.add(rulesInfoRow);
-
         // Battery Thresholds Page
         const thresholdsPage = new Adw.PreferencesPage({
             title: _('Thresholds'),
@@ -626,9 +614,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             });
         }
 
-        // Disable name editing for builtin profiles
-        if (isEdit && existingProfile.builtin)
-            nameEntry.sensitive = false;
+        // Note: builtin profiles can have their names edited (ID remains stable)
 
         // Power mode dropdown
         const powerModes = ['performance', 'balanced', 'power-saver'];
