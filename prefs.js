@@ -90,6 +90,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         settings.bind('show-force-discharge', forceDischargeRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(forceDischargeRow);
 
+        // Auto-manage battery levels
+        const autoManageRow = new Adw.SwitchRow({
+            title: _('Auto-Manage Battery Levels'),
+            subtitle: _('Automatically discharge when battery exceeds threshold (AC power only)'),
+        });
+        settings.bind('auto-manage-battery-levels', autoManageRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        uiGroup.add(autoManageRow);
+
         // Hide built-in power profile indicator
         const hideBuiltinRow = new Adw.SwitchRow({
             title: _('Hide Built-in Power Profile'),
@@ -97,6 +105,39 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
         settings.bind('hide-builtin-power-profile', hideBuiltinRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(hideBuiltinRow);
+
+        // Auto-switch profiles
+        const autoSwitchRow = new Adw.SwitchRow({
+            title: _('Automatically Switch Profiles'),
+            subtitle: _('Switch profiles based on power source (docking/undocking)'),
+        });
+        settings.bind('auto-switch-enabled', autoSwitchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        uiGroup.add(autoSwitchRow);
+
+        // Battery health display
+        const healthDisplayRow = new Adw.SwitchRow({
+            title: _('Show Battery Health in Quick Settings'),
+            subtitle: _('Display battery capacity degradation information'),
+        });
+        settings.bind('show-battery-health', healthDisplayRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        uiGroup.add(healthDisplayRow);
+
+        // Battery health threshold
+        const healthThresholdRow = new Adw.SpinRow({
+            title: _('Battery Health Threshold'),
+            subtitle: _('Show health only when below this percentage (100 = always show)'),
+            adjustment: new Gtk.Adjustment({
+                lower: 0,
+                upper: 100,
+                step_increment: 5,
+                page_increment: 10,
+            }),
+        });
+        settings.bind('battery-health-threshold', healthThresholdRow, 'value', Gio.SettingsBindFlags.DEFAULT);
+        uiGroup.add(healthThresholdRow);
+
+        // Bind threshold row sensitivity to show-battery-health toggle
+        settings.bind('show-battery-health', healthThresholdRow, 'sensitive', Gio.SettingsBindFlags.DEFAULT);
 
         // Docking Detection Group
         const dockingGroup = new Adw.PreferencesGroup({
@@ -217,7 +258,9 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         const fullStartRow = new Adw.SpinRow({
             title: _('Start Charging At'),
-            subtitle: _('Begin charging when battery drops below this level'),
+            subtitle: _('Battery will start charging when it drops to %d%%').format(
+                settings.get_int('threshold-full-start')
+            ),
             adjustment: new Gtk.Adjustment({
                 lower: 80,
                 upper: 99,
@@ -227,11 +270,20 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             }),
         });
         settings.bind('threshold-full-start', fullStartRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        // Update subtitle when value changes
+        fullStartRow.adjustment.connect('value-changed', () => {
+            const value = Math.round(fullStartRow.adjustment.value);
+            fullStartRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
+        });
+
         fullGroup.add(fullStartRow);
 
         const fullEndRow = new Adw.SpinRow({
             title: _('Stop Charging At'),
-            subtitle: _('Stop charging when battery reaches this level'),
+            subtitle: _('Battery will stop charging when it reaches %d%%').format(
+                settings.get_int('threshold-full-end')
+            ),
             adjustment: new Gtk.Adjustment({
                 lower: 85,
                 upper: 100,
@@ -241,6 +293,13 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             }),
         });
         settings.bind('threshold-full-end', fullEndRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        // Update subtitle when value changes
+        fullEndRow.adjustment.connect('value-changed', () => {
+            const value = Math.round(fullEndRow.adjustment.value);
+            fullEndRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
+        });
+
         fullGroup.add(fullEndRow);
 
         // Balanced Mode Group
@@ -252,7 +311,9 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         const balancedStartRow = new Adw.SpinRow({
             title: _('Start Charging At'),
-            subtitle: _('Begin charging when battery drops below this level'),
+            subtitle: _('Battery will start charging when it drops to %d%%').format(
+                settings.get_int('threshold-balanced-start')
+            ),
             adjustment: new Gtk.Adjustment({
                 lower: 60,
                 upper: 80,
@@ -262,11 +323,20 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             }),
         });
         settings.bind('threshold-balanced-start', balancedStartRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        // Update subtitle when value changes
+        balancedStartRow.adjustment.connect('value-changed', () => {
+            const value = Math.round(balancedStartRow.adjustment.value);
+            balancedStartRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
+        });
+
         balancedGroup.add(balancedStartRow);
 
         const balancedEndRow = new Adw.SpinRow({
             title: _('Stop Charging At'),
-            subtitle: _('Stop charging when battery reaches this level'),
+            subtitle: _('Battery will stop charging when it reaches %d%%').format(
+                settings.get_int('threshold-balanced-end')
+            ),
             adjustment: new Gtk.Adjustment({
                 lower: 65,
                 upper: 90,
@@ -276,6 +346,13 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             }),
         });
         settings.bind('threshold-balanced-end', balancedEndRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        // Update subtitle when value changes
+        balancedEndRow.adjustment.connect('value-changed', () => {
+            const value = Math.round(balancedEndRow.adjustment.value);
+            balancedEndRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
+        });
+
         balancedGroup.add(balancedEndRow);
 
         // Max Lifespan Mode Group
@@ -287,7 +364,9 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         const lifespanStartRow = new Adw.SpinRow({
             title: _('Start Charging At'),
-            subtitle: _('Begin charging when battery drops below this level'),
+            subtitle: _('Battery will start charging when it drops to %d%%').format(
+                settings.get_int('threshold-lifespan-start')
+            ),
             adjustment: new Gtk.Adjustment({
                 lower: 40,
                 upper: 60,
@@ -297,11 +376,20 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             }),
         });
         settings.bind('threshold-lifespan-start', lifespanStartRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        // Update subtitle when value changes
+        lifespanStartRow.adjustment.connect('value-changed', () => {
+            const value = Math.round(lifespanStartRow.adjustment.value);
+            lifespanStartRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
+        });
+
         lifespanGroup.add(lifespanStartRow);
 
         const lifespanEndRow = new Adw.SpinRow({
             title: _('Stop Charging At'),
-            subtitle: _('Stop charging when battery reaches this level'),
+            subtitle: _('Battery will stop charging when it reaches %d%%').format(
+                settings.get_int('threshold-lifespan-end')
+            ),
             adjustment: new Gtk.Adjustment({
                 lower: 45,
                 upper: 70,
@@ -311,6 +399,13 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             }),
         });
         settings.bind('threshold-lifespan-end', lifespanEndRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        // Update subtitle when value changes
+        lifespanEndRow.adjustment.connect('value-changed', () => {
+            const value = Math.round(lifespanEndRow.adjustment.value);
+            lifespanEndRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
+        });
+
         lifespanGroup.add(lifespanEndRow);
 
         // Profiles Page
@@ -407,6 +502,10 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             icon_name: helperInstalled ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic',
             valign: Gtk.Align.CENTER,
         });
+        helperIcon.update_property(
+            [Gtk.AccessibleProperty.LABEL],
+            [helperInstalled ? _('Installed') : _('Not installed')]
+        );
         helperRow.add_suffix(helperIcon);
         statusGroup.add(helperRow);
 
@@ -424,6 +523,10 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             icon_name: polkitInstalled ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic',
             valign: Gtk.Align.CENTER,
         });
+        polkitIcon.update_property(
+            [Gtk.AccessibleProperty.LABEL],
+            [polkitInstalled ? _('Configured') : _('Not configured')]
+        );
         polkitRow.add_suffix(polkitIcon);
         statusGroup.add(polkitRow);
 
@@ -457,6 +560,10 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             icon_name: iconName,
             valign: Gtk.Align.CENTER,
         });
+        batteryIcon.update_property(
+            [Gtk.AccessibleProperty.LABEL],
+            [statusSubtitle]
+        );
         batteryRow.add_suffix(batteryIcon);
         statusGroup.add(batteryRow);
 

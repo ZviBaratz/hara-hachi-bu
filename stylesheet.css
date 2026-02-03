@@ -25,3 +25,22 @@
 .upm-menu-scroll-section {
     max-height: 250px;
 }
+
+/* Loading state styling */
+.loading-state {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* Battery health color indicators */
+.health-good {
+    color: #57e389; /* GNOME green */
+}
+
+.health-fair {
+    color: #f8e45c; /* GNOME yellow */
+}
+
+.health-poor {
+    color: #ed333b; /* GNOME red */
+}

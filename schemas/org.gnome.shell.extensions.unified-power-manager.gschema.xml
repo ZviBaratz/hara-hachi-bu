@@ -33,6 +33,25 @@
       <description>Maximum indicator position value</description>
     </key>
 
+    <key name="auto-switch-enabled" type="b">
+      <default>true</default>
+      <summary>Automatically switch profiles based on power source</summary>
+      <description>When enabled, profiles switch automatically when docking/undocking</description>
+    </key>
+
+    <key name="show-battery-health" type="b">
+      <default>true</default>
+      <summary>Show battery health in Quick Settings</summary>
+      <description>Display battery health information in the Quick Settings panel</description>
+    </key>
+
+    <key name="battery-health-threshold" type="i">
+      <default>95</default>
+      <range min="0" max="100"/>
+      <summary>Battery health display threshold</summary>
+      <description>Show battery health only when below this percentage (100 = always show)</description>
+    </key>
+
     <!-- Current State -->
     <key name="current-power-mode" type="s">
       <default>'balanced'</default>
@@ -50,6 +69,12 @@
       <default>false</default>
       <summary>Force discharge enabled</summary>
       <description>Whether force discharge is currently active</description>
+    </key>
+
+    <key name="auto-manage-battery-levels" type="b">
+      <default>false</default>
+      <summary>Automatically manage battery levels with force discharge</summary>
+      <description>When enabled, automatically enables force discharge when battery exceeds end threshold (AC only) and disables when battery reaches start threshold. Requires force discharge hardware support.</description>
     </key>
 
     <key name="hide-builtin-power-profile" type="b">
