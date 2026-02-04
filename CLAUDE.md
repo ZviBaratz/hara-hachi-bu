@@ -104,7 +104,8 @@ cat /sys/class/power_supply/BAT0/capacity
 
 **lib/device/DeviceManager.js** - Device detection and instantiation
 - Factory class that detects hardware and returns appropriate device backend
-- Auto-detects battery: checks BAT0 first, falls back to BAT1 if not found
+- Auto-detects battery by enumerating /sys/class/power_supply
+- Fallback list if enumeration fails: BAT0, BAT1, BAT2, BAT3 (supports multi-battery systems)
 - Checks for mock trigger file for testing scenarios
 - Falls back through device implementations in priority order
 
@@ -176,6 +177,12 @@ Battery threshold changes must be written in the correct order to avoid kernel e
 4. StateManager emits unified 'state-changed' signal
 5. UI updates via StateManager event handlers
 
+**ParameterDetector Integration**
+- ParameterDetector monitors system state (external_display, power_source)
+- Emits 'parameter-changed' signal when state changes
+- StateManager subscribes to ParameterDetector for rule-based auto-switching
+- Rule evaluation is debounced (300ms) to prevent rapid switching
+
 **External Change Detection**
 - Power profiles: D-Bus property monitoring via g-properties-changed
 - Battery thresholds: Gio.FileMonitor on charge_control_end_threshold with CHANGES_DONE_HINT
@@ -214,10 +221,14 @@ Key settings:
 **Power Profiles**: Works on any system with power-profiles-daemon
 
 **Battery Thresholds**: Works on laptops with standard Linux sysfs battery control:
-- Auto-detects battery: checks BAT0 first, falls back to BAT1
+- Auto-detects battery: checks BAT0 first, falls back to BAT1, BAT2, BAT3
 - Minimum requirement: charge_control_end_threshold exists for the detected battery
 - Full support (start+end): Also requires charge_control_start_threshold
 - Known compatible: ThinkPad (thinkpad_acpi), Framework, ASUS, and others with standard kernel interfaces
+
+**AC Adapter Detection**: Automatically detects AC adapter by checking multiple known names:
+- Supported adapter names: AC, ACAD, ADP0, ADP1
+- Uses first available adapter for power source detection
 
 **Force Discharge**: Requires charge_behaviour support for the detected battery (typically ThinkPad)
 
@@ -307,6 +318,26 @@ Key settings:
 - Helper script uses exit codes (0=success, 1=error, 2=needs_update, 3=timeout)
 - execCheck implements mutex to prevent concurrent command execution
 - All async operations use try/catch and return safe defaults on failure
+
+### Async Safety Pattern (`_destroyed` flag)
+Controllers that use async operations (promises, timeouts) implement a `_destroyed` flag:
+1. Initialize `this._destroyed = false` in constructor
+2. Set `this._destroyed = true` at the start of `destroy()`
+3. Check `if (!this._destroyed)` in promise callbacks before accessing object state
+4. This prevents callbacks from executing on destroyed objects after extension disable
+
+Example from BatteryThresholdController:
+```javascript
+this.setForceDischarge(true, false)
+    .catch(e => {
+        if (!this._destroyed)  // Guard against destroyed object
+            console.error('Failed:', e);
+    })
+    .finally(() => {
+        if (!this._destroyed)  // Guard against destroyed object
+            this._autoEnableInProgress = false;
+    });
+```
 
 ## Testing Considerations
 

@@ -393,12 +393,17 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             this._refreshProfileList(window, settings);
         });
 
+        // Store settings reference for cleanup
+        this._settings = settings;
+
         // Disconnect signal when window closes to prevent memory leak
+        // Use both close-request and destroy to ensure cleanup happens
         window.connect('close-request', () => {
-            if (this._profileSettingsId) {
-                settings.disconnect(this._profileSettingsId);
-                this._profileSettingsId = null;
-            }
+            this._cleanupSettingsConnection();
+            return false; // Allow window to close
+        });
+        window.connect('destroy', () => {
+            this._cleanupSettingsConnection();
         });
 
         // About Page
@@ -515,6 +520,18 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         installGroup.add(installRow);
     }
 
+    _cleanupSettingsConnection() {
+        if (this._profileSettingsId && this._settings) {
+            try {
+                this._settings.disconnect(this._profileSettingsId);
+            } catch {
+                // Ignore - already disconnected
+            }
+            this._profileSettingsId = null;
+        }
+        this._settings = null;
+    }
+
     _checkFileExists(path) {
         try {
             const file = Gio.File.new_for_path(path);
@@ -599,16 +616,32 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 const name = nameEntry.get_text().trim();
                 if (name.length === 0) {
                     idPreviewLabel.set_text(_('ID: (enter name above)'));
+                    idPreviewLabel.remove_css_class('error');
+                    idPreviewLabel.remove_css_class('warning');
+                    idPreviewLabel.add_css_class('dim-label');
                 } else {
                     const generatedId = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
                     if (generatedId.length === 0) {
                         idPreviewLabel.set_text(_('ID: (invalid characters)'));
                         idPreviewLabel.add_css_class('error');
                         idPreviewLabel.remove_css_class('dim-label');
+                        idPreviewLabel.remove_css_class('warning');
                     } else {
-                        idPreviewLabel.set_text(_('ID: %s').format(generatedId));
-                        idPreviewLabel.remove_css_class('error');
-                        idPreviewLabel.add_css_class('dim-label');
+                        // Check for duplicate ID
+                        const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
+                        const isDuplicate = existingProfiles.some(p => p.id === generatedId);
+
+                        if (isDuplicate) {
+                            idPreviewLabel.set_text(_('ID: %s (already exists!)').format(generatedId));
+                            idPreviewLabel.add_css_class('warning');
+                            idPreviewLabel.remove_css_class('error');
+                            idPreviewLabel.remove_css_class('dim-label');
+                        } else {
+                            idPreviewLabel.set_text(_('ID: %s').format(generatedId));
+                            idPreviewLabel.remove_css_class('error');
+                            idPreviewLabel.remove_css_class('warning');
+                            idPreviewLabel.add_css_class('dim-label');
+                        }
                     }
                 }
             });
@@ -853,13 +886,29 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
     }
 
     _showDeleteDialog(window, settings, profile) {
+        // Check if this profile is currently active
+        const currentProfileId = settings.get_string('current-power-mode') + '+' +
+            settings.get_string('current-battery-mode');
+        const profileConfig = `${profile.powerMode}+${profile.batteryMode}`;
+        const isActive = currentProfileId === profileConfig ||
+            ProfileMatcher.detectProfile(
+                settings.get_string('current-power-mode'),
+                settings.get_string('current-battery-mode'),
+                settings
+            ) === profile.id;
+
+        let secondaryText = _('This action cannot be undone.');
+        if (isActive) {
+            secondaryText = _('This profile is currently active.') + ' ' + secondaryText;
+        }
+
         const dialog = new Gtk.MessageDialog({
             transient_for: window,
             modal: true,
             buttons: Gtk.ButtonsType.NONE,
             message_type: Gtk.MessageType.WARNING,
             text: _('Delete "%s"?').format(profile.name),
-            secondary_text: _('This action cannot be undone.'),
+            secondary_text: secondaryText,
         });
 
         dialog.add_button(_('Cancel'), Gtk.ResponseType.CANCEL);
