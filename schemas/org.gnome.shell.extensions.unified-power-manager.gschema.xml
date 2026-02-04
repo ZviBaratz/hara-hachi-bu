@@ -58,7 +58,7 @@
     </key>
 
     <key name="battery-health-threshold" type="i">
-      <default>95</default>
+      <default>100</default>
       <range min="0" max="100"/>
       <summary>Battery health display threshold</summary>
       <description>Show battery health only when below this percentage (100 = always show)</description>

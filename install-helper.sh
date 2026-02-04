@@ -51,6 +51,13 @@ elif [[ "$1" == "--help" || "$1" == "-h" ]]; then
     exit 0
 fi
 
+# Check if running as root
+if [ "$EUID" -ne 0 ]; then
+    echo "Error: This script must be run as root."
+    echo "Please run with sudo: sudo ./install-helper.sh"
+    exit 1
+fi
+
 echo "Installing Unified Power Manager helper components..."
 
 # Install the helper script
