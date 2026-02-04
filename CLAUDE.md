@@ -135,6 +135,21 @@ cat /sys/class/power_supply/BAT0/capacity
 - Handles migration from old profile-docked/profile-travel format
 - Validates profile IDs (must match /^[a-z0-9_-]+$/)
 
+**lib/parameterDetector.js** - System parameter monitoring
+- Monitors system parameters for rule-based profile switching
+- Detects external display connection (via MonitorManager)
+- Detects power source changes (AC/battery via UPower)
+- Detects lid state (open/closed via UPower)
+- Emits 'parameter-changed' signal when state changes
+- Implements debouncing (500ms) for monitor changes
+
+**lib/ruleEvaluator.js** - Rule matching engine
+- Implements most-specific-wins logic for profile rules
+- Evaluates conditions (param, operator, value) against current state
+- Finds best matching profile based on rule specificity
+- Validates rules and detects conflicts
+- Supports operators: 'is', 'is_not'
+
 **lib/quickSettingsPanel.js** - Quick Settings UI integration
 - Creates menu in GNOME Shell Quick Settings panel
 - Radio button groups for profiles, power modes, battery modes
@@ -204,6 +219,80 @@ Battery threshold changes must be written in the correct order to avoid kernel e
 - New format: JSON array in 'custom-profiles' with {id, name, powerMode, batteryMode, icon, builtin}
 - Builtin profiles (docked, travel) cannot be deleted, only modified
 
+**Async Safety Pattern**
+Controllers with async operations implement a `_destroyed` flag to prevent callbacks from executing on destroyed objects:
+
+```javascript
+// Constructor
+constructor() {
+    super();
+    this._destroyed = false;
+    // ... other initialization
+}
+
+// Async operation
+async someAsyncMethod() {
+    if (this._destroyed)
+        return false;
+
+    await someOperation();
+
+    // Check again after await
+    if (this._destroyed)
+        return false;
+
+    // Safe to access object state
+    this._updateState();
+    return true;
+}
+
+// Promise callback
+somePromise().then(() => {
+    if (!this._destroyed) {
+        // Safe to access object state
+    }
+}).catch(e => {
+    if (!this._destroyed) {
+        console.error('Error:', e);
+    }
+});
+
+// Destroy method (first line)
+destroy() {
+    this._destroyed = true;
+    // ... cleanup timeouts, signals, etc.
+}
+```
+
+Implemented in:
+- PowerProfileController (D-Bus proxy initialization, setProfile)
+- StateManager (setPowerMode, setBatteryMode, setProfile, setForceDischarge)
+- BatteryThresholdController (auto-management state machine)
+
+**Resource Lifecycle and Cleanup Checklist**
+
+All controllers must properly clean up resources in their `destroy()` methods:
+
+✓ **Timeouts** - Remove with `GLib.Source.remove(timeoutId)` before null
+- StateManager: `_initialRuleEvalTimeout`, `_ruleEvaluationTimeout`, `_displayEventTimeout`
+- QuickSettingsPanel: `_clipboardFeedbackTimeoutId`
+- BatteryThresholdController: `_forceDischargeDisableTimeout`, `_autoEnableTimeout`
+- ParameterDetector: `_debounceTimeoutId`
+
+✓ **Signal Connections** - Disconnect with `disconnectObject(this)` or `disconnect(signalId)`
+- Use `connectObject(...signals..., this)` pattern for automatic cleanup
+- Store signal IDs for manual disconnection if needed
+
+✓ **File Monitors** - Cancel with `monitor.cancel()` then disconnect signal
+- GenericSysfsDevice: `_monitorLevel`, `_monitorForceDischarge`
+
+✓ **D-Bus Proxies** - Disconnect signals before nulling proxy
+- PowerProfileController: `_proxy`, `_proxySignalId`
+- BatteryThresholdController: `_proxy`, `_proxyId`
+- ParameterDetector: `_upowerProxy`, `_upowerProxyId`
+
+✓ **Set _destroyed flag first** - Prevents async callbacks from executing during cleanup
+
 ## GSettings Schema
 
 Location: `schemas/org.gnome.shell.extensions.unified-power-manager.gschema.xml`
@@ -232,9 +321,37 @@ Key settings:
 
 **Force Discharge**: Requires charge_behaviour support for the detected battery (typically ThinkPad)
 
-## Recent Improvements (Commit 517cd2b)
+## Recent Improvements
 
-### Critical Bug Fixes
+### Async Safety and Code Cleanup (Commit d399886)
+
+**Async Safety Enhancements**
+- Added `_destroyed` flag pattern to PowerProfileController and StateManager
+- All async operations now check `_destroyed` before accessing object state
+- Prevents callbacks from executing on destroyed objects during extension reload
+- Guards all promise chains and async/await operations
+
+**Legacy Code Removal**
+- Removed DisplayMonitor.js (161 lines) - replaced by ParameterDetector
+- Removed legacy stub methods from StateManager
+- Documented legacy settings watchers with clear migration strategy
+- Net reduction: 125 lines while adding safety features
+
+**Error Handling Improvements**
+- Added try/catch to file monitor callbacks in GenericSysfsDevice
+- Added error guards to rule evaluation functions in RuleEvaluator
+- Added try/catch to dialog response handlers in prefs.js
+- All error paths now log descriptive messages for debugging
+
+**API Corrections**
+- Fixed `GLib.source_remove` → `GLib.Source.remove` typo in 3 files
+- Corrected capitalization ensures proper API usage
+
+**Testing**
+- Passed 5 rapid disable/enable cycles without memory leaks or errors
+- Verified no orphaned timeouts or callbacks after destruction
+
+### Critical Bug Fixes (Commit 517cd2b)
 
 **PowerProfileController Signal Emission**
 - Fixed missing signal emission after D-Bus profile assignment
@@ -318,28 +435,20 @@ Key settings:
 - Helper script uses exit codes (0=success, 1=error, 2=needs_update, 3=timeout)
 - execCheck implements mutex to prevent concurrent command execution
 - All async operations use try/catch and return safe defaults on failure
-
-### Async Safety Pattern (`_destroyed` flag)
-Controllers that use async operations (promises, timeouts) implement a `_destroyed` flag:
-1. Initialize `this._destroyed = false` in constructor
-2. Set `this._destroyed = true` at the start of `destroy()`
-3. Check `if (!this._destroyed)` in promise callbacks before accessing object state
-4. This prevents callbacks from executing on destroyed objects after extension disable
-
-Example from BatteryThresholdController:
-```javascript
-this.setForceDischarge(true, false)
-    .catch(e => {
-        if (!this._destroyed)  // Guard against destroyed object
-            console.error('Failed:', e);
-    })
-    .finally(() => {
-        if (!this._destroyed)  // Guard against destroyed object
-            this._autoEnableInProgress = false;
-    });
-```
+- File monitors, rule evaluation, and dialog handlers wrapped in try/catch blocks
+- See "Async Safety Pattern" in Critical Implementation Details section for async callback protection
 
 ## Testing Considerations
+
+**Rule-Based Profile Scenarios**
+- Test profile switching when external display is connected/disconnected
+- Test profile switching when AC adapter is plugged/unplugged
+- Test profile with multiple rules (must match all conditions)
+- Test profile conflict detection (same specificity)
+- Test manual override pausing auto-management
+- Test auto-management resume after timeout
+
+**Hardware Compatibility**
 
 - Extension must work without battery threshold support (unsupported hardware)
 - Extension must handle devices with only end threshold (no start threshold)
