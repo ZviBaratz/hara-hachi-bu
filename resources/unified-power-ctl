@@ -3,23 +3,33 @@ set -eu
 
 # unified-power-ctl - Helper script for Unified Power Manager extension
 # Handles privileged operations: setting battery thresholds, force-discharge
+# Security: This script is intended to be run via polkit with root privileges.
 
 EXIT_SUCCESS=0
 EXIT_ERROR=1
 
 # --- Validation Functions ---
 
-# Validate that a sysfs path exists before writing
-validate_sysfs_path() {
-    [[ -f "$1" ]] || { echo "Error: Path does not exist: $1" >&2; exit "$EXIT_ERROR"; }
+# Log action to system journal
+log_action() {
+    logger -t unified-power-ctl "[ACTION] $@"
 }
 
-# Validate number of arguments
-check_args() {
-    local expected=$1
-    local actual=$(( $# - 2 )) # Subtract 2 for 'expected' and 'TOOLCMD'
-    if [ "$actual" -lt "$expected" ]; then
-        echo "Error: Command '$TOOLCMD' requires $expected arguments, but $actual were provided." >&2
+# Validate that a sysfs path exists and is a regular file
+validate_sysfs_path() {
+    local path="$1"
+    # Ensure the path is strictly within the power_supply directory
+    if [[ ! "$path" =~ ^/sys/class/power_supply/BAT[0-9]+/[a-z_]+$ ]]; then
+        echo "Error: Forbidden path: $path" >&2
+        exit "$EXIT_ERROR"
+    fi
+    [[ -f "$path" ]] || { echo "Error: Path does not exist or is not a file: $path" >&2; exit "$EXIT_ERROR"; }
+}
+
+# Sanitize input values
+sanitize_input() {
+    if [[ "$1" =~ [/\.\.] ]]; then
+        echo "Error: Invalid characters in input." >&2
         exit "$EXIT_ERROR"
     fi
 }
@@ -31,15 +41,15 @@ is_int() {
 
 validate_threshold() {
     if [ -z "${1:-}" ]; then
-        echo "Error: Missing threshold value."
+        echo "Error: Missing threshold value." >&2
         exit "$EXIT_ERROR"
     fi
     if ! is_int "$1"; then
-        echo "Error: Threshold must be an integer."
+        echo "Error: Threshold must be an integer." >&2
         exit "$EXIT_ERROR"
     fi
     if [ "$1" -lt 0 ] || [ "$1" -gt 100 ]; then
-        echo "Error: Threshold must be between 0 and 100."
+        echo "Error: Threshold must be between 0 and 100." >&2
         exit "$EXIT_ERROR"
     fi
 }
@@ -47,18 +57,20 @@ validate_threshold() {
 # --- Command Parsing ---
 
 TOOLCMD=${1:-}
-ARG1=${2:-}
-ARG2=${3:-}
+# Sanitize all arguments
+for arg in "$@"; do
+    sanitize_input "$arg"
+done
 
 # Parse command format: BAT<N>_<ACTION> or FORCE_DISCHARGE_BAT<N>
-if [[ "$TOOLCMD" =~ ^BAT([0-9])_(.*)$ ]]; then
+if [[ "$TOOLCMD" =~ ^BAT([0-9]+)_(.*)$ ]]; then
     BAT_IDX="${BASH_REMATCH[1]}"
     ACTION="${BASH_REMATCH[2]}"
-elif [[ "$TOOLCMD" =~ ^FORCE_DISCHARGE_BAT([0-9])$ ]]; then
+elif [[ "$TOOLCMD" =~ ^FORCE_DISCHARGE_BAT([0-9]+)$ ]]; then
     BAT_IDX="${BASH_REMATCH[1]}"
     ACTION="FORCE_DISCHARGE"
 else
-    echo "Error: Unknown Command: '$TOOLCMD'"
+    echo "Error: Unknown Command: '$TOOLCMD'" >&2
     exit "$EXIT_ERROR"
 fi
 
@@ -70,46 +82,58 @@ FORCE_DISCHARGE_PATH="${BAT_PATH}/charge_behaviour"
 
 case "$ACTION" in
     END)
-        check_args 1 "$@"
+        if [ "$#" -ne 2 ]; then echo "Error: END requires 1 argument" >&2; exit "$EXIT_ERROR"; fi
+        ARG1=$2
         validate_threshold "$ARG1"
         validate_sysfs_path "$END_PATH"
+        log_action "Setting BAT${BAT_IDX} end threshold to ${ARG1}"
         echo "$ARG1" >"$END_PATH"
         ;;
     START)
-        check_args 1 "$@"
+        if [ "$#" -ne 2 ]; then echo "Error: START requires 1 argument" >&2; exit "$EXIT_ERROR"; fi
+        ARG1=$2
         validate_threshold "$ARG1"
         validate_sysfs_path "$START_PATH"
+        log_action "Setting BAT${BAT_IDX} start threshold to ${ARG1}"
         echo "$ARG1" >"$START_PATH"
         ;;
     END_START)
-        check_args 2 "$@"
+        if [ "$#" -ne 3 ]; then echo "Error: END_START requires 2 arguments" >&2; exit "$EXIT_ERROR"; fi
+        ARG1=$2
+        ARG2=$3
         validate_threshold "$ARG1"
         validate_threshold "$ARG2"
         validate_sysfs_path "$END_PATH"
         validate_sysfs_path "$START_PATH"
+        log_action "Setting BAT${BAT_IDX} thresholds: END=${ARG1}, START=${ARG2}"
         # Write END first, then START (safe order for increasing range)
         echo "$ARG1" >"$END_PATH" && echo "$ARG2" >"$START_PATH"
         ;;
     START_END)
-        check_args 2 "$@"
+        if [ "$#" -ne 3 ]; then echo "Error: START_END requires 2 arguments" >&2; exit "$EXIT_ERROR"; fi
+        ARG1=$2
+        ARG2=$3
         validate_threshold "$ARG1"
         validate_threshold "$ARG2"
         validate_sysfs_path "$START_PATH"
         validate_sysfs_path "$END_PATH"
+        log_action "Setting BAT${BAT_IDX} thresholds: START=${ARG2}, END=${ARG1}"
         # Write START first, then END (safe order for decreasing range)
         echo "$ARG2" >"$START_PATH" && echo "$ARG1" >"$END_PATH"
         ;;
     FORCE_DISCHARGE)
-        check_args 1 "$@"
+        if [ "$#" -ne 2 ]; then echo "Error: FORCE_DISCHARGE requires 1 argument" >&2; exit "$EXIT_ERROR"; fi
+        ARG1=$2
         if [[ "$ARG1" != "force-discharge" && "$ARG1" != "auto" ]]; then
-            echo "Error: Invalid force discharge mode. Allowed: 'force-discharge', 'auto'."
+            echo "Error: Invalid force discharge mode. Allowed: 'force-discharge', 'auto'." >&2
             exit "$EXIT_ERROR"
         fi
         validate_sysfs_path "$FORCE_DISCHARGE_PATH"
+        log_action "Setting BAT${BAT_IDX} force discharge to ${ARG1}"
         echo "$ARG1" >"$FORCE_DISCHARGE_PATH"
         ;;
     *)
-        echo "Error: Unknown Action: '$ACTION' for BAT$BAT_IDX"
+        echo "Error: Unknown Action: '$ACTION' for BAT$BAT_IDX" >&2
         exit "$EXIT_ERROR"
         ;;
 esac
