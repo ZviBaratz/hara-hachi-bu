@@ -12,7 +12,7 @@ EXIT_ERROR=1
 
 # Log action to system journal
 log_action() {
-    logger -t unified-power-ctl "[ACTION] $@"
+    logger -t unified-power-ctl "[ACTION] $*"
 }
 
 # Validate that a sysfs path exists and is a regular file
@@ -67,7 +67,7 @@ done
 if [[ "$TOOLCMD" =~ ^FORCE_DISCHARGE_([a-zA-Z0-9_]+)$ ]]; then
     BAT_NAME="${BASH_REMATCH[1]}"
     ACTION="FORCE_DISCHARGE"
-elif [[ "$TOOLCMD" =~ ^([a-zA-Z0-9_]+)_(.*)$ ]]; then
+elif [[ "$TOOLCMD" =~ ^(BAT[0-9]+)_(.+)$ ]]; then
     BAT_NAME="${BASH_REMATCH[1]}"
     ACTION="${BASH_REMATCH[2]}"
 else
