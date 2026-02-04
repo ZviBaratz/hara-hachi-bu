@@ -818,68 +818,74 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         nameEntry.activates_default = true;
 
         dialog.connect('response', (dlg, response) => {
-            if (response === Gtk.ResponseType.OK) {
-                const name = nameEntry.get_text().trim();
-                const powerMode = powerCombo.get_active_id();
-                const batteryMode = batteryCombo.get_active_id();
-                const forceDischarge = forceDischargeCombo.get_active_id();
+            try {
+                if (response === Gtk.ResponseType.OK) {
+                    const name = nameEntry.get_text().trim();
+                    const powerMode = powerCombo.get_active_id();
+                    const batteryMode = batteryCombo.get_active_id();
+                    const forceDischarge = forceDischargeCombo.get_active_id();
 
-                // Collect rules
-                const rules = ruleRows.map(row => ({
-                    param: row.paramCombo.get_active_id(),
-                    op: row.opCombo.get_active_id(),
-                    value: row.valueCombo.get_active_id(),
-                })).filter(r => r.param && r.op && r.value);
+                    // Collect rules
+                    const rules = ruleRows.map(row => ({
+                        param: row.paramCombo.get_active_id(),
+                        op: row.opCombo.get_active_id(),
+                        value: row.valueCombo.get_active_id(),
+                    })).filter(r => r.param && r.op && r.value);
 
-                // Generate ID from name
-                const id = isEdit ?
-                    existingProfile.id :
-                    name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+                    // Generate ID from name
+                    const id = isEdit ?
+                        existingProfile.id :
+                        name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
 
-                // Validate using centralized validation
-                const validation = ProfileMatcher.validateProfileInput(
-                    settings, id, name, powerMode, batteryMode, isEdit
-                );
-                if (!validation.valid) {
-                    errorLabel.set_text(_(validation.error));
-                    errorLabel.show();
-                    return;
+                    // Validate using centralized validation
+                    const validation = ProfileMatcher.validateProfileInput(
+                        settings, id, name, powerMode, batteryMode, isEdit
+                    );
+                    if (!validation.valid) {
+                        errorLabel.set_text(_(validation.error));
+                        errorLabel.show();
+                        return;
+                    }
+
+                    // Validate rules
+                    const rulesValidation = RuleEvaluator.validateRules(rules);
+                    if (!rulesValidation.valid) {
+                        errorLabel.set_text(rulesValidation.errors.join('\n'));
+                        errorLabel.show();
+                        return;
+                    }
+
+                    // Check for conflicts
+                    const profiles = ProfileMatcher.getCustomProfiles(settings);
+                    const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules};
+                    const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
+                    if (conflict) {
+                        errorLabel.set_text(_('Rule conflict with profile "%s": same conditions at same specificity').format(conflict.name));
+                        errorLabel.show();
+                        return;
+                    }
+
+                    // Save
+                    let success;
+                    if (isEdit) {
+                        success = ProfileMatcher.updateProfile(settings, existingProfile.id,
+                            {name, powerMode, batteryMode, forceDischarge, rules});
+                    } else {
+                        success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, forceDischarge, rules);
+                    }
+
+                    if (!success) {
+                        errorLabel.set_text(_('Failed to save profile. Check for conflicts or limit reached.'));
+                        errorLabel.show();
+                        return;
+                    }
                 }
-
-                // Validate rules
-                const rulesValidation = RuleEvaluator.validateRules(rules);
-                if (!rulesValidation.valid) {
-                    errorLabel.set_text(rulesValidation.errors.join('\n'));
-                    errorLabel.show();
-                    return;
-                }
-
-                // Check for conflicts
-                const profiles = ProfileMatcher.getCustomProfiles(settings);
-                const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules};
-                const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
-                if (conflict) {
-                    errorLabel.set_text(_('Rule conflict with profile "%s": same conditions at same specificity').format(conflict.name));
-                    errorLabel.show();
-                    return;
-                }
-
-                // Save
-                let success;
-                if (isEdit) {
-                    success = ProfileMatcher.updateProfile(settings, existingProfile.id,
-                        {name, powerMode, batteryMode, forceDischarge, rules});
-                } else {
-                    success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, forceDischarge, rules);
-                }
-
-                if (!success) {
-                    errorLabel.set_text(_('Failed to save profile. Check for conflicts or limit reached.'));
-                    errorLabel.show();
-                    return;
-                }
+                dlg.close();
+            } catch (e) {
+                console.error(`Unified Power Manager: Profile dialog error: ${e.message}`);
+                errorLabel.set_text(_('An unexpected error occurred. Check logs for details.'));
+                errorLabel.show();
             }
-            dlg.close();
         });
 
         dialog.present();
@@ -916,9 +922,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         deleteButton.add_css_class('destructive-action');
 
         dialog.connect('response', (dialog, response) => {
-            if (response === Gtk.ResponseType.OK)
-                ProfileMatcher.deleteProfile(settings, profile.id);
-            dialog.close();
+            try {
+                if (response === Gtk.ResponseType.OK)
+                    ProfileMatcher.deleteProfile(settings, profile.id);
+                dialog.close();
+            } catch (e) {
+                console.error(`Unified Power Manager: Delete dialog error: ${e.message}`);
+                dialog.close();
+            }
         });
 
         dialog.present();
