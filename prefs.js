@@ -251,6 +251,21 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         fullGroup.add(fullEndRow);
 
+        // Reset Button
+        const fullResetRow = new Adw.ActionRow({
+            title: _('Reset to Defaults'),
+        });
+        const fullResetBtn = new Gtk.Button({
+            label: _('Reset'),
+            valign: Gtk.Align.CENTER,
+        });
+        fullResetBtn.connect('clicked', () => {
+            settings.set_int('threshold-full-start', 95);
+            settings.set_int('threshold-full-end', 100);
+        });
+        fullResetRow.add_suffix(fullResetBtn);
+        fullGroup.add(fullResetRow);
+
         // Balanced Mode Group
         const balancedGroup = new Adw.PreferencesGroup({
             title: _('Balanced Mode'),
@@ -318,6 +333,21 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         balancedGroup.add(balancedEndRow);
 
+        // Reset Button
+        const balancedResetRow = new Adw.ActionRow({
+            title: _('Reset to Defaults'),
+        });
+        const balancedResetBtn = new Gtk.Button({
+            label: _('Reset'),
+            valign: Gtk.Align.CENTER,
+        });
+        balancedResetBtn.connect('clicked', () => {
+            settings.set_int('threshold-balanced-start', 75);
+            settings.set_int('threshold-balanced-end', 80);
+        });
+        balancedResetRow.add_suffix(balancedResetBtn);
+        balancedGroup.add(balancedResetRow);
+
         // Max Lifespan Mode Group
         const lifespanGroup = new Adw.PreferencesGroup({
             title: _('Max Lifespan Mode'),
@@ -384,6 +414,21 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         lifespanStartRow.adjustment.upper = lifespanEndRow.adjustment.value - 1;
 
         lifespanGroup.add(lifespanEndRow);
+
+        // Reset Button
+        const lifespanResetRow = new Adw.ActionRow({
+            title: _('Reset to Defaults'),
+        });
+        const lifespanResetBtn = new Gtk.Button({
+            label: _('Reset'),
+            valign: Gtk.Align.CENTER,
+        });
+        lifespanResetBtn.connect('clicked', () => {
+            settings.set_int('threshold-lifespan-start', 55);
+            settings.set_int('threshold-lifespan-end', 60);
+        });
+        lifespanResetRow.add_suffix(lifespanResetBtn);
+        lifespanGroup.add(lifespanResetRow);
 
         // Profiles Page
         const profilesPage = new Adw.PreferencesPage({

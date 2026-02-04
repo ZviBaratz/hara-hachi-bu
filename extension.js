@@ -100,22 +100,38 @@ export default class UnifiedPowerManager extends Extension {
 
     _destroyPowerManager() {
         if (this._powerManager) {
-            this._powerManager.destroy();
+            try {
+                this._powerManager.destroy();
+            } catch (e) {
+                console.error(`Unified Power Manager: Error destroying PowerManager: ${e}`);
+            }
             this._powerManager = null;
         }
 
         if (this._stateManager) {
-            this._stateManager.destroy();
+            try {
+                this._stateManager.destroy();
+            } catch (e) {
+                console.error(`Unified Power Manager: Error destroying StateManager: ${e}`);
+            }
             this._stateManager = null;
         }
 
         if (this._batteryController) {
-            this._batteryController.destroy();
+            try {
+                this._batteryController.destroy();
+            } catch (e) {
+                console.error(`Unified Power Manager: Error destroying BatteryThresholdController: ${e}`);
+            }
             this._batteryController = null;
         }
 
         if (this._powerController) {
-            this._powerController.destroy();
+            try {
+                this._powerController.destroy();
+            } catch (e) {
+                console.error(`Unified Power Manager: Error destroying PowerProfileController: ${e}`);
+            }
             this._powerController = null;
         }
     }
