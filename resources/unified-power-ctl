@@ -19,7 +19,8 @@ log_action() {
 validate_sysfs_path() {
     local path="$1"
     # Ensure the path is strictly within the power_supply directory
-    if [[ ! "$path" =~ ^/sys/class/power_supply/BAT[0-9]+/[a-z_]+$ ]]; then
+    # Allow alphanumeric and underscores for battery names
+    if [[ ! "$path" =~ ^/sys/class/power_supply/[a-zA-Z0-9_]+/[a-z_]+$ ]]; then
         echo "Error: Forbidden path: $path" >&2
         exit "$EXIT_ERROR"
     fi
@@ -62,22 +63,41 @@ for arg in "$@"; do
     sanitize_input "$arg"
 done
 
-# Parse command format: BAT<N>_<ACTION> or FORCE_DISCHARGE_BAT<N>
-if [[ "$TOOLCMD" =~ ^BAT([0-9]+)_(.*)$ ]]; then
-    BAT_IDX="${BASH_REMATCH[1]}"
-    ACTION="${BASH_REMATCH[2]}"
-elif [[ "$TOOLCMD" =~ ^FORCE_DISCHARGE_BAT([0-9]+)$ ]]; then
-    BAT_IDX="${BASH_REMATCH[1]}"
+# Parse command format: <BATTERY_NAME>_<ACTION> or FORCE_DISCHARGE_<BATTERY_NAME>
+if [[ "$TOOLCMD" =~ ^FORCE_DISCHARGE_([a-zA-Z0-9_]+)$ ]]; then
+    BAT_NAME="${BASH_REMATCH[1]}"
     ACTION="FORCE_DISCHARGE"
+elif [[ "$TOOLCMD" =~ ^([a-zA-Z0-9_]+)_(.*)$ ]]; then
+    BAT_NAME="${BASH_REMATCH[1]}"
+    ACTION="${BASH_REMATCH[2]}"
 else
     echo "Error: Unknown Command: '$TOOLCMD'" >&2
     exit "$EXIT_ERROR"
 fi
 
 # Define paths dynamically based on battery index
-BAT_PATH="/sys/class/power_supply/BAT${BAT_IDX}"
-END_PATH="${BAT_PATH}/charge_control_end_threshold"
-START_PATH="${BAT_PATH}/charge_control_start_threshold"
+BAT_PATH="/sys/class/power_supply/${BAT_NAME}"
+
+# Probe for supported end threshold file
+if [ -f "${BAT_PATH}/charge_control_end_threshold" ]; then
+    END_PATH="${BAT_PATH}/charge_control_end_threshold"
+elif [ -f "${BAT_PATH}/stop_charge_thresh" ]; then
+    END_PATH="${BAT_PATH}/stop_charge_thresh"
+else
+    # Default fallback (will fail validation if file doesn't exist)
+    END_PATH="${BAT_PATH}/charge_control_end_threshold"
+fi
+
+# Probe for supported start threshold file
+if [ -f "${BAT_PATH}/charge_control_start_threshold" ]; then
+    START_PATH="${BAT_PATH}/charge_control_start_threshold"
+elif [ -f "${BAT_PATH}/start_charge_thresh" ]; then
+    START_PATH="${BAT_PATH}/start_charge_thresh"
+else
+    # Default fallback
+    START_PATH="${BAT_PATH}/charge_control_start_threshold"
+fi
+
 FORCE_DISCHARGE_PATH="${BAT_PATH}/charge_behaviour"
 
 case "$ACTION" in
@@ -86,7 +106,7 @@ case "$ACTION" in
         ARG1=$2
         validate_threshold "$ARG1"
         validate_sysfs_path "$END_PATH"
-        log_action "Setting BAT${BAT_IDX} end threshold to ${ARG1}"
+        log_action "Setting ${BAT_NAME} end threshold to ${ARG1}"
         echo "$ARG1" >"$END_PATH"
         ;;
     START)
@@ -94,7 +114,7 @@ case "$ACTION" in
         ARG1=$2
         validate_threshold "$ARG1"
         validate_sysfs_path "$START_PATH"
-        log_action "Setting BAT${BAT_IDX} start threshold to ${ARG1}"
+        log_action "Setting ${BAT_NAME} start threshold to ${ARG1}"
         echo "$ARG1" >"$START_PATH"
         ;;
     END_START)
@@ -105,7 +125,7 @@ case "$ACTION" in
         validate_threshold "$ARG2"
         validate_sysfs_path "$END_PATH"
         validate_sysfs_path "$START_PATH"
-        log_action "Setting BAT${BAT_IDX} thresholds: END=${ARG1}, START=${ARG2}"
+        log_action "Setting ${BAT_NAME} thresholds: END=${ARG1}, START=${ARG2}"
         # Write END first, then START (safe order for increasing range)
         echo "$ARG1" >"$END_PATH" && echo "$ARG2" >"$START_PATH"
         ;;
@@ -117,7 +137,7 @@ case "$ACTION" in
         validate_threshold "$ARG2"
         validate_sysfs_path "$START_PATH"
         validate_sysfs_path "$END_PATH"
-        log_action "Setting BAT${BAT_IDX} thresholds: START=${ARG2}, END=${ARG1}"
+        log_action "Setting ${BAT_NAME} thresholds: START=${ARG2}, END=${ARG1}"
         # Write START first, then END (safe order for decreasing range)
         echo "$ARG2" >"$START_PATH" && echo "$ARG1" >"$END_PATH"
         ;;
@@ -129,11 +149,11 @@ case "$ACTION" in
             exit "$EXIT_ERROR"
         fi
         validate_sysfs_path "$FORCE_DISCHARGE_PATH"
-        log_action "Setting BAT${BAT_IDX} force discharge to ${ARG1}"
+        log_action "Setting ${BAT_NAME} force discharge to ${ARG1}"
         echo "$ARG1" >"$FORCE_DISCHARGE_PATH"
         ;;
     *)
-        echo "Error: Unknown Action: '$ACTION' for BAT$BAT_IDX" >&2
+        echo "Error: Unknown Action: '$ACTION' for $BAT_NAME" >&2
         exit "$EXIT_ERROR"
         ;;
 esac
