@@ -13,6 +13,7 @@ import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/ex
 import * as ProfileMatcher from './lib/profileMatcher.js';
 import {PARAMETERS, OPERATORS} from './lib/parameterDetector.js';
 import * as RuleEvaluator from './lib/ruleEvaluator.js';
+import * as Constants from './lib/constants.js';
 
 const _ = s => Gettext.dgettext('unified-power-manager', s);
 
@@ -692,40 +693,28 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Note: builtin profiles can have their names edited (ID remains stable)
 
         // Power mode dropdown
-        const powerModes = ['performance', 'balanced', 'power-saver'];
-        const powerModeLabels = {
-            'performance': _('Performance'),
-            'balanced': _('Balanced'),
-            'power-saver': _('Power Saver'),
-        };
         const powerCombo = new Gtk.ComboBoxText();
-        powerModes.forEach(mode => powerCombo.append(mode, powerModeLabels[mode]));
+        Object.entries(Constants.POWER_MODES).forEach(([mode, config]) => {
+            powerCombo.append(mode, _(config.label));
+        });
         powerCombo.set_active_id(isEdit ? existingProfile.powerMode : 'balanced');
         content.append(new Gtk.Label({label: _('Power Mode'), halign: Gtk.Align.START, margin_top: 6}));
         content.append(powerCombo);
 
         // Battery mode dropdown
-        const batteryModes = ['full-capacity', 'balanced', 'max-lifespan'];
-        const batteryModeLabels = {
-            'full-capacity': _('Full Capacity'),
-            'balanced': _('Balanced'),
-            'max-lifespan': _('Max Lifespan'),
-        };
         const batteryCombo = new Gtk.ComboBoxText();
-        batteryModes.forEach(mode => batteryCombo.append(mode, batteryModeLabels[mode]));
+        Object.entries(Constants.BATTERY_MODES).forEach(([mode, config]) => {
+            batteryCombo.append(mode, _(config.label));
+        });
         batteryCombo.set_active_id(isEdit ? existingProfile.batteryMode : 'balanced');
         content.append(new Gtk.Label({label: _('Battery Mode'), halign: Gtk.Align.START, margin_top: 6}));
         content.append(batteryCombo);
 
         // Force discharge dropdown
-        const forceDischargeOptions = ['unspecified', 'on', 'off'];
-        const forceDischargeLabels = {
-            'unspecified': _('Unspecified (no change)'),
-            'on': _('On'),
-            'off': _('Off'),
-        };
         const forceDischargeCombo = new Gtk.ComboBoxText();
-        forceDischargeOptions.forEach(opt => forceDischargeCombo.append(opt, forceDischargeLabels[opt]));
+        Object.entries(Constants.FORCE_DISCHARGE_OPTIONS).forEach(([opt, config]) => {
+            forceDischargeCombo.append(opt, _(config.label));
+        });
         forceDischargeCombo.set_active_id(isEdit && existingProfile.forceDischarge ? existingProfile.forceDischarge : 'unspecified');
         content.append(new Gtk.Label({label: _('Force Discharge'), halign: Gtk.Align.START, margin_top: 6}));
         content.append(forceDischargeCombo);
