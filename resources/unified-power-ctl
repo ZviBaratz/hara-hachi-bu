@@ -26,9 +26,9 @@ validate_sysfs_path() {
     [[ -f "$path" ]] || { echo "Error: Path does not exist or is not a file: $path" >&2; exit "$EXIT_ERROR"; }
 }
 
-# Sanitize input values
+# Sanitize input values - reject path traversal and shell metacharacters
 sanitize_input() {
-    if [[ "$1" =~ [/\.\.] ]]; then
+    if [[ "$1" =~ \.\. ]] || [[ "$1" =~ [/\;\|\&\$\`\\] ]]; then
         echo "Error: Invalid characters in input." >&2
         exit "$EXIT_ERROR"
     fi

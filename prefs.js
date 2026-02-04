@@ -77,7 +77,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const settings = this.getSettings();
 
         // Run migration
-        ProfileMatcher.migrateProfilesToCustomFormat(settings);
+        ProfileMatcher.runMigrations(settings);
 
         // General Settings Page
         const generalPage = new Adw.PreferencesPage({
