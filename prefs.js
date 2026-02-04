@@ -209,6 +209,11 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         fullStartRow.adjustment.connect('value-changed', () => {
             const value = Math.round(fullStartRow.adjustment.value);
             fullStartRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
+            // Ensure end threshold is always higher than start
+            if (fullEndRow.adjustment.value <= value) {
+                fullEndRow.adjustment.value = value + 1;
+            }
+            fullEndRow.adjustment.lower = value + 1;
         });
 
         fullGroup.add(fullStartRow);
@@ -232,7 +237,16 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         fullEndRow.adjustment.connect('value-changed', () => {
             const value = Math.round(fullEndRow.adjustment.value);
             fullEndRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
+            // Ensure start threshold is always lower than end
+            if (fullStartRow.adjustment.value >= value) {
+                fullStartRow.adjustment.value = value - 1;
+            }
+            fullStartRow.adjustment.upper = value - 1;
         });
+        
+        // Initialize dynamic bounds
+        fullEndRow.adjustment.lower = fullStartRow.adjustment.value + 1;
+        fullStartRow.adjustment.upper = fullEndRow.adjustment.value - 1;
 
         fullGroup.add(fullEndRow);
 
@@ -262,6 +276,11 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         balancedStartRow.adjustment.connect('value-changed', () => {
             const value = Math.round(balancedStartRow.adjustment.value);
             balancedStartRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
+            // Ensure end threshold is always higher than start
+            if (balancedEndRow.adjustment.value <= value) {
+                balancedEndRow.adjustment.value = value + 1;
+            }
+            balancedEndRow.adjustment.lower = value + 1;
         });
 
         balancedGroup.add(balancedStartRow);
@@ -285,7 +304,16 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         balancedEndRow.adjustment.connect('value-changed', () => {
             const value = Math.round(balancedEndRow.adjustment.value);
             balancedEndRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
+            // Ensure start threshold is always lower than end
+            if (balancedStartRow.adjustment.value >= value) {
+                balancedStartRow.adjustment.value = value - 1;
+            }
+            balancedStartRow.adjustment.upper = value - 1;
         });
+
+        // Initialize dynamic bounds
+        balancedEndRow.adjustment.lower = balancedStartRow.adjustment.value + 1;
+        balancedStartRow.adjustment.upper = balancedEndRow.adjustment.value - 1;
 
         balancedGroup.add(balancedEndRow);
 
@@ -315,6 +343,11 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         lifespanStartRow.adjustment.connect('value-changed', () => {
             const value = Math.round(lifespanStartRow.adjustment.value);
             lifespanStartRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
+            // Ensure end threshold is always higher than start
+            if (lifespanEndRow.adjustment.value <= value) {
+                lifespanEndRow.adjustment.value = value + 1;
+            }
+            lifespanEndRow.adjustment.lower = value + 1;
         });
 
         lifespanGroup.add(lifespanStartRow);
@@ -338,7 +371,16 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         lifespanEndRow.adjustment.connect('value-changed', () => {
             const value = Math.round(lifespanEndRow.adjustment.value);
             lifespanEndRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
+            // Ensure start threshold is always lower than end
+            if (lifespanStartRow.adjustment.value >= value) {
+                lifespanStartRow.adjustment.value = value - 1;
+            }
+            lifespanStartRow.adjustment.upper = value - 1;
         });
+        
+        // Initialize dynamic bounds
+        lifespanEndRow.adjustment.lower = lifespanStartRow.adjustment.value + 1;
+        lifespanStartRow.adjustment.upper = lifespanEndRow.adjustment.value - 1;
 
         lifespanGroup.add(lifespanEndRow);
 
