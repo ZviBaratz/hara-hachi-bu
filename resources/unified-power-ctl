@@ -4,22 +4,10 @@ set -eu
 # unified-power-ctl - Helper script for Unified Power Manager extension
 # Handles privileged operations: setting battery thresholds, force-discharge
 
-BAT0_END_PATH='/sys/class/power_supply/BAT0/charge_control_end_threshold'
-BAT0_START_PATH='/sys/class/power_supply/BAT0/charge_control_start_threshold'
-BAT1_END_PATH='/sys/class/power_supply/BAT1/charge_control_end_threshold'
-BAT1_START_PATH='/sys/class/power_supply/BAT1/charge_control_start_threshold'
-BAT2_END_PATH='/sys/class/power_supply/BAT2/charge_control_end_threshold'
-BAT2_START_PATH='/sys/class/power_supply/BAT2/charge_control_start_threshold'
-BAT3_END_PATH='/sys/class/power_supply/BAT3/charge_control_end_threshold'
-BAT3_START_PATH='/sys/class/power_supply/BAT3/charge_control_start_threshold'
-BAT0_FORCE_DISCHARGE_PATH='/sys/class/power_supply/BAT0/charge_behaviour'
-BAT1_FORCE_DISCHARGE_PATH='/sys/class/power_supply/BAT1/charge_behaviour'
-BAT2_FORCE_DISCHARGE_PATH='/sys/class/power_supply/BAT2/charge_behaviour'
-BAT3_FORCE_DISCHARGE_PATH='/sys/class/power_supply/BAT3/charge_behaviour'
-
 EXIT_SUCCESS=0
 EXIT_ERROR=1
-EXIT_NEEDS_UPDATE=2
+
+# --- Validation Functions ---
 
 # Validate that a sysfs path exists before writing
 validate_sysfs_path() {
@@ -35,10 +23,6 @@ check_args() {
         exit "$EXIT_ERROR"
     fi
 }
-
-TOOLCMD=${1:-}
-ARG1=${2:-}
-ARG2=${3:-}
 
 # Helper validation function
 is_int() {
@@ -60,187 +44,74 @@ validate_threshold() {
     fi
 }
 
-case "$TOOLCMD" in
-    BAT0_END)
+# --- Command Parsing ---
+
+TOOLCMD=${1:-}
+ARG1=${2:-}
+ARG2=${3:-}
+
+# Parse command format: BAT<N>_<ACTION> or FORCE_DISCHARGE_BAT<N>
+if [[ "$TOOLCMD" =~ ^BAT([0-9])_(.*)$ ]]; then
+    BAT_IDX="${BASH_REMATCH[1]}"
+    ACTION="${BASH_REMATCH[2]}"
+elif [[ "$TOOLCMD" =~ ^FORCE_DISCHARGE_BAT([0-9])$ ]]; then
+    BAT_IDX="${BASH_REMATCH[1]}"
+    ACTION="FORCE_DISCHARGE"
+else
+    echo "Error: Unknown Command: '$TOOLCMD'"
+    exit "$EXIT_ERROR"
+fi
+
+# Define paths dynamically based on battery index
+BAT_PATH="/sys/class/power_supply/BAT${BAT_IDX}"
+END_PATH="${BAT_PATH}/charge_control_end_threshold"
+START_PATH="${BAT_PATH}/charge_control_start_threshold"
+FORCE_DISCHARGE_PATH="${BAT_PATH}/charge_behaviour"
+
+case "$ACTION" in
+    END)
         check_args 1 "$@"
         validate_threshold "$ARG1"
-        validate_sysfs_path "$BAT0_END_PATH"
-        echo "$ARG1" >"$BAT0_END_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        validate_sysfs_path "$END_PATH"
+        echo "$ARG1" >"$END_PATH"
         ;;
-    BAT0_START)
+    START)
         check_args 1 "$@"
         validate_threshold "$ARG1"
-        validate_sysfs_path "$BAT0_START_PATH"
-        echo "$ARG1" >"$BAT0_START_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        validate_sysfs_path "$START_PATH"
+        echo "$ARG1" >"$START_PATH"
         ;;
-    BAT0_END_START)
+    END_START)
         check_args 2 "$@"
         validate_threshold "$ARG1"
         validate_threshold "$ARG2"
-        validate_sysfs_path "$BAT0_END_PATH"
-        validate_sysfs_path "$BAT0_START_PATH"
-        # Write END first, then START (for increasing thresholds)
-        echo "$ARG1" >"$BAT0_END_PATH" &&
-            echo "$ARG2" >"$BAT0_START_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        validate_sysfs_path "$END_PATH"
+        validate_sysfs_path "$START_PATH"
+        # Write END first, then START (safe order for increasing range)
+        echo "$ARG1" >"$END_PATH" && echo "$ARG2" >"$START_PATH"
         ;;
-    BAT0_START_END)
+    START_END)
         check_args 2 "$@"
         validate_threshold "$ARG1"
         validate_threshold "$ARG2"
-        validate_sysfs_path "$BAT0_START_PATH"
-        validate_sysfs_path "$BAT0_END_PATH"
-        # Write START first, then END (for decreasing thresholds)
-        echo "$ARG2" >"$BAT0_START_PATH" &&
-            echo "$ARG1" >"$BAT0_END_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        validate_sysfs_path "$START_PATH"
+        validate_sysfs_path "$END_PATH"
+        # Write START first, then END (safe order for decreasing range)
+        echo "$ARG2" >"$START_PATH" && echo "$ARG1" >"$END_PATH"
         ;;
-    BAT1_END_START)
-        check_args 2 "$@"
-        validate_threshold "$ARG1"
-        validate_threshold "$ARG2"
-        validate_sysfs_path "$BAT1_END_PATH"
-        validate_sysfs_path "$BAT1_START_PATH"
-        echo "$ARG1" >"$BAT1_END_PATH" &&
-            echo "$ARG2" >"$BAT1_START_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    BAT1_START_END)
-        check_args 2 "$@"
-        validate_threshold "$ARG1"
-        validate_threshold "$ARG2"
-        validate_sysfs_path "$BAT1_START_PATH"
-        validate_sysfs_path "$BAT1_END_PATH"
-        echo "$ARG2" >"$BAT1_START_PATH" &&
-            echo "$ARG1" >"$BAT1_END_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    BAT1_END)
-        check_args 1 "$@"
-        validate_threshold "$ARG1"
-        validate_sysfs_path "$BAT1_END_PATH"
-        echo "$ARG1" >"$BAT1_END_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    BAT1_START)
-        check_args 1 "$@"
-        validate_threshold "$ARG1"
-        validate_sysfs_path "$BAT1_START_PATH"
-        echo "$ARG1" >"$BAT1_START_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    FORCE_DISCHARGE_BAT0)
+    FORCE_DISCHARGE)
         check_args 1 "$@"
         if [[ "$ARG1" != "force-discharge" && "$ARG1" != "auto" ]]; then
-            echo "Error: Invalid force discharge mode."
+            echo "Error: Invalid force discharge mode. Allowed: 'force-discharge', 'auto'."
             exit "$EXIT_ERROR"
         fi
-        validate_sysfs_path "$BAT0_FORCE_DISCHARGE_PATH"
-        echo "$ARG1" >"$BAT0_FORCE_DISCHARGE_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    FORCE_DISCHARGE_BAT1)
-        check_args 1 "$@"
-        if [[ "$ARG1" != "force-discharge" && "$ARG1" != "auto" ]]; then
-            echo "Error: Invalid force discharge mode."
-            exit "$EXIT_ERROR"
-        fi
-        validate_sysfs_path "$BAT1_FORCE_DISCHARGE_PATH"
-        echo "$ARG1" >"$BAT1_FORCE_DISCHARGE_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    BAT2_END)
-        check_args 1 "$@"
-        validate_threshold "$ARG1"
-        validate_sysfs_path "$BAT2_END_PATH"
-        echo "$ARG1" >"$BAT2_END_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    BAT2_START)
-        check_args 1 "$@"
-        validate_threshold "$ARG1"
-        validate_sysfs_path "$BAT2_START_PATH"
-        echo "$ARG1" >"$BAT2_START_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    BAT2_END_START)
-        check_args 2 "$@"
-        validate_threshold "$ARG1"
-        validate_threshold "$ARG2"
-        validate_sysfs_path "$BAT2_END_PATH"
-        validate_sysfs_path "$BAT2_START_PATH"
-        echo "$ARG1" >"$BAT2_END_PATH" &&
-            echo "$ARG2" >"$BAT2_START_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    BAT2_START_END)
-        check_args 2 "$@"
-        validate_threshold "$ARG1"
-        validate_threshold "$ARG2"
-        validate_sysfs_path "$BAT2_START_PATH"
-        validate_sysfs_path "$BAT2_END_PATH"
-        echo "$ARG2" >"$BAT2_START_PATH" &&
-            echo "$ARG1" >"$BAT2_END_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    FORCE_DISCHARGE_BAT2)
-        check_args 1 "$@"
-        if [[ "$ARG1" != "force-discharge" && "$ARG1" != "auto" ]]; then
-            echo "Error: Invalid force discharge mode."
-            exit "$EXIT_ERROR"
-        fi
-        validate_sysfs_path "$BAT2_FORCE_DISCHARGE_PATH"
-        echo "$ARG1" >"$BAT2_FORCE_DISCHARGE_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    BAT3_END)
-        check_args 1 "$@"
-        validate_threshold "$ARG1"
-        validate_sysfs_path "$BAT3_END_PATH"
-        echo "$ARG1" >"$BAT3_END_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    BAT3_START)
-        check_args 1 "$@"
-        validate_threshold "$ARG1"
-        validate_sysfs_path "$BAT3_START_PATH"
-        echo "$ARG1" >"$BAT3_START_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    BAT3_END_START)
-        check_args 2 "$@"
-        validate_threshold "$ARG1"
-        validate_threshold "$ARG2"
-        validate_sysfs_path "$BAT3_END_PATH"
-        validate_sysfs_path "$BAT3_START_PATH"
-        echo "$ARG1" >"$BAT3_END_PATH" &&
-            echo "$ARG2" >"$BAT3_START_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    BAT3_START_END)
-        check_args 2 "$@"
-        validate_threshold "$ARG1"
-        validate_threshold "$ARG2"
-        validate_sysfs_path "$BAT3_START_PATH"
-        validate_sysfs_path "$BAT3_END_PATH"
-        echo "$ARG2" >"$BAT3_START_PATH" &&
-            echo "$ARG1" >"$BAT3_END_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
-        ;;
-    FORCE_DISCHARGE_BAT3)
-        check_args 1 "$@"
-        if [[ "$ARG1" != "force-discharge" && "$ARG1" != "auto" ]]; then
-            echo "Error: Invalid force discharge mode."
-            exit "$EXIT_ERROR"
-        fi
-        validate_sysfs_path "$BAT3_FORCE_DISCHARGE_PATH"
-        echo "$ARG1" >"$BAT3_FORCE_DISCHARGE_PATH" &&
-            exit "$EXIT_SUCCESS" || exit "$EXIT_ERROR"
+        validate_sysfs_path "$FORCE_DISCHARGE_PATH"
+        echo "$ARG1" >"$FORCE_DISCHARGE_PATH"
         ;;
     *)
-        echo "Unknown Command: '$TOOLCMD'"
+        echo "Error: Unknown Action: '$ACTION' for BAT$BAT_IDX"
         exit "$EXIT_ERROR"
         ;;
 esac
+
+exit "$EXIT_SUCCESS"
