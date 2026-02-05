@@ -23,6 +23,7 @@ export default class UnifiedPowerManager extends Extension {
     enable() {
         this._settings = this.getSettings();
         this._initializing = false;
+        this._pendingDestroy = false;
         this._powerManager = null;
         this._uiPatcher = null;
         this._hideBuiltinId = null;
@@ -54,9 +55,11 @@ export default class UnifiedPowerManager extends Extension {
             // Initialize controllers
             this._powerController = new PowerProfileController();
             await this._powerController.initialize();
+            if (this._pendingDestroy) return;
 
             this._batteryController = new BatteryThresholdController(this._settings);
             await this._batteryController.initialize(this);
+            if (this._pendingDestroy) return;
 
             // Initialize state manager
             this._stateManager = new StateManager(
@@ -65,6 +68,7 @@ export default class UnifiedPowerManager extends Extension {
                 this._batteryController
             );
             await this._stateManager.initialize();
+            if (this._pendingDestroy) return;
 
             // Create UI
             this._powerManager = new PowerManagerIndicator(
@@ -95,10 +99,21 @@ export default class UnifiedPowerManager extends Extension {
             Main.notify(_('Unified Power Manager'), _('Failed to initialize. Check logs for details.'));
         } finally {
             this._initializing = false;
+            // If destroy was requested during initialization, run it now
+            if (this._pendingDestroy) {
+                this._pendingDestroy = false;
+                this._destroyPowerManager();
+            }
         }
     }
 
     _destroyPowerManager() {
+        // If initialization is in progress, defer destruction
+        if (this._initializing) {
+            this._pendingDestroy = true;
+            return;
+        }
+
         if (this._powerManager) {
             try {
                 this._powerManager.destroy();
