@@ -86,6 +86,7 @@ export default class UnifiedPowerManager extends Extension {
 
             // Watch for setting changes
             this._hideBuiltinId = this._settings.connect('changed::hide-builtin-power-profile', () => {
+                if (!this._uiPatcher) return;
                 if (this._settings.get_boolean('hide-builtin-power-profile'))
                     this._uiPatcher.hideBuiltinPowerProfile();
                 else
@@ -112,6 +113,17 @@ export default class UnifiedPowerManager extends Extension {
         if (this._initializing) {
             this._pendingDestroy = true;
             return;
+        }
+
+        // Disconnect hide-builtin setting watcher (prevent accumulation on lock/unlock)
+        if (this._hideBuiltinId) {
+            this._settings.disconnect(this._hideBuiltinId);
+            this._hideBuiltinId = null;
+        }
+
+        if (this._uiPatcher) {
+            this._uiPatcher.destroy();
+            this._uiPatcher = null;
         }
 
         if (this._powerManager) {
