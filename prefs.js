@@ -21,8 +21,10 @@ const _ = s => Gettext.dgettext('unified-power-manager', s);
 const ProfileRow = GObject.registerClass(
 class ProfileRow extends Adw.ActionRow {
     _init(profile, onEdit, onDelete) {
-        // Build subtitle with mode info and rule summary
-        let subtitle = `${profile.powerMode} + ${profile.batteryMode}`;
+        // Build subtitle with human-readable mode labels
+        const powerLabel = Constants.POWER_MODES[profile.powerMode]?.label ?? profile.powerMode;
+        const batteryLabel = Constants.BATTERY_MODES[profile.batteryMode]?.label ?? profile.batteryMode;
+        let subtitle = `${powerLabel} + ${batteryLabel}`;
         if (profile.forceDischarge && profile.forceDischarge !== 'unspecified') {
             subtitle += ` · FD: ${profile.forceDischarge}`;
         }
@@ -504,9 +506,10 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const aboutGroup = new Adw.PreferencesGroup();
         aboutPage.add(aboutGroup);
 
+        const version = this.metadata.version ?? '?';
         const aboutRow = new Adw.ActionRow({
             title: _('Unified Power Manager'),
-            subtitle: _('Version 1.0\nManage power profiles and battery charging modes'),
+            subtitle: _('Version %s\nManage power profiles and battery charging modes').format(version),
         });
         aboutGroup.add(aboutRow);
 
@@ -557,25 +560,21 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         polkitRow.add_suffix(polkitIcon);
         statusGroup.add(polkitRow);
 
-        // Check Battery Threshold Support
-        const bat0End = this._checkFileExists('/sys/class/power_supply/BAT0/charge_control_end_threshold');
-        const bat0Start = this._checkFileExists('/sys/class/power_supply/BAT0/charge_control_start_threshold');
-        const bat1End = this._checkFileExists('/sys/class/power_supply/BAT1/charge_control_end_threshold');
-        const bat1Start = this._checkFileExists('/sys/class/power_supply/BAT1/charge_control_start_threshold');
-        
+        // Check Battery Threshold Support (BAT0-BAT3)
         let statusSubtitle = _('No compatible battery detected');
         let iconName = 'dialog-warning-symbolic';
 
-        if (bat0End || bat1End) {
-            const bat = bat0End ? 'BAT0' : 'BAT1';
-            const hasStart = bat0End ? bat0Start : bat1Start;
-            
-            if (hasStart) {
-                statusSubtitle = _('Compatible battery detected (%s) - Full threshold control').format(bat);
+        for (const bat of ['BAT0', 'BAT1', 'BAT2', 'BAT3']) {
+            const batEnd = this._checkFileExists(`/sys/class/power_supply/${bat}/charge_control_end_threshold`);
+            if (batEnd) {
+                const batStart = this._checkFileExists(`/sys/class/power_supply/${bat}/charge_control_start_threshold`);
+                if (batStart) {
+                    statusSubtitle = _('Compatible battery detected (%s) - Full threshold control').format(bat);
+                } else {
+                    statusSubtitle = _('Compatible battery detected (%s) - End threshold only (Start threshold ignored)').format(bat);
+                }
                 iconName = 'emblem-ok-symbolic';
-            } else {
-                statusSubtitle = _('Compatible battery detected (%s) - End threshold only (Start threshold ignored)').format(bat);
-                iconName = 'emblem-ok-symbolic';
+                break;
             }
         }
 
@@ -969,15 +968,11 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
     _showDeleteDialog(window, settings, profile) {
         // Check if this profile is currently active
-        const currentProfileId = settings.get_string('current-power-mode') + '+' +
-            settings.get_string('current-battery-mode');
-        const profileConfig = `${profile.powerMode}+${profile.batteryMode}`;
-        const isActive = currentProfileId === profileConfig ||
-            ProfileMatcher.detectProfile(
-                settings.get_string('current-power-mode'),
-                settings.get_string('current-battery-mode'),
-                settings
-            ) === profile.id;
+        const isActive = ProfileMatcher.detectProfile(
+            settings.get_string('current-power-mode'),
+            settings.get_string('current-battery-mode'),
+            settings
+        ) === profile.id;
 
         let secondaryText = _('This action cannot be undone.');
         if (isActive) {
