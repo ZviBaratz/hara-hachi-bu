@@ -11,6 +11,10 @@ OUTPUT_FILE="${SCRIPT_DIR}/${EXTENSION_UUID}.zip"
 # Remove existing package
 rm -f "$OUTPUT_FILE"
 
+# Compile schemas so manual installs work without glib-compile-schemas
+echo "Compiling schemas..."
+glib-compile-schemas schemas/
+
 # Create zip excluding development files and helper scripts
 # Note: resources/ contains helper scripts that require manual installation
 cd "$SCRIPT_DIR"
@@ -22,6 +26,7 @@ zip -r "$OUTPUT_FILE" \
     LICENSE \
     README.md \
     schemas/org.gnome.shell.extensions.unified-power-manager.gschema.xml \
+    schemas/gschemas.compiled \
     icons/ \
     lib/ \
     resources/ \
