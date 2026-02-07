@@ -215,9 +215,9 @@ Battery threshold changes must be written in the correct order to avoid kernel e
 - Prevents panel operations during locked state
 
 **Profile Migration**
-- On first load, migrateProfilesToCustomFormat converts old profile-docked/profile-travel settings
-- New format: JSON array in 'custom-profiles' with {id, name, powerMode, batteryMode, icon, builtin}
+- Profiles stored as JSON array in 'custom-profiles' with {id, name, powerMode, batteryMode, forceDischarge, rules, icon, builtin}
 - Builtin profiles (docked, travel) cannot be deleted, only modified
+- Migration v2: ensures all profiles have `rules: []` and `forceDischarge: 'unspecified'` fields
 
 **Async Safety Pattern**
 Controllers with async operations implement a `_destroyed` flag to prevent callbacks from executing on destroyed objects:
@@ -274,7 +274,7 @@ Implemented in:
 All controllers must properly clean up resources in their `destroy()` methods:
 
 ✓ **Timeouts** - Remove with `GLib.Source.remove(timeoutId)` before null
-- StateManager: `_initialRuleEvalTimeout`, `_ruleEvaluationTimeout`, `_displayEventTimeout`
+- StateManager: `_initialRuleEvalTimeout`, `_ruleEvaluationTimeout`
 - QuickSettingsPanel: `_clipboardFeedbackTimeoutId`
 - BatteryThresholdController: `_forceDischargeDisableTimeout`, `_autoEnableTimeout`
 - ParameterDetector: `_debounceTimeoutId`
@@ -322,6 +322,28 @@ Key settings:
 **Force Discharge**: Requires charge_behaviour support for the detected battery (typically ThinkPad)
 
 ## Recent Improvements
+
+### Pre-Release Code Quality Review
+
+**Rule Validation**
+- `validateCondition` now checks that rule parameters exist in `PARAMETERS` and values are valid
+- Unknown parameters or invalid values are rejected with descriptive error messages
+
+**Profile Data Integrity**
+- `validateProfile` no longer deletes entire profiles when rules are invalid; instead strips invalid rules and logs warnings
+- `getCustomProfiles` logs warnings when profiles are dropped due to missing required fields
+- `getThresholdsForMode` validates `start < end` and falls back to defaults if violated
+
+**Legacy Code Removal**
+- Removed 7 legacy schema settings: `profile-docked`, `profile-travel`, `docking-detection-enabled`, `docked-profile-id`, `undocked-profile-id`, `power-source-detection-enabled`, `ac-profile-id`, `battery-profile-id`
+- Removed v0→v1 migration code (`_migrateProfilesToCustomFormat`)
+- Removed legacy feature-flag migration from `_migrateToRuleBasedProfiles`
+- Schema `migration-version` default set to 2
+
+**Defense-in-Depth**
+- Added builtin profile delete guard in prefs UI
+- Auto-switch notifications throttled to once per 10 seconds
+- `_isLoading` explicitly initialized in `PowerManagerToggle` constructor
 
 ### Async Safety and Code Cleanup (Commit d399886)
 

@@ -967,6 +967,9 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
     }
 
     _showDeleteDialog(window, settings, profile) {
+        if (profile.builtin)
+            return;
+
         // Check if this profile is currently active
         const isActive = ProfileMatcher.detectProfile(
             settings.get_string('current-power-mode'),

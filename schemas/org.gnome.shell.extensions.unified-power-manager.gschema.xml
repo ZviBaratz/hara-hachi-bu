@@ -145,62 +145,11 @@
       <description>Stop charging threshold for max lifespan mode</description>
     </key>
 
-    <!-- Profile Definitions -->
-    <key name="profile-docked" type="s">
-      <default>'{"powerMode":"performance","batteryMode":"max-lifespan"}'</default>
-      <summary>Docked profile configuration</summary>
-      <description>JSON configuration for the docked profile</description>
-    </key>
-
-    <key name="profile-travel" type="s">
-      <default>'{"powerMode":"balanced","batteryMode":"full-capacity"}'</default>
-      <summary>Travel profile configuration</summary>
-      <description>JSON configuration for the travel profile</description>
-    </key>
-
     <!-- Migration Tracking -->
     <key name="migration-version" type="i">
-      <default>0</default>
+      <default>2</default>
       <summary>Migration version</summary>
       <description>Internal tracking of completed data migrations.</description>
-    </key>
-
-    <!-- Docking Detection -->
-    <key name="docking-detection-enabled" type="b">
-      <default>false</default>
-      <summary>Enable automatic profile switching on docking</summary>
-      <description>Automatically switch profiles when external displays are connected or disconnected</description>
-    </key>
-
-    <key name="docked-profile-id" type="s">
-      <default>'docked'</default>
-      <summary>Profile to use when docked</summary>
-      <description>Profile ID to switch to when external display is connected</description>
-    </key>
-
-    <key name="undocked-profile-id" type="s">
-      <default>'travel'</default>
-      <summary>Profile to use when undocked</summary>
-      <description>Profile ID to switch to when all external displays are disconnected</description>
-    </key>
-
-    <!-- Power Source Detection -->
-    <key name="power-source-detection-enabled" type="b">
-      <default>false</default>
-      <summary>Enable automatic profile switching on power source change</summary>
-      <description>Automatically switch profiles when AC adapter is plugged in or removed</description>
-    </key>
-
-    <key name="ac-profile-id" type="s">
-      <default>'docked'</default>
-      <summary>Profile to use on AC power</summary>
-      <description>Profile ID to switch to when connected to AC power</description>
-    </key>
-
-    <key name="battery-profile-id" type="s">
-      <default>'travel'</default>
-      <summary>Profile to use on battery power</summary>
-      <description>Profile ID to switch to when running on battery power</description>
     </key>
 
   </schema>
