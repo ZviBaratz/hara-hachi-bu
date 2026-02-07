@@ -58,7 +58,7 @@ class ProfileRow extends Adw.ActionRow {
         const deleteButton = new Gtk.Button({
             icon_name: 'user-trash-symbolic',
             valign: Gtk.Align.CENTER,
-            css_classes: ['flat', 'destructive-action'],
+            css_classes: ['flat'],
         });
         deleteButton.connect('clicked', () => onDelete(profile));
         this.add_suffix(deleteButton);
