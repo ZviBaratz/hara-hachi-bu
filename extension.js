@@ -92,6 +92,16 @@ export default class UnifiedPowerManager extends Extension {
                     this._uiPatcher.showBuiltinPowerProfile();
             });
 
+            // Show one-time notification if helper script is missing
+            if (this._stateManager.batteryNeedsHelper &&
+                !this._settings.get_boolean('helper-notification-shown')) {
+                this._settings.set_boolean('helper-notification-shown', true);
+                Main.notify(
+                    _('Unified Power Manager'),
+                    _('Battery threshold control requires setup. Open Quick Settings \u2192 Power for instructions.')
+                );
+            }
+
             console.log('Unified Power Manager: Extension initialized successfully');
         } catch (e) {
             console.error(`Unified Power Manager: Failed to initialize: ${e}`);

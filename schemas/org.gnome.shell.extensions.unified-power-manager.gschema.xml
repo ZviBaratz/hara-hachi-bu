@@ -145,6 +145,13 @@
       <description>Stop charging threshold for max lifespan mode</description>
     </key>
 
+    <!-- One-Time Notification Flags -->
+    <key name="helper-notification-shown" type="b">
+      <default>false</default>
+      <summary>Helper notification shown</summary>
+      <description>Whether the one-time helper script installation notification has been shown</description>
+    </key>
+
     <!-- Migration Tracking -->
     <key name="migration-version" type="i">
       <default>2</default>
