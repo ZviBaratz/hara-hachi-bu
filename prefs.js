@@ -34,8 +34,8 @@ class ProfileRow extends Adw.ActionRow {
             subtitle: subtitle,
         });
 
-        // Add "auto" badge if profile has rules
-        if (ProfileMatcher.hasAutoRules(profile)) {
+        // Add "auto" badge if profile is auto-managed
+        if (ProfileMatcher.isAutoManaged(profile)) {
             const autoBadge = new Gtk.Label({
                 label: _('Auto'),
                 css_classes: ['accent', 'caption'],
@@ -54,24 +54,14 @@ class ProfileRow extends Adw.ActionRow {
         editButton.connect('clicked', () => onEdit(profile));
         this.add_suffix(editButton);
 
-        // Delete button (only for non-builtin)
-        if (!profile.builtin) {
-            const deleteButton = new Gtk.Button({
-                icon_name: 'user-trash-symbolic',
-                valign: Gtk.Align.CENTER,
-                css_classes: ['flat', 'destructive-action'],
-            });
-            deleteButton.connect('clicked', () => onDelete(profile));
-            this.add_suffix(deleteButton);
-        } else {
-            // Builtin badge
-            const badge = new Gtk.Label({
-                label: _('Default'),
-                css_classes: ['dim-label', 'caption'],
-                margin_start: 6,
-            });
-            this.add_suffix(badge);
-        }
+        // Delete button
+        const deleteButton = new Gtk.Button({
+            icon_name: 'user-trash-symbolic',
+            valign: Gtk.Align.CENTER,
+            css_classes: ['flat', 'destructive-action'],
+        });
+        deleteButton.connect('clicked', () => onDelete(profile));
+        this.add_suffix(deleteButton);
     }
 });
 
@@ -766,11 +756,38 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Separator
         content.append(new Gtk.Separator({margin_top: 12, margin_bottom: 6}));
 
+        // Auto-activate toggle
+        const autoManagedBox = new Gtk.Box({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            spacing: 12,
+            margin_top: 6,
+        });
+        autoManagedBox.append(new Gtk.Label({
+            label: _('Auto-activate'),
+            halign: Gtk.Align.START,
+            hexpand: true,
+        }));
+        const autoManagedSwitch = new Gtk.Switch({
+            active: isEdit ? !!existingProfile.autoManaged : false,
+            valign: Gtk.Align.CENTER,
+        });
+        autoManagedBox.append(autoManagedSwitch);
+        content.append(autoManagedBox);
+
+        const autoManagedHint = new Gtk.Label({
+            label: _('When enabled, profile activates automatically when all conditions match.'),
+            halign: Gtk.Align.START,
+            css_classes: ['dim-label', 'caption'],
+            wrap: true,
+        });
+        content.append(autoManagedHint);
+
         // Auto-activation rules section
         const rulesLabel = new Gtk.Label({
-            label: _('Auto-Activation Rules'),
+            label: _('Conditions'),
             halign: Gtk.Align.START,
             css_classes: ['heading'],
+            margin_top: 12,
         });
         content.append(rulesLabel);
 
@@ -869,6 +886,17 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         addRuleBtn.connect('clicked', () => addRuleRow());
         content.append(addRuleBtn);
 
+        // Toggle rules section visibility based on auto-managed switch
+        const updateRulesVisibility = () => {
+            const visible = autoManagedSwitch.active;
+            rulesLabel.visible = visible;
+            rulesDescription.visible = visible;
+            rulesBox.visible = visible;
+            addRuleBtn.visible = visible;
+        };
+        autoManagedSwitch.connect('notify::active', updateRulesVisibility);
+        updateRulesVisibility();
+
         // Error label
         const errorLabel = new Gtk.Label({
             css_classes: ['error'],
@@ -899,6 +927,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     const powerMode = powerCombo.get_active_id();
                     const batteryMode = batteryCombo.get_active_id();
                     const forceDischarge = forceDischargeCombo.get_active_id();
+                    const autoManaged = autoManagedSwitch.active;
 
                     // Collect rules
                     const rules = ruleRows.map(row => ({
@@ -944,9 +973,9 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     let success;
                     if (isEdit) {
                         success = ProfileMatcher.updateProfile(settings, existingProfile.id,
-                            {name, powerMode, batteryMode, forceDischarge, rules});
+                            {name, powerMode, batteryMode, forceDischarge, rules, autoManaged});
                     } else {
-                        success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, forceDischarge, rules);
+                        success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged);
                     }
 
                     if (!success) {
@@ -967,9 +996,6 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
     }
 
     _showDeleteDialog(window, settings, profile) {
-        if (profile.builtin)
-            return;
-
         // Check if this profile is currently active
         const isActive = ProfileMatcher.detectProfile(
             settings.get_string('current-power-mode'),
