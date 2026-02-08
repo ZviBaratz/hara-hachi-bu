@@ -1,4 +1,9 @@
 /* Unified Power Manager - Quick Settings Styles */
+/*
+ * Color values are from the Adwaita dark palette to match GNOME Shell's
+ * Quick Settings panel (always dark, even in light system theme).
+ * See: https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html
+ */
 
 /* Section headers in the popup menu (scoped to extension scroll section) */
 .upm-menu-scroll-section .popup-menu-section-header {
@@ -28,7 +33,7 @@
 
 /* Error/warning item styling (e.g., missing helper script) */
 .upm-error-item {
-    color: #f5c211; /* GNOME warning yellow */
+    color: #f5c211; /* Adwaita @warning_color (dark) */
 }
 
 /* Loading state styling - applied to the toggle widget */
@@ -37,24 +42,24 @@
     opacity: 0.7;
 }
 
-/* Battery health color indicators */
+/* Battery health color indicators (Adwaita semantic colors, dark variant) */
 .health-good {
-    color: #57e389; /* GNOME green */
+    color: #57e389; /* Adwaita @success_color (dark) */
 }
 
 .health-fair {
-    color: #f8e45c; /* GNOME yellow */
+    color: #f5c211; /* Adwaita @warning_color (dark) */
 }
 
 .health-poor {
-    color: #ed333b; /* GNOME red */
+    color: #ed333b; /* Adwaita @error_color (dark) */
 }
 
 /* Auto badge for profiles with rules */
 .upm-auto-badge {
     font-size: 0.75em;
     font-weight: bold;
-    color: #62a0ea; /* GNOME blue */
+    color: #62a0ea; /* Adwaita @accent_color (dark) */
     background-color: rgba(98, 160, 234, 0.15);
     border-radius: 4px;
     padding: 2px 6px;
@@ -78,17 +83,17 @@
 
 .upm-paused-indicator .upm-resume-button {
     margin-start: auto;
-    background-color: rgba(98, 160, 234, 0.2);
+    background-color: rgba(98, 160, 234, 0.2); /* Adwaita @accent_color 20% */
     border-radius: 12px;
     padding: 4px 12px;
     font-size: 0.9em;
 }
 
 .upm-paused-indicator .upm-resume-button:hover {
-    background-color: rgba(98, 160, 234, 0.4);
+    background-color: rgba(98, 160, 234, 0.4); /* Adwaita @accent_color 40% */
 }
 
 /* Success feedback styling */
 .success {
-    color: #57e389; /* GNOME green */
+    color: #57e389; /* Adwaita @success_color (dark) */
 }

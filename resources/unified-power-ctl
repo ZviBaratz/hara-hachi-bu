@@ -19,8 +19,8 @@ log_action() {
 validate_sysfs_path() {
     local path="$1"
     # Ensure the path is strictly within the power_supply directory
-    # Allow alphanumeric and underscores for battery names
-    if [[ ! "$path" =~ ^/sys/class/power_supply/[a-zA-Z0-9_]+/[a-z_]+$ ]]; then
+    # Allow alphanumeric, underscores, and hyphens for battery names (e.g., macsmc-battery)
+    if [[ ! "$path" =~ ^/sys/class/power_supply/[a-zA-Z0-9_-]+/[a-z_]+$ ]]; then
         echo "Error: Forbidden path: $path" >&2
         exit "$EXIT_ERROR"
     fi
@@ -28,8 +28,7 @@ validate_sysfs_path() {
 }
 
 # Sanitize input values - whitelist allowed characters
-# Allows hyphens for mode values like "force-discharge"; battery names are
-# further restricted by the command-parsing regex (alphanumeric + underscore only).
+# Allows hyphens for mode values like "force-discharge" and battery names like "macsmc-battery".
 sanitize_input() {
     if [[ ! "$1" =~ ^[a-zA-Z0-9_\-]+$ ]]; then
         echo "Error: Invalid characters in input: $1" >&2
@@ -65,18 +64,19 @@ for arg in "$@"; do
     sanitize_input "$arg"
 done
 
-# Parse command format: <BATTERY_NAME>_<ACTION> or FORCE_DISCHARGE_<BATTERY_NAME>
-if [[ "$TOOLCMD" =~ ^FORCE_DISCHARGE_([a-zA-Z0-9_]+)$ ]]; then
+# Parse command format: FORCE_DISCHARGE_<BATTERY_NAME> or <BATTERY_NAME>_<ACTION>
+# Battery names may contain hyphens (e.g., macsmc-battery), so we match actions
+# as a known suffix. Multi-word actions (END_START, START_END) are tried first
+# to prevent partial matches.
+if [[ "$TOOLCMD" =~ ^FORCE_DISCHARGE_([a-zA-Z0-9_-]+)$ ]]; then
     BAT_NAME="${BASH_REMATCH[1]}"
     ACTION="FORCE_DISCHARGE"
-elif [[ "$TOOLCMD" =~ ^(BAT[0-9]+)_(.+)$ ]]; then
+elif [[ "$TOOLCMD" =~ ^(.+)_(END_START|START_END)$ ]]; then
     BAT_NAME="${BASH_REMATCH[1]}"
     ACTION="${BASH_REMATCH[2]}"
-    # Defense-in-depth: validate ACTION is uppercase letters and underscores only
-    if [[ ! "$ACTION" =~ ^[A-Z_]+$ ]]; then
-        echo "Error: Invalid action format: $ACTION" >&2
-        exit "$EXIT_ERROR"
-    fi
+elif [[ "$TOOLCMD" =~ ^(.+)_(END|START)$ ]]; then
+    BAT_NAME="${BASH_REMATCH[1]}"
+    ACTION="${BASH_REMATCH[2]}"
 else
     echo "Error: Unknown Command: '$TOOLCMD'" >&2
     exit "$EXIT_ERROR"

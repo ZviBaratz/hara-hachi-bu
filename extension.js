@@ -185,6 +185,7 @@ export default class UnifiedPowerManager extends Extension {
 
         this._destroyPowerManager();
         Helper.destroyExecCheck();
+        ProfileMatcher.resetCache();
 
         this._settings = null;
     }

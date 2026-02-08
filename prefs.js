@@ -27,7 +27,8 @@ class ProfileRow extends Adw.ActionRow {
         const batteryLabel = Constants.BATTERY_MODES[profile.batteryMode]?.label ?? profile.batteryMode;
         let subtitle = `${powerLabel} + ${batteryLabel}`;
         if (profile.forceDischarge && profile.forceDischarge !== 'unspecified') {
-            subtitle += ` · FD: ${profile.forceDischarge}`;
+            const fdLabel = Constants.FORCE_DISCHARGE_OPTIONS[profile.forceDischarge]?.label ?? profile.forceDischarge;
+            subtitle += ` · ${_('Force Discharge')}: ${_(fdLabel)}`;
         }
 
         super._init({
@@ -531,218 +532,175 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
     _showProfileDialog(window, settings, existingProfile) {
         const isEdit = existingProfile !== null;
 
-        const dialog = new Gtk.Dialog({
-            title: isEdit ? _('Edit Profile') : _('Create Profile'),
-            transient_for: window,
-            modal: true,
-            use_header_bar: true,
-            default_width: 450,
-            default_height: 600,
-        });
+        // Build key arrays for DropDown index-based lookup
+        const powerModeKeys = Object.keys(Constants.POWER_MODES);
+        const powerModeLabels = powerModeKeys.map(k => _(Constants.POWER_MODES[k].label));
+        const batteryModeKeys = Object.keys(Constants.BATTERY_MODES);
+        const batteryModeLabels = batteryModeKeys.map(k => _(Constants.BATTERY_MODES[k].label));
+        const fdKeys = Object.keys(Constants.FORCE_DISCHARGE_OPTIONS);
+        const fdLabels = fdKeys.map(k => _(Constants.FORCE_DISCHARGE_OPTIONS[k].label));
 
-        // Wrap in scrolled window for better usability
-        const scrolled = new Gtk.ScrolledWindow({
-            hscrollbar_policy: Gtk.PolicyType.NEVER,
-            vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
-            propagate_natural_height: true,
-        });
+        // --- Build dialog content using Adw widgets ---
+        const mainGroup = new Adw.PreferencesGroup();
 
-        const content = new Gtk.Box({
-            orientation: Gtk.Orientation.VERTICAL,
-            spacing: 12,
-            margin_top: 18,
-            margin_bottom: 18,
-            margin_start: 18,
-            margin_end: 18,
-        });
-        scrolled.set_child(content);
-        dialog.get_content_area().append(scrolled);
-
-        // Profile name entry
-        const nameEntry = new Gtk.Entry({
-            placeholder_text: _('Profile Name (e.g., Gaming)'),
+        // Profile name
+        const nameRow = new Adw.EntryRow({
+            title: _('Profile Name'),
             text: isEdit ? existingProfile.name : '',
         });
-        content.append(new Gtk.Label({label: _('Profile Name'), halign: Gtk.Align.START}));
-        content.append(nameEntry);
+        mainGroup.add(nameRow);
 
         // Live ID preview (only for new profiles)
-        let idPreviewLabel = null;
+        let idPreviewRow = null;
         if (!isEdit) {
-            idPreviewLabel = new Gtk.Label({
-                label: _('ID: (enter name above)'),
-                halign: Gtk.Align.START,
-                css_classes: ['dim-label', 'caption'],
-                margin_top: 4,
+            idPreviewRow = new Adw.ActionRow({
+                title: _('ID'),
+                subtitle: _('(enter name above)'),
+                sensitive: false,
             });
-            content.append(idPreviewLabel);
+            mainGroup.add(idPreviewRow);
 
-            // Update ID preview as user types
-            nameEntry.connect('changed', () => {
-                const name = nameEntry.get_text().trim();
+            nameRow.connect('changed', () => {
+                const name = nameRow.get_text().trim();
                 if (name.length === 0) {
-                    idPreviewLabel.set_text(_('ID: (enter name above)'));
-                    idPreviewLabel.remove_css_class('error');
-                    idPreviewLabel.remove_css_class('warning');
-                    idPreviewLabel.add_css_class('dim-label');
+                    idPreviewRow.subtitle = _('(enter name above)');
+                    idPreviewRow.remove_css_class('error');
+                    idPreviewRow.remove_css_class('warning');
                 } else {
                     const generatedId = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
                     if (generatedId.length === 0) {
-                        idPreviewLabel.set_text(_('ID: (invalid characters)'));
-                        idPreviewLabel.add_css_class('error');
-                        idPreviewLabel.remove_css_class('dim-label');
-                        idPreviewLabel.remove_css_class('warning');
+                        idPreviewRow.subtitle = _('(invalid characters)');
+                        idPreviewRow.add_css_class('error');
+                        idPreviewRow.remove_css_class('warning');
                     } else {
-                        // Check for duplicate ID
                         const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
                         const isDuplicate = existingProfiles.some(p => p.id === generatedId);
-
                         if (isDuplicate) {
-                            idPreviewLabel.set_text(_('ID: %s (already exists!)').format(generatedId));
-                            idPreviewLabel.add_css_class('warning');
-                            idPreviewLabel.remove_css_class('error');
-                            idPreviewLabel.remove_css_class('dim-label');
+                            idPreviewRow.subtitle = `${generatedId} (${_('already exists!')})`;
+                            idPreviewRow.add_css_class('warning');
+                            idPreviewRow.remove_css_class('error');
                         } else {
-                            idPreviewLabel.set_text(_('ID: %s').format(generatedId));
-                            idPreviewLabel.remove_css_class('error');
-                            idPreviewLabel.remove_css_class('warning');
-                            idPreviewLabel.add_css_class('dim-label');
+                            idPreviewRow.subtitle = generatedId;
+                            idPreviewRow.remove_css_class('error');
+                            idPreviewRow.remove_css_class('warning');
                         }
                     }
                 }
             });
         }
 
-        // Note: builtin profiles can have their names edited (ID remains stable)
-
-        // Power mode dropdown
-        const powerCombo = new Gtk.ComboBoxText();
-        Object.entries(Constants.POWER_MODES).forEach(([mode, config]) => {
-            powerCombo.append(mode, _(config.label));
+        // Power mode dropdown (Adw.ComboRow)
+        const powerModel = Gtk.StringList.new(powerModeLabels);
+        const powerRow = new Adw.ComboRow({
+            title: _('Power Mode'),
+            model: powerModel,
+            selected: isEdit
+                ? Math.max(0, powerModeKeys.indexOf(existingProfile.powerMode))
+                : powerModeKeys.indexOf('balanced'),
         });
-        powerCombo.set_active_id(isEdit ? existingProfile.powerMode : 'balanced');
-        content.append(new Gtk.Label({label: _('Power Mode'), halign: Gtk.Align.START, margin_top: 6}));
-        content.append(powerCombo);
+        mainGroup.add(powerRow);
 
-        // Battery mode dropdown
-        const batteryCombo = new Gtk.ComboBoxText();
-        Object.entries(Constants.BATTERY_MODES).forEach(([mode, config]) => {
-            batteryCombo.append(mode, _(config.label));
+        // Battery mode dropdown (Adw.ComboRow)
+        const batteryModel = Gtk.StringList.new(batteryModeLabels);
+        const batteryRow = new Adw.ComboRow({
+            title: _('Battery Mode'),
+            model: batteryModel,
+            selected: isEdit
+                ? Math.max(0, batteryModeKeys.indexOf(existingProfile.batteryMode))
+                : batteryModeKeys.indexOf('balanced'),
         });
-        batteryCombo.set_active_id(isEdit ? existingProfile.batteryMode : 'balanced');
-        content.append(new Gtk.Label({label: _('Battery Mode'), halign: Gtk.Align.START, margin_top: 6}));
-        content.append(batteryCombo);
+        mainGroup.add(batteryRow);
 
-        // Force discharge dropdown
-        const forceDischargeCombo = new Gtk.ComboBoxText();
-        Object.entries(Constants.FORCE_DISCHARGE_OPTIONS).forEach(([opt, config]) => {
-            forceDischargeCombo.append(opt, _(config.label));
+        // Force discharge dropdown (Adw.ComboRow)
+        const fdModel = Gtk.StringList.new(fdLabels);
+        const fdRow = new Adw.ComboRow({
+            title: _('Force Discharge'),
+            model: fdModel,
+            selected: isEdit && existingProfile.forceDischarge
+                ? Math.max(0, fdKeys.indexOf(existingProfile.forceDischarge))
+                : fdKeys.indexOf('unspecified'),
         });
-        forceDischargeCombo.set_active_id(isEdit && existingProfile.forceDischarge ? existingProfile.forceDischarge : 'unspecified');
-        content.append(new Gtk.Label({label: _('Force Discharge'), halign: Gtk.Align.START, margin_top: 6}));
-        content.append(forceDischargeCombo);
+        mainGroup.add(fdRow);
 
-        // Separator
-        content.append(new Gtk.Separator({margin_top: 12, margin_bottom: 6}));
-
-        // Auto-activate toggle
-        const autoManagedBox = new Gtk.Box({
-            orientation: Gtk.Orientation.HORIZONTAL,
-            spacing: 12,
-            margin_top: 6,
-        });
-        autoManagedBox.append(new Gtk.Label({
-            label: _('Auto-activate'),
-            halign: Gtk.Align.START,
-            hexpand: true,
-        }));
-        const autoManagedSwitch = new Gtk.Switch({
+        // Auto-activate toggle (Adw.SwitchRow)
+        const autoManagedRow = new Adw.SwitchRow({
+            title: _('Auto-activate'),
+            subtitle: _('Profile activates automatically when all conditions match'),
             active: isEdit ? !!existingProfile.autoManaged : false,
-            valign: Gtk.Align.CENTER,
         });
-        autoManagedBox.append(autoManagedSwitch);
-        content.append(autoManagedBox);
+        mainGroup.add(autoManagedRow);
 
-        const autoManagedHint = new Gtk.Label({
-            label: _('When enabled, profile activates automatically when all conditions match.'),
-            halign: Gtk.Align.START,
-            css_classes: ['dim-label', 'caption'],
-            wrap: true,
+        // --- Rules section ---
+        const rulesGroup = new Adw.PreferencesGroup({
+            title: _('Conditions'),
+            description: _('When all conditions match, this profile activates automatically.'),
         });
-        content.append(autoManagedHint);
-
-        // Auto-activation rules section
-        const rulesLabel = new Gtk.Label({
-            label: _('Conditions'),
-            halign: Gtk.Align.START,
-            css_classes: ['heading'],
-            margin_top: 12,
-        });
-        content.append(rulesLabel);
-
-        const rulesDescription = new Gtk.Label({
-            label: _('When all conditions match, this profile activates automatically.'),
-            halign: Gtk.Align.START,
-            css_classes: ['dim-label', 'caption'],
-            wrap: true,
-        });
-        content.append(rulesDescription);
-
-        // Rules container
-        const rulesBox = new Gtk.Box({
-            orientation: Gtk.Orientation.VERTICAL,
-            spacing: 6,
-            margin_top: 6,
-        });
-        content.append(rulesBox);
 
         // Track rule rows
         const ruleRows = [];
         const initialRules = isEdit && existingProfile.rules ? [...existingProfile.rules] : [];
+
+        // Rule row builder helper arrays
+        const paramKeys = Object.values(PARAMETERS).map(p => p.name);
+        const paramLabels = Object.values(PARAMETERS).map(p => p.label);
+        const opKeys = Object.values(OPERATORS).map(o => o.name);
+        const opLabels = Object.values(OPERATORS).map(o => o.label);
 
         // Function to add a rule row
         const addRuleRow = (rule = null) => {
             const rowBox = new Gtk.Box({
                 orientation: Gtk.Orientation.HORIZONTAL,
                 spacing: 6,
+                margin_start: 12,
+                margin_end: 12,
+                margin_top: 3,
+                margin_bottom: 3,
             });
 
             // Parameter dropdown
-            const paramCombo = new Gtk.ComboBoxText();
-            Object.values(PARAMETERS).forEach(p => paramCombo.append(p.name, p.label));
-            if (rule)
-                paramCombo.set_active_id(rule.param);
-            else
-                paramCombo.set_active(0);
-            rowBox.append(paramCombo);
+            const paramDrop = new Gtk.DropDown({
+                model: Gtk.StringList.new(paramLabels),
+                selected: rule ? Math.max(0, paramKeys.indexOf(rule.param)) : 0,
+            });
+            paramDrop.hexpand = true;
+            rowBox.append(paramDrop);
 
             // Operator dropdown
-            const opCombo = new Gtk.ComboBoxText();
-            Object.values(OPERATORS).forEach(o => opCombo.append(o.name, o.label));
-            if (rule)
-                opCombo.set_active_id(rule.op);
-            else
-                opCombo.set_active(0);
-            rowBox.append(opCombo);
+            const opDrop = new Gtk.DropDown({
+                model: Gtk.StringList.new(opLabels),
+                selected: rule ? Math.max(0, opKeys.indexOf(rule.op)) : 0,
+            });
+            rowBox.append(opDrop);
 
             // Value dropdown (populated based on parameter)
-            const valueCombo = new Gtk.ComboBoxText();
-            const updateValueOptions = () => {
-                valueCombo.remove_all();
-                const paramName = paramCombo.get_active_id();
+            let valueKeys = [];
+            let valueLabelsArr = [];
+            const updateValueModel = () => {
+                const paramIdx = paramDrop.selected;
+                const paramName = paramKeys[paramIdx];
                 const param = PARAMETERS[paramName];
                 if (param) {
-                    param.values.forEach(v => valueCombo.append(v, param.valueLabels[v]));
-                }
-                if (rule && rule.param === paramName) {
-                    valueCombo.set_active_id(rule.value);
+                    valueKeys = [...param.values];
+                    valueLabelsArr = param.values.map(v => param.valueLabels[v]);
                 } else {
-                    valueCombo.set_active(0);
+                    valueKeys = [];
+                    valueLabelsArr = [];
+                }
+                valueDrop.model = Gtk.StringList.new(valueLabelsArr);
+                if (rule && rule.param === paramName) {
+                    const idx = valueKeys.indexOf(rule.value);
+                    valueDrop.selected = idx >= 0 ? idx : 0;
+                } else {
+                    valueDrop.selected = 0;
                 }
             };
-            updateValueOptions();
-            paramCombo.connect('changed', updateValueOptions);
-            rowBox.append(valueCombo);
+            const valueDrop = new Gtk.DropDown({
+                model: Gtk.StringList.new([]),
+            });
+            valueDrop.hexpand = true;
+            updateValueModel();
+            paramDrop.connect('notify::selected', updateValueModel);
+            rowBox.append(valueDrop);
 
             // Remove button
             const removeBtn = new Gtk.Button({
@@ -753,14 +711,19 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 const index = ruleRows.indexOf(rowData);
                 if (index > -1) {
                     ruleRows.splice(index, 1);
-                    rulesBox.remove(rowBox);
+                    rulesGroup.remove(rowBox);
                 }
             });
             rowBox.append(removeBtn);
 
-            const rowData = {box: rowBox, paramCombo, opCombo, valueCombo};
+            const rowData = {
+                box: rowBox,
+                getParam: () => paramKeys[paramDrop.selected],
+                getOp: () => opKeys[opDrop.selected],
+                getValue: () => valueKeys[valueDrop.selected] ?? null,
+            };
             ruleRows.push(rowData);
-            rulesBox.append(rowBox);
+            rulesGroup.add(rowBox);
         };
 
         // Add existing rules
@@ -770,20 +733,17 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const addRuleBtn = new Gtk.Button({
             label: _('Add Condition'),
             halign: Gtk.Align.START,
+            margin_start: 12,
             margin_top: 6,
         });
         addRuleBtn.connect('clicked', () => addRuleRow());
-        content.append(addRuleBtn);
+        rulesGroup.add(addRuleBtn);
 
-        // Toggle rules section visibility based on auto-managed switch
+        // Toggle rules section visibility
         const updateRulesVisibility = () => {
-            const visible = autoManagedSwitch.active;
-            rulesLabel.visible = visible;
-            rulesDescription.visible = visible;
-            rulesBox.visible = visible;
-            addRuleBtn.visible = visible;
+            rulesGroup.visible = autoManagedRow.active;
         };
-        autoManagedSwitch.connect('notify::active', updateRulesVisibility);
+        autoManagedRow.connect('notify::active', updateRulesVisibility);
         updateRulesVisibility();
 
         // Error label
@@ -793,111 +753,134 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             visible: false,
             wrap: true,
             margin_top: 12,
+            margin_start: 12,
+            margin_end: 12,
         });
-        content.append(errorLabel);
 
-        // Dialog buttons
-        dialog.add_button(_('Cancel'), Gtk.ResponseType.CANCEL);
-        const saveButton = dialog.add_button(
-            isEdit ? _('Save') : _('Create'),
-            Gtk.ResponseType.OK
-        );
-        saveButton.add_css_class('suggested-action');
+        // --- Assemble dialog layout ---
+        const contentPage = new Adw.PreferencesPage();
+        contentPage.add(mainGroup);
+        contentPage.add(rulesGroup);
 
-        // Set initial focus and keyboard navigation
-        nameEntry.grab_focus();
-        dialog.set_default_response(Gtk.ResponseType.OK);
-        nameEntry.activates_default = true;
+        // Wrap in Adw.ToolbarView for header bar with buttons
+        const headerBar = new Adw.HeaderBar();
 
-        dialog.connect('response', (dlg, response) => {
+        const cancelBtn = new Gtk.Button({label: _('Cancel')});
+        headerBar.pack_start(cancelBtn);
+
+        const saveBtn = new Gtk.Button({
+            label: isEdit ? _('Save') : _('Create'),
+            css_classes: ['suggested-action'],
+        });
+        headerBar.pack_end(saveBtn);
+
+        const outerBox = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+        });
+
+        const toolbarView = new Adw.ToolbarView();
+        toolbarView.add_top_bar(headerBar);
+        toolbarView.set_content(contentPage);
+        outerBox.append(toolbarView);
+        outerBox.append(errorLabel);
+
+        const dialog = new Adw.Dialog({
+            title: isEdit ? _('Edit Profile') : _('Create Profile'),
+            content_width: 450,
+            content_height: 600,
+        });
+        dialog.set_child(outerBox);
+
+        // Button handlers
+        cancelBtn.connect('clicked', () => dialog.close());
+        saveBtn.connect('clicked', () => {
             try {
-                if (response === Gtk.ResponseType.OK) {
-                    const name = nameEntry.get_text().trim();
-                    const powerMode = powerCombo.get_active_id();
-                    const batteryMode = batteryCombo.get_active_id();
-                    const forceDischarge = forceDischargeCombo.get_active_id();
-                    const autoManaged = autoManagedSwitch.active;
+                const name = nameRow.get_text().trim();
+                const powerMode = powerModeKeys[powerRow.selected];
+                const batteryMode = batteryModeKeys[batteryRow.selected];
+                const forceDischarge = fdKeys[fdRow.selected];
+                const autoManaged = autoManagedRow.active;
 
-                    // Collect rules
-                    const rules = ruleRows.map(row => ({
-                        param: row.paramCombo.get_active_id(),
-                        op: row.opCombo.get_active_id(),
-                        value: row.valueCombo.get_active_id(),
-                    })).filter(r => r.param && r.op && r.value);
+                // Collect rules
+                const rules = ruleRows.map(row => ({
+                    param: row.getParam(),
+                    op: row.getOp(),
+                    value: row.getValue(),
+                })).filter(r => r.param && r.op && r.value);
 
-                    if (autoManaged && rules.length === 0) {
-                        errorLabel.set_text(_('Auto-activate is enabled but no conditions are defined. Add at least one condition or disable auto-activate.'));
-                        errorLabel.show();
-                        return;
-                    }
-
-                    // Generate ID from name
-                    const id = isEdit ?
-                        existingProfile.id :
-                        name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
-
-                    if (!isEdit && id.length === 0) {
-                        errorLabel.set_text(_('Profile name must contain at least one letter or number.'));
-                        errorLabel.show();
-                        return;
-                    }
-
-                    // Validate using centralized validation
-                    const validation = ProfileMatcher.validateProfileInput(
-                        settings, id, name, powerMode, batteryMode, isEdit
-                    );
-                    if (!validation.valid) {
-                        errorLabel.set_text(_(validation.error));
-                        errorLabel.show();
-                        return;
-                    }
-
-                    // Check for duplicate display name
-                    const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
-                    const duplicateName = existingProfiles.some(p =>
-                        p.name.trim().toLowerCase() === name.toLowerCase() &&
-                        (!isEdit || p.id !== existingProfile.id)
-                    );
-                    if (duplicateName) {
-                        errorLabel.set_text(_('A profile with this name already exists'));
-                        errorLabel.show();
-                        return;
-                    }
-
-                    // Validate rules
-                    const rulesValidation = RuleEvaluator.validateRules(rules);
-                    if (!rulesValidation.valid) {
-                        errorLabel.set_text(rulesValidation.errors.join('\n'));
-                        errorLabel.show();
-                        return;
-                    }
-
-                    // Check for conflicts
-                    const profiles = ProfileMatcher.getCustomProfiles(settings);
-                    const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules};
-                    const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
-                    if (conflict) {
-                        errorLabel.set_text(_('Rule conflict with profile "%s": same conditions at same specificity').format(conflict.name));
-                        errorLabel.show();
-                        return;
-                    }
-
-                    // Save
-                    let success;
-                    if (isEdit) {
-                        success = ProfileMatcher.updateProfile(settings, existingProfile.id,
-                            {name, powerMode, batteryMode, forceDischarge, rules, autoManaged});
-                    } else {
-                        success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged);
-                    }
-
-                    if (!success) {
-                        errorLabel.set_text(_('Failed to save profile. Check for conflicts or limit reached.'));
-                        errorLabel.show();
-                        return;
-                    }
+                if (autoManaged && rules.length === 0) {
+                    errorLabel.set_text(_('Auto-activate is enabled but no conditions are defined. Add at least one condition or disable auto-activate.'));
+                    errorLabel.show();
+                    return;
                 }
-                dlg.close();
+
+                // Generate ID from name
+                const id = isEdit
+                    ? existingProfile.id
+                    : name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+
+                if (!isEdit && id.length === 0) {
+                    errorLabel.set_text(_('Profile name must contain at least one letter or number.'));
+                    errorLabel.show();
+                    return;
+                }
+
+                // Validate using centralized validation
+                const validation = ProfileMatcher.validateProfileInput(
+                    settings, id, name, powerMode, batteryMode, isEdit
+                );
+                if (!validation.valid) {
+                    errorLabel.set_text(validation.error);
+                    errorLabel.show();
+                    return;
+                }
+
+                // Check for duplicate display name
+                const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
+                const duplicateName = existingProfiles.some(p =>
+                    p.name.trim().toLowerCase() === name.toLowerCase() &&
+                    (!isEdit || p.id !== existingProfile.id)
+                );
+                if (duplicateName) {
+                    errorLabel.set_text(_('A profile with this name already exists'));
+                    errorLabel.show();
+                    return;
+                }
+
+                // Validate rules
+                const rulesValidation = RuleEvaluator.validateRules(rules);
+                if (!rulesValidation.valid) {
+                    errorLabel.set_text(rulesValidation.errors.join('\n'));
+                    errorLabel.show();
+                    return;
+                }
+
+                // Check for conflicts
+                const profiles = ProfileMatcher.getCustomProfiles(settings);
+                const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules};
+                const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
+                if (conflict) {
+                    errorLabel.set_text(_('Rule conflict with profile "%s": same conditions at same specificity').format(conflict.name));
+                    errorLabel.show();
+                    return;
+                }
+
+                // Save
+                let success;
+                if (isEdit) {
+                    success = ProfileMatcher.updateProfile(settings, existingProfile.id,
+                        {name, powerMode, batteryMode, forceDischarge, rules, autoManaged});
+                } else {
+                    success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged);
+                }
+
+                if (!success) {
+                    errorLabel.set_text(_('Failed to save profile. Check for conflicts or limit reached.'));
+                    errorLabel.show();
+                    return;
+                }
+
+                dialog.close();
             } catch (e) {
                 console.error(`Unified Power Manager: Profile dialog error: ${e.message}`);
                 errorLabel.set_text(_('An unexpected error occurred. Check logs for details.'));
@@ -905,7 +888,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             }
         });
 
-        dialog.present();
+        dialog.present(window);
     }
 
     _showDeleteDialog(window, settings, profile) {
@@ -916,52 +899,40 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             settings
         ) === profile.id;
 
-        let secondaryText = _('This action cannot be undone.');
+        let body = _('This action cannot be undone.');
         if (isActive) {
-            secondaryText = _('This profile is currently active. Deleting it will switch to manual mode.') + ' ' + secondaryText;
+            body = _('This profile is currently active. Deleting it will switch to manual mode.') + ' ' + body;
         }
 
-        const dialog = new Gtk.MessageDialog({
-            transient_for: window,
-            modal: true,
-            buttons: Gtk.ButtonsType.NONE,
-            message_type: Gtk.MessageType.WARNING,
-            text: _('Delete "%s"?').format(profile.name),
-            secondary_text: secondaryText,
+        const dialog = new Adw.AlertDialog({
+            heading: _('Delete "%s"?').format(profile.name),
+            body,
         });
 
-        dialog.add_button(_('Cancel'), Gtk.ResponseType.CANCEL);
-        const deleteButton = dialog.add_button(_('Delete'), Gtk.ResponseType.OK);
-        deleteButton.add_css_class('destructive-action');
+        dialog.add_response('cancel', _('Cancel'));
+        dialog.add_response('delete', _('Delete'));
+        dialog.set_response_appearance('delete', Adw.ResponseAppearance.DESTRUCTIVE);
+        dialog.set_default_response('cancel');
+        dialog.set_close_response('cancel');
 
-        // Error label for delete failures
-        const errorLabel = new Gtk.Label({
-            css_classes: ['error'],
-            halign: Gtk.Align.START,
-            visible: false,
-            wrap: true,
-            margin_top: 12,
-        });
-        dialog.get_content_area().append(errorLabel);
-
-        dialog.connect('response', (dlg, response) => {
+        dialog.choose(window, null, (dlg, result) => {
             try {
-                if (response === Gtk.ResponseType.OK) {
+                const response = dlg.choose_finish(result);
+                if (response === 'delete') {
                     const success = ProfileMatcher.deleteProfile(settings, profile.id);
                     if (!success) {
-                        errorLabel.set_text(_('Failed to delete profile. Please try again.'));
-                        errorLabel.show();
-                        return;
+                        // Show a follow-up error dialog
+                        const errDialog = new Adw.AlertDialog({
+                            heading: _('Delete Failed'),
+                            body: _('Failed to delete profile. Please try again.'),
+                        });
+                        errDialog.add_response('ok', _('OK'));
+                        errDialog.present(window);
                     }
                 }
-                dlg.close();
             } catch (e) {
                 console.error(`Unified Power Manager: Delete dialog error: ${e.message}`);
-                errorLabel.set_text(_('An unexpected error occurred. Check logs for details.'));
-                errorLabel.show();
             }
         });
-
-        dialog.present();
     }
 }
