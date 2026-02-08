@@ -145,6 +145,13 @@
       <description>Stop charging threshold for max lifespan mode</description>
     </key>
 
+    <!-- Device Capabilities (written by extension, read by prefs) -->
+    <key name="device-has-start-threshold" type="b">
+      <default>true</default>
+      <summary>Device supports start threshold</summary>
+      <description>Whether the detected battery device supports a start charging threshold. Written by the extension at startup.</description>
+    </key>
+
     <!-- One-Time Notification Flags -->
     <key name="helper-notification-shown" type="b">
       <default>false</default>

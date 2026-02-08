@@ -345,9 +345,13 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         let iconName = 'dialog-warning-symbolic';
 
         for (const bat of ['BAT0', 'BAT1', 'BAT2', 'BAT3']) {
-            const batEnd = this._checkFileExists(`/sys/class/power_supply/${bat}/charge_control_end_threshold`);
+            const batEnd = Constants.THRESHOLD_END_FILES.some(
+                f => this._checkFileExists(`/sys/class/power_supply/${bat}/${f}`)
+            );
             if (batEnd) {
-                const batStart = this._checkFileExists(`/sys/class/power_supply/${bat}/charge_control_start_threshold`);
+                const batStart = Constants.THRESHOLD_START_FILES.some(
+                    f => this._checkFileExists(`/sys/class/power_supply/${bat}/${f}`)
+                );
                 if (batStart) {
                     statusSubtitle = _('Compatible battery detected (%s) - Full threshold control').format(bat);
                 } else {
@@ -405,11 +409,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             description: config.description,
         });
 
+        const hasStartThreshold = settings.get_boolean('device-has-start-threshold');
         const startRow = new Adw.SpinRow({
             title: _('Start Charging At'),
-            subtitle: _('Battery will start charging when it drops to %d%%').format(
-                settings.get_int(config.startKey)
-            ),
+            subtitle: hasStartThreshold
+                ? _('Battery will start charging when it drops to %d%%').format(
+                    settings.get_int(config.startKey))
+                : _('Not supported on this device \u2013 only end threshold is used'),
+            sensitive: hasStartThreshold,
             adjustment: new Gtk.Adjustment({
                 lower: config.startRange.lower,
                 upper: config.startRange.upper,
@@ -438,7 +445,8 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Cross-validate: start must always be less than end
         startRow.adjustment.connect('value-changed', () => {
             const value = Math.round(startRow.adjustment.value);
-            startRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
+            if (hasStartThreshold)
+                startRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
             if (endRow.adjustment.value <= value)
                 endRow.adjustment.value = value + 1;
             endRow.adjustment.lower = value + 1;
@@ -918,14 +926,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const deleteButton = dialog.add_button(_('Delete'), Gtk.ResponseType.OK);
         deleteButton.add_css_class('destructive-action');
 
-        dialog.connect('response', (dialog, response) => {
+        dialog.connect('response', (dlg, response) => {
             try {
                 if (response === Gtk.ResponseType.OK)
                     ProfileMatcher.deleteProfile(settings, profile.id);
-                dialog.close();
+                dlg.close();
             } catch (e) {
                 console.error(`Unified Power Manager: Delete dialog error: ${e.message}`);
-                dialog.close();
+                dlg.close();
             }
         });
 
