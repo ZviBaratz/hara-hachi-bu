@@ -72,6 +72,11 @@ if [[ "$TOOLCMD" =~ ^FORCE_DISCHARGE_([a-zA-Z0-9_]+)$ ]]; then
 elif [[ "$TOOLCMD" =~ ^(BAT[0-9]+)_(.+)$ ]]; then
     BAT_NAME="${BASH_REMATCH[1]}"
     ACTION="${BASH_REMATCH[2]}"
+    # Defense-in-depth: validate ACTION is uppercase letters and underscores only
+    if [[ ! "$ACTION" =~ ^[A-Z_]+$ ]]; then
+        echo "Error: Invalid action format: $ACTION" >&2
+        exit "$EXIT_ERROR"
+    fi
 else
     echo "Error: Unknown Command: '$TOOLCMD'" >&2
     exit "$EXIT_ERROR"

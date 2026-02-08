@@ -825,6 +825,12 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                         value: row.valueCombo.get_active_id(),
                     })).filter(r => r.param && r.op && r.value);
 
+                    if (autoManaged && rules.length === 0) {
+                        errorLabel.set_text(_('Auto-activate is enabled but no conditions are defined. Add at least one condition or disable auto-activate.'));
+                        errorLabel.show();
+                        return;
+                    }
+
                     // Generate ID from name
                     const id = isEdit ?
                         existingProfile.id :
@@ -912,7 +918,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         let secondaryText = _('This action cannot be undone.');
         if (isActive) {
-            secondaryText = _('This profile is currently active.') + ' ' + secondaryText;
+            secondaryText = _('This profile is currently active. Deleting it will switch to manual mode.') + ' ' + secondaryText;
         }
 
         const dialog = new Gtk.MessageDialog({
