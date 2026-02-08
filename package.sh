@@ -25,6 +25,7 @@ zip -r "$OUTPUT_FILE" \
     stylesheet.css \
     LICENSE \
     README.md \
+    install-helper.sh \
     schemas/org.gnome.shell.extensions.unified-power-manager.gschema.xml \
     schemas/gschemas.compiled \
     icons/ \

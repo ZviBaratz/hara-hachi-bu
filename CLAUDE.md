@@ -338,10 +338,9 @@ Key settings:
 - Removed 7 legacy schema settings: `profile-docked`, `profile-travel`, `docking-detection-enabled`, `docked-profile-id`, `undocked-profile-id`, `power-source-detection-enabled`, `ac-profile-id`, `battery-profile-id`
 - Removed v0→v1 migration code (`_migrateProfilesToCustomFormat`)
 - Removed legacy feature-flag migration from `_migrateToRuleBasedProfiles`
-- Schema `migration-version` default set to 2
+- Schema `migration-version` default set to 3
 
 **Defense-in-Depth**
-- Added builtin profile delete guard in prefs UI
 - Auto-switch notifications throttled to once per 10 seconds
 - `_isLoading` explicitly initialized in `PowerManagerToggle` constructor
 

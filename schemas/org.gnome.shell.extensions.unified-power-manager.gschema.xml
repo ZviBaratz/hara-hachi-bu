@@ -154,7 +154,7 @@
 
     <!-- Migration Tracking -->
     <key name="migration-version" type="i">
-      <default>2</default>
+      <default>3</default>
       <summary>Migration version</summary>
       <description>Internal tracking of completed data migrations.</description>
     </key>

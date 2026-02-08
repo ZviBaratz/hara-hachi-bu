@@ -1,7 +1,7 @@
 /* Unified Power Manager - Quick Settings Styles */
 
-/* Section headers in the popup menu */
-.popup-menu-section-header {
+/* Section headers in the popup menu (scoped to extension scroll section) */
+.upm-menu-scroll-section .popup-menu-section-header {
     font-weight: bold;
     font-size: 0.85em;
     color: inherit;
@@ -16,8 +16,8 @@
     opacity: 0.7;
 }
 
-/* Ensure proper spacing for menu items */
-.popup-menu-item {
+/* Ensure proper spacing for menu items (scoped to extension scroll section) */
+.upm-menu-scroll-section .popup-menu-item {
     padding: 8px 12px;
 }
 

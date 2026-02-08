@@ -497,6 +497,17 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Get profiles and add rows
         const profiles = ProfileMatcher.getCustomProfiles(settings);
+
+        if (profiles.length === 0) {
+            const emptyRow = new Adw.ActionRow({
+                title: _('No profiles'),
+                subtitle: _('Click "Add Profile" to create one'),
+                sensitive: false,
+            });
+            this._profileListBox.append(emptyRow);
+            return;
+        }
+
         for (const profile of profiles) {
             const row = new ProfileRow(
                 profile,
@@ -821,6 +832,18 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     );
                     if (!validation.valid) {
                         errorLabel.set_text(_(validation.error));
+                        errorLabel.show();
+                        return;
+                    }
+
+                    // Check for duplicate display name
+                    const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
+                    const duplicateName = existingProfiles.some(p =>
+                        p.name.trim().toLowerCase() === name.toLowerCase() &&
+                        (!isEdit || p.id !== existingProfile.id)
+                    );
+                    if (duplicateName) {
+                        errorLabel.set_text(_('A profile with this name already exists'));
                         errorLabel.show();
                         return;
                     }
