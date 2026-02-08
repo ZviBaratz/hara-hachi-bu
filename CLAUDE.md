@@ -72,6 +72,63 @@ cat /sys/class/power_supply/BAT0/status
 cat /sys/class/power_supply/BAT0/capacity
 ```
 
+## Commit Convention
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/).
+
+### Format
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Types
+- **feat**: New feature or user-facing functionality
+- **fix**: Bug fix
+- **refactor**: Code change that neither fixes a bug nor adds a feature
+- **perf**: Performance improvement
+- **style**: Formatting, whitespace, missing semicolons (no logic change)
+- **docs**: Documentation only
+- **chore**: Build process, packaging, dependencies, tooling
+- **ci**: CI/CD changes
+- **test**: Adding or updating tests
+
+### Scopes (optional, use when it clarifies the change)
+- **prefs** - Preferences UI (prefs.js)
+- **panel** - Quick Settings panel (quickSettingsPanel.js)
+- **state** - StateManager
+- **power** - PowerProfileController
+- **battery** - BatteryThresholdController
+- **device** - Device backends (GenericSysfsDevice, MockDevice, DeviceManager)
+- **profiles** - ProfileMatcher, profile management
+- **rules** - RuleEvaluator, ParameterDetector
+- **helper** - Helper script and utilities
+- **schema** - GSettings schema
+- **i18n** - Translations and internationalization
+
+### Examples
+```
+feat(panel): add battery health percentage to status display
+fix(battery): correct threshold write ordering for end-only devices
+refactor(state): extract profile validation into separate method
+fix(helper): validate sysfs filenames to prevent path traversal
+chore: update metadata for GNOME 47 compatibility
+docs: document multi-battery support in README
+feat(profiles)!: change profile storage format to JSON array
+```
+
+### Breaking Changes
+Append `!` after the type/scope for breaking changes, and include a `BREAKING CHANGE:` footer:
+```
+feat(schema)!: remove legacy profile settings
+
+BREAKING CHANGE: Removed profile-docked and profile-travel settings.
+Profiles are now stored exclusively in custom-profiles JSON format.
+```
+
 ## Architecture
 
 ### Core Components
