@@ -20,10 +20,19 @@ validate_sysfs_path() {
     local path="$1"
     # Ensure the path is strictly within the power_supply directory
     # Allow alphanumeric, underscores, and hyphens for battery names (e.g., macsmc-battery)
-    if [[ ! "$path" =~ ^/sys/class/power_supply/[a-zA-Z0-9_-]+/[a-z_]+$ ]]; then
+    if [[ ! "$path" =~ ^/sys/class/power_supply/[a-zA-Z0-9_-]{1,64}/[a-z_]+$ ]]; then
         echo "Error: Forbidden path: $path" >&2
         exit "$EXIT_ERROR"
     fi
+    # Whitelist allowed sysfs filenames to prevent writes to unrelated files
+    local filename
+    filename=$(basename "$path")
+    case "$filename" in
+        charge_control_end_threshold|stop_charge_thresh|\
+        charge_control_start_threshold|start_charge_thresh|\
+        charge_behaviour) ;;
+        *) echo "Error: Forbidden sysfs file: $filename" >&2; exit "$EXIT_ERROR" ;;
+    esac
     [[ -f "$path" ]] || { echo "Error: Path does not exist or is not a file: $path" >&2; exit "$EXIT_ERROR"; }
 }
 
@@ -114,7 +123,10 @@ case "$ACTION" in
         validate_threshold "$END_VAL"
         validate_sysfs_path "$END_PATH"
         log_action "Setting ${BAT_NAME} end threshold to ${END_VAL}"
-        echo "$END_VAL" >"$END_PATH"
+        if ! echo "$END_VAL" >"$END_PATH" 2>/dev/null; then
+            echo "Error: Failed to write $END_VAL to $END_PATH" >&2
+            exit "$EXIT_ERROR"
+        fi
         ;;
     START)
         if [ "$#" -ne 2 ]; then echo "Error: START requires 1 argument" >&2; exit "$EXIT_ERROR"; fi
@@ -122,7 +134,10 @@ case "$ACTION" in
         validate_threshold "$START_VAL"
         validate_sysfs_path "$START_PATH"
         log_action "Setting ${BAT_NAME} start threshold to ${START_VAL}"
-        echo "$START_VAL" >"$START_PATH"
+        if ! echo "$START_VAL" >"$START_PATH" 2>/dev/null; then
+            echo "Error: Failed to write $START_VAL to $START_PATH" >&2
+            exit "$EXIT_ERROR"
+        fi
         ;;
     END_START)
         if [ "$#" -ne 3 ]; then echo "Error: END_START requires 2 arguments" >&2; exit "$EXIT_ERROR"; fi
@@ -134,7 +149,14 @@ case "$ACTION" in
         validate_sysfs_path "$START_PATH"
         log_action "Setting ${BAT_NAME} thresholds: END=${END_VAL}, START=${START_VAL}"
         # Write END first, then START (safe order for increasing range)
-        echo "$END_VAL" >"$END_PATH" && echo "$START_VAL" >"$START_PATH"
+        if ! echo "$END_VAL" >"$END_PATH" 2>/dev/null; then
+            echo "Error: Failed to write $END_VAL to $END_PATH" >&2
+            exit "$EXIT_ERROR"
+        fi
+        if ! echo "$START_VAL" >"$START_PATH" 2>/dev/null; then
+            echo "Error: Failed to write $START_VAL to $START_PATH" >&2
+            exit "$EXIT_ERROR"
+        fi
         ;;
     START_END)
         if [ "$#" -ne 3 ]; then echo "Error: START_END requires 2 arguments" >&2; exit "$EXIT_ERROR"; fi
@@ -146,7 +168,14 @@ case "$ACTION" in
         validate_sysfs_path "$END_PATH"
         log_action "Setting ${BAT_NAME} thresholds: START=${START_VAL}, END=${END_VAL}"
         # Write START first, then END (safe order for decreasing range)
-        echo "$START_VAL" >"$START_PATH" && echo "$END_VAL" >"$END_PATH"
+        if ! echo "$START_VAL" >"$START_PATH" 2>/dev/null; then
+            echo "Error: Failed to write $START_VAL to $START_PATH" >&2
+            exit "$EXIT_ERROR"
+        fi
+        if ! echo "$END_VAL" >"$END_PATH" 2>/dev/null; then
+            echo "Error: Failed to write $END_VAL to $END_PATH" >&2
+            exit "$EXIT_ERROR"
+        fi
         ;;
     FORCE_DISCHARGE)
         if [ "$#" -ne 2 ]; then echo "Error: FORCE_DISCHARGE requires 1 argument" >&2; exit "$EXIT_ERROR"; fi
@@ -157,7 +186,10 @@ case "$ACTION" in
         fi
         validate_sysfs_path "$FORCE_DISCHARGE_PATH"
         log_action "Setting ${BAT_NAME} force discharge to ${MODE}"
-        echo "$MODE" >"$FORCE_DISCHARGE_PATH"
+        if ! echo "$MODE" >"$FORCE_DISCHARGE_PATH" 2>/dev/null; then
+            echo "Error: Failed to write $MODE to $FORCE_DISCHARGE_PATH" >&2
+            exit "$EXIT_ERROR"
+        fi
         ;;
     *)
         echo "Error: Unknown Action: '$ACTION' for $BAT_NAME" >&2

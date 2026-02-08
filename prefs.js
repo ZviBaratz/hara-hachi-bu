@@ -795,6 +795,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         cancelBtn.connect('clicked', () => dialog.close());
         saveBtn.connect('clicked', () => {
             try {
+                errorLabel.hide();
                 const name = nameRow.get_text().trim();
                 const powerMode = powerModeKeys[powerRow.selected];
                 const batteryMode = batteryModeKeys[batteryRow.selected];
