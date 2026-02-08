@@ -51,6 +51,7 @@ class ProfileRow extends Adw.ActionRow {
             icon_name: 'document-edit-symbolic',
             valign: Gtk.Align.CENTER,
             css_classes: ['flat'],
+            tooltip_text: _('Edit profile'),
         });
         editButton.connect('clicked', () => onEdit(profile));
         this.add_suffix(editButton);
@@ -60,6 +61,7 @@ class ProfileRow extends Adw.ActionRow {
             icon_name: 'user-trash-symbolic',
             valign: Gtk.Align.CENTER,
             css_classes: ['flat'],
+            tooltip_text: _('Delete profile'),
         });
         deleteButton.connect('clicked', () => onDelete(profile));
         this.add_suffix(deleteButton);
@@ -926,14 +928,31 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const deleteButton = dialog.add_button(_('Delete'), Gtk.ResponseType.OK);
         deleteButton.add_css_class('destructive-action');
 
+        // Error label for delete failures
+        const errorLabel = new Gtk.Label({
+            css_classes: ['error'],
+            halign: Gtk.Align.START,
+            visible: false,
+            wrap: true,
+            margin_top: 12,
+        });
+        dialog.get_content_area().append(errorLabel);
+
         dialog.connect('response', (dlg, response) => {
             try {
-                if (response === Gtk.ResponseType.OK)
-                    ProfileMatcher.deleteProfile(settings, profile.id);
+                if (response === Gtk.ResponseType.OK) {
+                    const success = ProfileMatcher.deleteProfile(settings, profile.id);
+                    if (!success) {
+                        errorLabel.set_text(_('Failed to delete profile. Please try again.'));
+                        errorLabel.show();
+                        return;
+                    }
+                }
                 dlg.close();
             } catch (e) {
                 console.error(`Unified Power Manager: Delete dialog error: ${e.message}`);
-                dlg.close();
+                errorLabel.set_text(_('An unexpected error occurred. Check logs for details.'));
+                errorLabel.show();
             }
         });
 

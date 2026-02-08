@@ -75,7 +75,13 @@ fi
 
 # Check polkit version for rules format
 if command -v pkaction >/dev/null 2>&1; then
-    POLKIT_VERSION=$(pkaction --version 2>/dev/null | cut -d' ' -f3 || echo "0.100")
+    POLKIT_RAW=$(pkaction --version 2>/dev/null || true)
+    POLKIT_VERSION=$(echo "$POLKIT_RAW" | grep -oE '[0-9]+\.[0-9]+' | head -1)
+    if [ -z "$POLKIT_VERSION" ]; then
+        echo "WARNING: Could not parse polkit version from: $POLKIT_RAW"
+        echo "         Assuming modern polkit (0.106+)."
+        POLKIT_VERSION="0.106"
+    fi
 else
     POLKIT_VERSION=""
     echo "WARNING: pkaction not found. Polkit may not be installed."
