@@ -109,7 +109,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Auto-manage battery levels
         const autoManageRow = new Adw.SwitchRow({
             title: _('Auto-Manage Battery Levels'),
-            subtitle: _('Automatically discharge when battery exceeds threshold (AC power only)'),
+            subtitle: _('Automatically bring battery down to threshold when plugged in'),
         });
         settings.bind('auto-manage-battery-levels', autoManageRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(autoManageRow);
@@ -781,8 +781,8 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const toolbarView = new Adw.ToolbarView();
         toolbarView.add_top_bar(headerBar);
         toolbarView.set_content(contentPage);
+        toolbarView.add_bottom_bar(errorLabel);
         outerBox.append(toolbarView);
-        outerBox.append(errorLabel);
 
         const dialog = new Adw.Dialog({
             title: isEdit ? _('Edit Profile') : _('Create Profile'),
@@ -803,11 +803,16 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 const autoManaged = autoManagedRow.active;
 
                 // Collect rules
-                const rules = ruleRows.map(row => ({
+                const allRules = ruleRows.map(row => ({
                     param: row.getParam(),
                     op: row.getOp(),
                     value: row.getValue(),
-                })).filter(r => r.param && r.op && r.value);
+                }));
+                const rules = allRules.filter(r => r.param && r.op && r.value);
+                if (rules.length < allRules.length) {
+                    errorLabel.set_text(_('Some conditions were incomplete and have been removed.'));
+                    errorLabel.show();
+                }
 
                 if (autoManaged && rules.length === 0) {
                     errorLabel.set_text(_('Auto-activate is enabled but no conditions are defined. Add at least one condition or disable auto-activate.'));
