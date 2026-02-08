@@ -5,7 +5,6 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-EXTENSION_USER="${SUDO_USER:-$USER}"
 
 function show_help() {
     echo "Unified Power Manager Helper Installer"
@@ -60,17 +59,31 @@ fi
 
 echo "Installing Unified Power Manager helper components..."
 
+HELPER_INSTALLED=false
+RULES_INSTALLED=false
+
 # Install the helper script
 echo "Installing unified-power-ctl to /usr/local/bin..."
 cp "${SCRIPT_DIR}/resources/unified-power-ctl" /usr/local/bin/unified-power-ctl
 chmod +x /usr/local/bin/unified-power-ctl
+if [ -f "/usr/local/bin/unified-power-ctl" ]; then
+    HELPER_INSTALLED=true
+    echo "Helper script installed successfully."
+else
+    echo "ERROR: Failed to install helper script to /usr/local/bin/"
+fi
 
 # Check polkit version for rules format
-POLKIT_VERSION=$(pkaction --version 2>/dev/null | cut -d' ' -f3 || echo "0.100")
+if command -v pkaction >/dev/null 2>&1; then
+    POLKIT_VERSION=$(pkaction --version 2>/dev/null | cut -d' ' -f3 || echo "0.100")
+else
+    POLKIT_VERSION=""
+    echo "WARNING: pkaction not found. Polkit may not be installed."
+    echo "         You may need to enter your password each time battery thresholds are changed."
+fi
 
 # Compare versions - 0.106 and above use JavaScript rules
-RULES_INSTALLED=false
-if printf '%s\n%s' "0.106" "$POLKIT_VERSION" | sort -V | head -n1 | grep -q "0.106"; then
+if [ -n "$POLKIT_VERSION" ] && printf '%s\n%s' "0.106" "$POLKIT_VERSION" | sort -V | head -n1 | grep -q "0.106"; then
     echo "Using modern polkit rules format..."
     if [ -d "/etc/polkit-1/rules.d" ]; then
         cp "${SCRIPT_DIR}/resources/10-unified-power-manager.rules" /etc/polkit-1/rules.d/
@@ -84,7 +97,7 @@ if printf '%s\n%s' "0.106" "$POLKIT_VERSION" | sort -V | head -n1 | grep -q "0.1
         echo "WARNING: /etc/polkit-1/rules.d directory not found."
         echo "         You may need to create it or polkit may not support JavaScript rules."
     fi
-else
+elif [ -n "$POLKIT_VERSION" ]; then
     echo "WARNING: Polkit version $POLKIT_VERSION is older than 0.106."
     echo "         JavaScript rules are not supported. You may need to enter your password"
     echo "         each time battery thresholds are changed."
@@ -105,11 +118,21 @@ else
 fi
 
 echo ""
-echo "Installation complete!"
+if [ "$HELPER_INSTALLED" = true ]; then
+    echo "Installation complete!"
+    if [ "$RULES_INSTALLED" = false ]; then
+        echo "NOTE: Polkit rules were not installed. Password prompts may appear for threshold changes."
+    fi
+else
+    echo "Installation FAILED: helper script could not be installed."
+fi
 echo ""
 echo "To enable the extension, run:"
 echo "  gnome-extensions enable unified-power-manager@baratzz"
-
-echo "" 
-
+echo ""
 echo "Then log out and log back in, or restart GNOME Shell (Alt+F2, type 'r', press Enter)"
+
+# Exit non-zero if the critical helper script failed to install
+if [ "$HELPER_INSTALLED" = false ]; then
+    exit 1
+fi

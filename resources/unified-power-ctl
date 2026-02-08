@@ -12,7 +12,7 @@ EXIT_ERROR=1
 
 # Log action to system journal
 log_action() {
-    logger -t unified-power-ctl "[ACTION] $*"
+    logger -t unified-power-ctl "[ACTION] uid=${PKEXEC_UID:-?} $*"
 }
 
 # Validate that a sysfs path exists and is a regular file
@@ -28,6 +28,8 @@ validate_sysfs_path() {
 }
 
 # Sanitize input values - whitelist allowed characters
+# Allows hyphens for mode values like "force-discharge"; battery names are
+# further restricted by the command-parsing regex (alphanumeric + underscore only).
 sanitize_input() {
     if [[ ! "$1" =~ ^[a-zA-Z0-9_\-]+$ ]]; then
         echo "Error: Invalid characters in input: $1" >&2
@@ -37,7 +39,7 @@ sanitize_input() {
 
 # Helper validation function
 is_int() {
-    [[ "$1" =~ ^[0-9]+$ ]]
+    [[ "$1" =~ ^(0|[1-9][0-9]*)$ ]]
 }
 
 validate_threshold() {

@@ -23,7 +23,12 @@
 
 /* Scrollable section for the menu content */
 .upm-menu-scroll-section {
-    max-height: 250px;
+    max-height: 350px;
+}
+
+/* Error/warning item styling (e.g., missing helper script) */
+.upm-error-item {
+    color: #f5c211; /* GNOME warning yellow */
 }
 
 /* Loading state styling - applied to the toggle widget */
