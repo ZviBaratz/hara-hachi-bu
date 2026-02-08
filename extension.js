@@ -178,17 +178,6 @@ export default class UnifiedPowerManager extends Extension {
     disable() {
         console.log('Unified Power Manager: Disabling extension');
 
-        // Disconnect hide-builtin setting watcher
-        if (this._hideBuiltinId) {
-            this._settings.disconnect(this._hideBuiltinId);
-            this._hideBuiltinId = null;
-        }
-
-        if (this._uiPatcher) {
-            this._uiPatcher.destroy();
-            this._uiPatcher = null;
-        }
-
         if (this._sessionId) {
             Main.sessionMode.disconnect(this._sessionId);
             this._sessionId = null;

@@ -29,7 +29,7 @@ validate_sysfs_path() {
 
 # Sanitize input values - whitelist allowed characters
 sanitize_input() {
-    if [[ ! "$1" =~ ^[a-zA-Z0-9_\.\-]+$ ]]; then
+    if [[ ! "$1" =~ ^[a-zA-Z0-9_\-]+$ ]]; then
         echo "Error: Invalid characters in input: $1" >&2
         exit "$EXIT_ERROR"
     fi
