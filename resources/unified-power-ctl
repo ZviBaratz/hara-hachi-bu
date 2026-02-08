@@ -33,7 +33,16 @@ validate_sysfs_path() {
         charge_behaviour) ;;
         *) echo "Error: Forbidden sysfs file: $filename" >&2; exit "$EXIT_ERROR" ;;
     esac
-    [[ -f "$path" ]] || { echo "Error: Path does not exist or is not a file: $path" >&2; exit "$EXIT_ERROR"; }
+    # Phase 3: Canonicalize and verify resolved path is under /sys/
+    local resolved
+    resolved=$(realpath -e "$path" 2>/dev/null) || {
+        echo "Error: Path does not exist or cannot be resolved: $path" >&2
+        exit "$EXIT_ERROR"
+    }
+    if [[ ! "$resolved" =~ ^/sys/ ]]; then
+        echo "Error: Resolved path escapes /sys/: $resolved" >&2
+        exit "$EXIT_ERROR"
+    fi
 }
 
 # Sanitize input values - whitelist allowed characters
@@ -123,7 +132,7 @@ case "$ACTION" in
         validate_threshold "$END_VAL"
         validate_sysfs_path "$END_PATH"
         log_action "Setting ${BAT_NAME} end threshold to ${END_VAL}"
-        if ! echo "$END_VAL" >"$END_PATH" 2>/dev/null; then
+        if ! echo "$END_VAL" >"$END_PATH"; then
             echo "Error: Failed to write $END_VAL to $END_PATH" >&2
             exit "$EXIT_ERROR"
         fi
@@ -134,7 +143,7 @@ case "$ACTION" in
         validate_threshold "$START_VAL"
         validate_sysfs_path "$START_PATH"
         log_action "Setting ${BAT_NAME} start threshold to ${START_VAL}"
-        if ! echo "$START_VAL" >"$START_PATH" 2>/dev/null; then
+        if ! echo "$START_VAL" >"$START_PATH"; then
             echo "Error: Failed to write $START_VAL to $START_PATH" >&2
             exit "$EXIT_ERROR"
         fi
@@ -149,11 +158,11 @@ case "$ACTION" in
         validate_sysfs_path "$START_PATH"
         log_action "Setting ${BAT_NAME} thresholds: END=${END_VAL}, START=${START_VAL}"
         # Write END first, then START (safe order for increasing range)
-        if ! echo "$END_VAL" >"$END_PATH" 2>/dev/null; then
+        if ! echo "$END_VAL" >"$END_PATH"; then
             echo "Error: Failed to write $END_VAL to $END_PATH" >&2
             exit "$EXIT_ERROR"
         fi
-        if ! echo "$START_VAL" >"$START_PATH" 2>/dev/null; then
+        if ! echo "$START_VAL" >"$START_PATH"; then
             echo "Error: Failed to write $START_VAL to $START_PATH" >&2
             exit "$EXIT_ERROR"
         fi
@@ -168,11 +177,11 @@ case "$ACTION" in
         validate_sysfs_path "$END_PATH"
         log_action "Setting ${BAT_NAME} thresholds: START=${START_VAL}, END=${END_VAL}"
         # Write START first, then END (safe order for decreasing range)
-        if ! echo "$START_VAL" >"$START_PATH" 2>/dev/null; then
+        if ! echo "$START_VAL" >"$START_PATH"; then
             echo "Error: Failed to write $START_VAL to $START_PATH" >&2
             exit "$EXIT_ERROR"
         fi
-        if ! echo "$END_VAL" >"$END_PATH" 2>/dev/null; then
+        if ! echo "$END_VAL" >"$END_PATH"; then
             echo "Error: Failed to write $END_VAL to $END_PATH" >&2
             exit "$EXIT_ERROR"
         fi
@@ -186,7 +195,7 @@ case "$ACTION" in
         fi
         validate_sysfs_path "$FORCE_DISCHARGE_PATH"
         log_action "Setting ${BAT_NAME} force discharge to ${MODE}"
-        if ! echo "$MODE" >"$FORCE_DISCHARGE_PATH" 2>/dev/null; then
+        if ! echo "$MODE" >"$FORCE_DISCHARGE_PATH"; then
             echo "Error: Failed to write $MODE to $FORCE_DISCHARGE_PATH" >&2
             exit "$EXIT_ERROR"
         fi
