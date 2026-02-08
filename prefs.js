@@ -812,6 +812,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 if (rules.length < allRules.length) {
                     errorLabel.set_text(_('Some conditions were incomplete and have been removed.'));
                     errorLabel.show();
+                    return;
                 }
 
                 if (autoManaged && rules.length === 0) {
