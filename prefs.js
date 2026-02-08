@@ -11,9 +11,10 @@ import GObject from 'gi://GObject';
 import Gettext from 'gettext';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import * as ProfileMatcher from './lib/profileMatcher.js';
-import {PARAMETERS, OPERATORS} from './lib/parameterDetector.js';
 import * as RuleEvaluator from './lib/ruleEvaluator.js';
 import * as Constants from './lib/constants.js';
+
+const {PARAMETERS, OPERATORS} = Constants;
 
 const _ = s => Gettext.dgettext('unified-power-manager', s);
 
@@ -176,251 +177,40 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
         window.add(thresholdsPage);
 
-        // Full Capacity Mode Group
-        const fullGroup = new Adw.PreferencesGroup({
-            title: _('Full Capacity Mode'),
-            description: _('Maximum battery capacity for travel'),
-        });
-        thresholdsPage.add(fullGroup);
+        // Threshold mode groups
+        const thresholdConfigs = [
+            {
+                title: _('Full Capacity Mode'),
+                description: _('Maximum battery capacity for travel'),
+                startKey: 'threshold-full-start',
+                endKey: 'threshold-full-end',
+                startRange: {lower: 80, upper: 99},
+                endRange: {lower: 85, upper: 100},
+                defaults: {start: 95, end: 100},
+            },
+            {
+                title: _('Balanced Mode'),
+                description: _('Balance between capacity and battery lifespan'),
+                startKey: 'threshold-balanced-start',
+                endKey: 'threshold-balanced-end',
+                startRange: {lower: 60, upper: 80},
+                endRange: {lower: 65, upper: 90},
+                defaults: {start: 75, end: 80},
+            },
+            {
+                title: _('Max Lifespan Mode'),
+                description: _('Maximize battery lifespan for desk work'),
+                startKey: 'threshold-lifespan-start',
+                endKey: 'threshold-lifespan-end',
+                startRange: {lower: 40, upper: 60},
+                endRange: {lower: 45, upper: 70},
+                defaults: {start: 55, end: 60},
+            },
+        ];
 
-        const fullStartRow = new Adw.SpinRow({
-            title: _('Start Charging At'),
-            subtitle: _('Battery will start charging when it drops to %d%%').format(
-                settings.get_int('threshold-full-start')
-            ),
-            adjustment: new Gtk.Adjustment({
-                lower: 80,
-                upper: 99,
-                step_increment: 1,
-                page_increment: 5,
-                value: settings.get_int('threshold-full-start'),
-            }),
-        });
-        settings.bind('threshold-full-start', fullStartRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
-
-        // Update subtitle when value changes
-        fullStartRow.adjustment.connect('value-changed', () => {
-            const value = Math.round(fullStartRow.adjustment.value);
-            fullStartRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
-            // Ensure end threshold is always higher than start
-            if (fullEndRow.adjustment.value <= value) {
-                fullEndRow.adjustment.value = value + 1;
-            }
-            fullEndRow.adjustment.lower = value + 1;
-        });
-
-        fullGroup.add(fullStartRow);
-
-        const fullEndRow = new Adw.SpinRow({
-            title: _('Stop Charging At'),
-            subtitle: _('Battery will stop charging when it reaches %d%%').format(
-                settings.get_int('threshold-full-end')
-            ),
-            adjustment: new Gtk.Adjustment({
-                lower: 85,
-                upper: 100,
-                step_increment: 1,
-                page_increment: 5,
-                value: settings.get_int('threshold-full-end'),
-            }),
-        });
-        settings.bind('threshold-full-end', fullEndRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
-
-        // Update subtitle when value changes
-        fullEndRow.adjustment.connect('value-changed', () => {
-            const value = Math.round(fullEndRow.adjustment.value);
-            fullEndRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
-            // Ensure start threshold is always lower than end
-            if (fullStartRow.adjustment.value >= value) {
-                fullStartRow.adjustment.value = value - 1;
-            }
-            fullStartRow.adjustment.upper = value - 1;
-        });
-        
-        // Initialize dynamic bounds
-        fullEndRow.adjustment.lower = fullStartRow.adjustment.value + 1;
-        fullStartRow.adjustment.upper = fullEndRow.adjustment.value - 1;
-
-        fullGroup.add(fullEndRow);
-
-        // Reset Button
-        const fullResetRow = new Adw.ActionRow({
-            title: _('Reset to Defaults'),
-        });
-        const fullResetBtn = new Gtk.Button({
-            label: _('Reset'),
-            valign: Gtk.Align.CENTER,
-        });
-        fullResetBtn.connect('clicked', () => {
-            settings.set_int('threshold-full-start', 95);
-            settings.set_int('threshold-full-end', 100);
-        });
-        fullResetRow.add_suffix(fullResetBtn);
-        fullGroup.add(fullResetRow);
-
-        // Balanced Mode Group
-        const balancedGroup = new Adw.PreferencesGroup({
-            title: _('Balanced Mode'),
-            description: _('Balance between capacity and battery lifespan'),
-        });
-        thresholdsPage.add(balancedGroup);
-
-        const balancedStartRow = new Adw.SpinRow({
-            title: _('Start Charging At'),
-            subtitle: _('Battery will start charging when it drops to %d%%').format(
-                settings.get_int('threshold-balanced-start')
-            ),
-            adjustment: new Gtk.Adjustment({
-                lower: 60,
-                upper: 80,
-                step_increment: 1,
-                page_increment: 5,
-                value: settings.get_int('threshold-balanced-start'),
-            }),
-        });
-        settings.bind('threshold-balanced-start', balancedStartRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
-
-        // Update subtitle when value changes
-        balancedStartRow.adjustment.connect('value-changed', () => {
-            const value = Math.round(balancedStartRow.adjustment.value);
-            balancedStartRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
-            // Ensure end threshold is always higher than start
-            if (balancedEndRow.adjustment.value <= value) {
-                balancedEndRow.adjustment.value = value + 1;
-            }
-            balancedEndRow.adjustment.lower = value + 1;
-        });
-
-        balancedGroup.add(balancedStartRow);
-
-        const balancedEndRow = new Adw.SpinRow({
-            title: _('Stop Charging At'),
-            subtitle: _('Battery will stop charging when it reaches %d%%').format(
-                settings.get_int('threshold-balanced-end')
-            ),
-            adjustment: new Gtk.Adjustment({
-                lower: 65,
-                upper: 90,
-                step_increment: 1,
-                page_increment: 5,
-                value: settings.get_int('threshold-balanced-end'),
-            }),
-        });
-        settings.bind('threshold-balanced-end', balancedEndRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
-
-        // Update subtitle when value changes
-        balancedEndRow.adjustment.connect('value-changed', () => {
-            const value = Math.round(balancedEndRow.adjustment.value);
-            balancedEndRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
-            // Ensure start threshold is always lower than end
-            if (balancedStartRow.adjustment.value >= value) {
-                balancedStartRow.adjustment.value = value - 1;
-            }
-            balancedStartRow.adjustment.upper = value - 1;
-        });
-
-        // Initialize dynamic bounds
-        balancedEndRow.adjustment.lower = balancedStartRow.adjustment.value + 1;
-        balancedStartRow.adjustment.upper = balancedEndRow.adjustment.value - 1;
-
-        balancedGroup.add(balancedEndRow);
-
-        // Reset Button
-        const balancedResetRow = new Adw.ActionRow({
-            title: _('Reset to Defaults'),
-        });
-        const balancedResetBtn = new Gtk.Button({
-            label: _('Reset'),
-            valign: Gtk.Align.CENTER,
-        });
-        balancedResetBtn.connect('clicked', () => {
-            settings.set_int('threshold-balanced-start', 75);
-            settings.set_int('threshold-balanced-end', 80);
-        });
-        balancedResetRow.add_suffix(balancedResetBtn);
-        balancedGroup.add(balancedResetRow);
-
-        // Max Lifespan Mode Group
-        const lifespanGroup = new Adw.PreferencesGroup({
-            title: _('Max Lifespan Mode'),
-            description: _('Maximize battery lifespan for desk work'),
-        });
-        thresholdsPage.add(lifespanGroup);
-
-        const lifespanStartRow = new Adw.SpinRow({
-            title: _('Start Charging At'),
-            subtitle: _('Battery will start charging when it drops to %d%%').format(
-                settings.get_int('threshold-lifespan-start')
-            ),
-            adjustment: new Gtk.Adjustment({
-                lower: 40,
-                upper: 60,
-                step_increment: 1,
-                page_increment: 5,
-                value: settings.get_int('threshold-lifespan-start'),
-            }),
-        });
-        settings.bind('threshold-lifespan-start', lifespanStartRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
-
-        // Update subtitle when value changes
-        lifespanStartRow.adjustment.connect('value-changed', () => {
-            const value = Math.round(lifespanStartRow.adjustment.value);
-            lifespanStartRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
-            // Ensure end threshold is always higher than start
-            if (lifespanEndRow.adjustment.value <= value) {
-                lifespanEndRow.adjustment.value = value + 1;
-            }
-            lifespanEndRow.adjustment.lower = value + 1;
-        });
-
-        lifespanGroup.add(lifespanStartRow);
-
-        const lifespanEndRow = new Adw.SpinRow({
-            title: _('Stop Charging At'),
-            subtitle: _('Battery will stop charging when it reaches %d%%').format(
-                settings.get_int('threshold-lifespan-end')
-            ),
-            adjustment: new Gtk.Adjustment({
-                lower: 45,
-                upper: 70,
-                step_increment: 1,
-                page_increment: 5,
-                value: settings.get_int('threshold-lifespan-end'),
-            }),
-        });
-        settings.bind('threshold-lifespan-end', lifespanEndRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
-
-        // Update subtitle when value changes
-        lifespanEndRow.adjustment.connect('value-changed', () => {
-            const value = Math.round(lifespanEndRow.adjustment.value);
-            lifespanEndRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
-            // Ensure start threshold is always lower than end
-            if (lifespanStartRow.adjustment.value >= value) {
-                lifespanStartRow.adjustment.value = value - 1;
-            }
-            lifespanStartRow.adjustment.upper = value - 1;
-        });
-        
-        // Initialize dynamic bounds
-        lifespanEndRow.adjustment.lower = lifespanStartRow.adjustment.value + 1;
-        lifespanStartRow.adjustment.upper = lifespanEndRow.adjustment.value - 1;
-
-        lifespanGroup.add(lifespanEndRow);
-
-        // Reset Button
-        const lifespanResetRow = new Adw.ActionRow({
-            title: _('Reset to Defaults'),
-        });
-        const lifespanResetBtn = new Gtk.Button({
-            label: _('Reset'),
-            valign: Gtk.Align.CENTER,
-        });
-        lifespanResetBtn.connect('clicked', () => {
-            settings.set_int('threshold-lifespan-start', 55);
-            settings.set_int('threshold-lifespan-end', 60);
-        });
-        lifespanResetRow.add_suffix(lifespanResetBtn);
-        lifespanGroup.add(lifespanResetRow);
+        for (const config of thresholdConfigs) {
+            thresholdsPage.add(this._buildThresholdGroup(settings, config));
+        }
 
         // Profiles Page
         const profilesPage = new Adw.PreferencesPage({
@@ -607,6 +397,84 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             this._profileSettingsId = null;
         }
         this._settings = null;
+    }
+
+    _buildThresholdGroup(settings, config) {
+        const group = new Adw.PreferencesGroup({
+            title: config.title,
+            description: config.description,
+        });
+
+        const startRow = new Adw.SpinRow({
+            title: _('Start Charging At'),
+            subtitle: _('Battery will start charging when it drops to %d%%').format(
+                settings.get_int(config.startKey)
+            ),
+            adjustment: new Gtk.Adjustment({
+                lower: config.startRange.lower,
+                upper: config.startRange.upper,
+                step_increment: 1,
+                page_increment: 5,
+                value: settings.get_int(config.startKey),
+            }),
+        });
+        settings.bind(config.startKey, startRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        const endRow = new Adw.SpinRow({
+            title: _('Stop Charging At'),
+            subtitle: _('Battery will stop charging when it reaches %d%%').format(
+                settings.get_int(config.endKey)
+            ),
+            adjustment: new Gtk.Adjustment({
+                lower: config.endRange.lower,
+                upper: config.endRange.upper,
+                step_increment: 1,
+                page_increment: 5,
+                value: settings.get_int(config.endKey),
+            }),
+        });
+        settings.bind(config.endKey, endRow.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        // Cross-validate: start must always be less than end
+        startRow.adjustment.connect('value-changed', () => {
+            const value = Math.round(startRow.adjustment.value);
+            startRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
+            if (endRow.adjustment.value <= value)
+                endRow.adjustment.value = value + 1;
+            endRow.adjustment.lower = value + 1;
+        });
+
+        endRow.adjustment.connect('value-changed', () => {
+            const value = Math.round(endRow.adjustment.value);
+            endRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
+            if (startRow.adjustment.value >= value)
+                startRow.adjustment.value = value - 1;
+            startRow.adjustment.upper = value - 1;
+        });
+
+        // Initialize dynamic bounds
+        endRow.adjustment.lower = startRow.adjustment.value + 1;
+        startRow.adjustment.upper = endRow.adjustment.value - 1;
+
+        group.add(startRow);
+        group.add(endRow);
+
+        // Reset button
+        const resetRow = new Adw.ActionRow({
+            title: _('Reset to Defaults'),
+        });
+        const resetBtn = new Gtk.Button({
+            label: _('Reset'),
+            valign: Gtk.Align.CENTER,
+        });
+        resetBtn.connect('clicked', () => {
+            settings.set_int(config.startKey, config.defaults.start);
+            settings.set_int(config.endKey, config.defaults.end);
+        });
+        resetRow.add_suffix(resetBtn);
+        group.add(resetRow);
+
+        return group;
     }
 
     _checkFileExists(path) {
@@ -940,6 +808,12 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     const id = isEdit ?
                         existingProfile.id :
                         name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+
+                    if (!isEdit && id.length === 0) {
+                        errorLabel.set_text(_('Profile name must contain at least one letter or number.'));
+                        errorLabel.show();
+                        return;
+                    }
 
                     // Validate using centralized validation
                     const validation = ProfileMatcher.validateProfileInput(

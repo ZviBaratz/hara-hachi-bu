@@ -102,7 +102,10 @@ export default class UnifiedPowerManager extends Extension {
                 );
             }
 
-            console.log('Unified Power Manager: Extension initialized successfully');
+            if (this._pendingDestroy)
+                console.log('Unified Power Manager: Extension initialized but destroy pending');
+            else
+                console.log('Unified Power Manager: Extension initialized successfully');
         } catch (e) {
             console.error(`Unified Power Manager: Failed to initialize: ${e}`);
             console.error(e.stack);
