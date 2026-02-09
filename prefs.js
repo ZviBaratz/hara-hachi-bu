@@ -1,6 +1,6 @@
 /*
  * Unified Power Manager - GNOME Shell Extension
- * Copyright (C) 2024 zvi
+ * Copyright (C) 2024-2026 zvi
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 'use strict';
@@ -464,9 +464,11 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         endRow.adjustment.connect('value-changed', () => {
             const value = Math.round(endRow.adjustment.value);
             endRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
-            if (startRow.adjustment.value >= value)
-                startRow.adjustment.value = value - 1;
-            startRow.adjustment.upper = value - 1;
+            if (hasStartThreshold) {
+                if (startRow.adjustment.value >= value)
+                    startRow.adjustment.value = value - 1;
+                startRow.adjustment.upper = value - 1;
+            }
         });
 
         // Initialize dynamic bounds
@@ -869,7 +871,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
 
         // Store reference to prevent GC before GTK processes the dialog
-        if (this._profileDialog)
+        if (this._profileDialog && this._profileDialogClosedId)
             this._profileDialog.disconnect(this._profileDialogClosedId);
         this._profileDialogClosedId = dialog.connect('closed', () => {
             this._profileDialog = null;

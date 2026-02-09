@@ -49,9 +49,9 @@ function uninstall() {
 }
 
 # Parse arguments
-if [[ "$1" == "--uninstall" ]]; then
+if [[ "${1:-}" == "--uninstall" ]]; then
     uninstall
-elif [[ "$1" == "--help" || "$1" == "-h" ]]; then
+elif [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
     show_help
     exit 0
 fi
