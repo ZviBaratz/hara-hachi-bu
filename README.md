@@ -188,4 +188,7 @@ GPL-3.0-or-later
 
 ## Contributing
 
-Issues and pull requests welcome at https://github.com/zvi/unified-power-manager
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, commit conventions,
+and pull request guidelines.
+
+Issues and pull requests welcome at https://github.com/ZviBaratz/unified-power-manager

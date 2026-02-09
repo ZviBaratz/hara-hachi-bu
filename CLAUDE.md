@@ -74,6 +74,9 @@ cat /sys/class/power_supply/BAT0/capacity
 
 ## Commit Convention
 
+> **Canonical reference:** [CONTRIBUTING.md](CONTRIBUTING.md) is the contributor-facing
+> source of truth. This section is kept in sync for AI assistant context.
+
 This project uses [Conventional Commits](https://www.conventionalcommits.org/).
 
 ### Format
