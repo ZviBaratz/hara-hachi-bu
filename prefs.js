@@ -661,6 +661,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             const paramDrop = new Gtk.DropDown({
                 model: Gtk.StringList.new(paramLabels),
                 selected: rule ? Math.max(0, paramKeys.indexOf(rule.param)) : 0,
+                accessible_name: _('Condition parameter'),
             });
             paramDrop.hexpand = true;
             rowBox.append(paramDrop);
@@ -669,6 +670,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             const opDrop = new Gtk.DropDown({
                 model: Gtk.StringList.new(opLabels),
                 selected: rule ? Math.max(0, opKeys.indexOf(rule.op)) : 0,
+                accessible_name: _('Condition operator'),
             });
             rowBox.append(opDrop);
 
@@ -696,6 +698,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             };
             const valueDrop = new Gtk.DropDown({
                 model: Gtk.StringList.new([]),
+                accessible_name: _('Condition value'),
             });
             valueDrop.hexpand = true;
             updateValueModel();
@@ -795,6 +798,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         cancelBtn.connect('clicked', () => dialog.close());
         saveBtn.connect('clicked', () => {
             try {
+                errorLabel.set_text('');
                 errorLabel.hide();
                 const name = nameRow.get_text().trim();
                 const powerMode = powerModeKeys[powerRow.selected];
