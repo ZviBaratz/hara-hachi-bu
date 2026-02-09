@@ -18,6 +18,12 @@ function show_help() {
 }
 
 function uninstall() {
+    if [ "$EUID" -ne 0 ]; then
+        echo "Error: Uninstall must be run as root."
+        echo "Please run with sudo: sudo ./install-helper.sh --uninstall"
+        exit 1
+    fi
+
     echo "Uninstalling Unified Power Manager helper components..."
     
     if [ -f "/usr/local/bin/unified-power-ctl" ]; then
@@ -93,6 +99,7 @@ if [ -n "$POLKIT_VERSION" ] && printf '%s\n%s' "0.106" "$POLKIT_VERSION" | sort 
     echo "Using modern polkit rules format..."
     if [ -d "/etc/polkit-1/rules.d" ]; then
         cp "${SCRIPT_DIR}/resources/10-unified-power-manager.rules" /etc/polkit-1/rules.d/
+        chmod 644 /etc/polkit-1/rules.d/10-unified-power-manager.rules
         if [ -f "/etc/polkit-1/rules.d/10-unified-power-manager.rules" ]; then
             RULES_INSTALLED=true
             echo "Polkit rules installed successfully."
@@ -114,6 +121,7 @@ echo "Installing policy action..."
 if [ -d "/usr/share/polkit-1/actions" ]; then
     cp "${SCRIPT_DIR}/resources/org.gnome.shell.extensions.unified-power-manager.policy" \
         /usr/share/polkit-1/actions/
+    chmod 644 /usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy
     if [ -f "/usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy" ]; then
         echo "Policy action installed successfully."
     else
