@@ -6,6 +6,6 @@
     "shell-version": ["46", "47", "48"],
     "settings-schema": "org.gnome.shell.extensions.unified-power-manager",
     "gettext-domain": "unified-power-manager",
-    "url": "https://github.com/zvi/unified-power-manager",
+    "url": "https://github.com/ZviBaratz/unified-power-manager",
     "session-modes": ["user"]
 }
