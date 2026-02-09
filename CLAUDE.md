@@ -504,10 +504,6 @@ Key settings:
 - Subtitle displays "Applying [profile name]..." or "Setting [mode]..."
 - Prevents confusion during async operations
 
-**Profile ID Preview**
-- Preferences UI now shows live preview of profile ID during creation
-- Helps users understand how profile names are converted to IDs
-- Prevents surprises with auto-generated IDs
 
 ## Error Handling Patterns
 
