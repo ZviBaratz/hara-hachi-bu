@@ -25,10 +25,10 @@ class ProfileRow extends Adw.ActionRow {
         // Build subtitle with human-readable mode labels
         const powerLabel = Constants.POWER_MODES[profile.powerMode]?.label ?? profile.powerMode;
         const batteryLabel = Constants.BATTERY_MODES[profile.batteryMode]?.label ?? profile.batteryMode;
-        let subtitle = `${powerLabel} + ${batteryLabel}`;
+        let subtitle = _('%s + %s').format(powerLabel, batteryLabel);
         if (profile.forceDischarge && profile.forceDischarge !== 'unspecified') {
             const fdLabel = Constants.FORCE_DISCHARGE_OPTIONS[profile.forceDischarge]?.label ?? profile.forceDischarge;
-            subtitle += ` · ${_('Force Discharge')}: ${_(fdLabel)}`;
+            subtitle = _('%s \u00b7 Force Discharge: %s').format(subtitle, _(fdLabel));
         }
 
         super._init({
