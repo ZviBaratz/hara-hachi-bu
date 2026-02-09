@@ -810,7 +810,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 }));
                 const rules = allRules.filter(r => r.param && r.op && r.value);
                 if (rules.length < allRules.length) {
-                    errorLabel.set_text(_('Some conditions were incomplete and have been removed.'));
+                    errorLabel.set_text(_('Some conditions are incomplete. Please complete or remove them before saving.'));
                     errorLabel.show();
                     return;
                 }

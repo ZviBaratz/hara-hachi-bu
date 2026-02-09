@@ -147,7 +147,7 @@
 
     <!-- Device Capabilities (written by extension, read by prefs) -->
     <key name="device-has-start-threshold" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Device supports start threshold</summary>
       <description>Whether the detected battery device supports a start charging threshold. Written by the extension at startup.</description>
     </key>
