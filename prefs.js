@@ -23,8 +23,8 @@ const ProfileRow = GObject.registerClass(
 class ProfileRow extends Adw.ActionRow {
     _init(profile, onEdit, onDelete) {
         // Build subtitle with human-readable mode labels
-        const powerLabel = Constants.POWER_MODES[profile.powerMode]?.label ?? profile.powerMode;
-        const batteryLabel = Constants.BATTERY_MODES[profile.batteryMode]?.label ?? profile.batteryMode;
+        const powerLabel = _(Constants.POWER_MODES[profile.powerMode]?.label ?? profile.powerMode);
+        const batteryLabel = _(Constants.BATTERY_MODES[profile.batteryMode]?.label ?? profile.batteryMode);
         let subtitle = _('%s + %s').format(powerLabel, batteryLabel);
         if (profile.forceDischarge && profile.forceDischarge !== 'unspecified') {
             const fdLabel = Constants.FORCE_DISCHARGE_OPTIONS[profile.forceDischarge]?.label ?? profile.forceDischarge;
@@ -32,7 +32,7 @@ class ProfileRow extends Adw.ActionRow {
         }
 
         super._init({
-            title: profile.name,
+            title: profile.builtin ? _(profile.name) : profile.name,
             subtitle: subtitle,
         });
 
@@ -609,9 +609,9 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Rule row builder helper arrays
         const paramKeys = Object.values(PARAMETERS).map(p => p.name);
-        const paramLabels = Object.values(PARAMETERS).map(p => p.label);
+        const paramLabels = Object.values(PARAMETERS).map(p => _(p.label));
         const opKeys = Object.values(OPERATORS).map(o => o.name);
-        const opLabels = Object.values(OPERATORS).map(o => o.label);
+        const opLabels = Object.values(OPERATORS).map(o => _(o.label));
 
         // Function to add a rule row
         const addRuleRow = (rule = null) => {
@@ -651,7 +651,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 const param = PARAMETERS[paramName];
                 if (param) {
                     valueKeys = [...param.values];
-                    valueLabelsArr = param.values.map(v => param.valueLabels[v]);
+                    valueLabelsArr = param.values.map(v => _(param.valueLabels[v]));
                 } else {
                     valueKeys = [];
                     valueLabelsArr = [];
