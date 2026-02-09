@@ -32,7 +32,7 @@ class ProfileRow extends Adw.ActionRow {
         }
 
         super._init({
-            title: profile.builtin ? _(profile.name) : profile.name,
+            title: ProfileMatcher.getProfileDisplayName(profile),
             subtitle: subtitle,
         });
 
@@ -893,7 +893,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         }
 
         const dialog = new Adw.AlertDialog({
-            heading: _('Delete "%s"?').format(profile.name),
+            heading: _('Delete "%s"?').format(ProfileMatcher.getProfileDisplayName(profile)),
             body,
         });
 
