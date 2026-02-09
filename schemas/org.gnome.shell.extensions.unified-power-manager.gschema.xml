@@ -6,7 +6,7 @@
     <key name="show-system-indicator" type="b">
       <default>true</default>
       <summary>Show system indicator</summary>
-      <description>Show indicator icon in the system tray</description>
+      <description>Show indicator icon in the top bar</description>
     </key>
 
     <key name="show-force-discharge" type="b">
@@ -18,7 +18,7 @@
     <key name="indicator-position" type="i">
       <default>0</default>
       <summary>Indicator position</summary>
-      <description>Position of the indicator in system tray</description>
+      <description>Position of the indicator in the top bar</description>
     </key>
 
     <key name="indicator-position-index" type="i">

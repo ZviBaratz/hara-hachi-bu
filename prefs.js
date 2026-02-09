@@ -93,7 +93,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Show system indicator
         const indicatorRow = new Adw.SwitchRow({
             title: _('Show System Indicator'),
-            subtitle: _('Display indicator icon in the system tray'),
+            subtitle: _('Display indicator icon in the top bar'),
         });
         settings.bind('show-system-indicator', indicatorRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(indicatorRow);
@@ -105,14 +105,6 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
         settings.bind('show-force-discharge', forceDischargeRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(forceDischargeRow);
-
-        // Auto-manage battery levels
-        const autoManageRow = new Adw.SwitchRow({
-            title: _('Auto-Manage Battery Levels'),
-            subtitle: _('Automatically bring battery down to threshold when plugged in'),
-        });
-        settings.bind('auto-manage-battery-levels', autoManageRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-        uiGroup.add(autoManageRow);
 
         // Hide built-in power profile indicator
         const hideBuiltinRow = new Adw.SwitchRow({
@@ -146,6 +138,20 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Bind threshold row sensitivity to show-battery-health toggle
         settings.bind('show-battery-health', healthThresholdRow, 'sensitive', Gio.SettingsBindFlags.DEFAULT);
+
+        // Battery Management Group
+        const batteryManageGroup = new Adw.PreferencesGroup({
+            title: _('Battery Management'),
+            description: _('Configure automatic battery level management'),
+        });
+        generalPage.add(batteryManageGroup);
+
+        const autoManageRow = new Adw.SwitchRow({
+            title: _('Auto-Manage Battery Levels'),
+            subtitle: _('Automatically bring battery down to threshold when plugged in'),
+        });
+        settings.bind('auto-manage-battery-levels', autoManageRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        batteryManageGroup.add(autoManageRow);
 
         // Auto-Management Group
         const autoManageGroup = new Adw.PreferencesGroup({
