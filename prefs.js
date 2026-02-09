@@ -556,45 +556,6 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
         mainGroup.add(nameRow);
 
-        // Live ID preview (only for new profiles)
-        let idPreviewRow = null;
-        if (!isEdit) {
-            idPreviewRow = new Adw.ActionRow({
-                title: _('ID'),
-                subtitle: _('(enter name above)'),
-                sensitive: false,
-            });
-            mainGroup.add(idPreviewRow);
-
-            nameRow.connect('changed', () => {
-                const name = nameRow.get_text().trim();
-                if (name.length === 0) {
-                    idPreviewRow.subtitle = _('(enter name above)');
-                    idPreviewRow.remove_css_class('error');
-                    idPreviewRow.remove_css_class('warning');
-                } else {
-                    const generatedId = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
-                    if (generatedId.length === 0) {
-                        idPreviewRow.subtitle = _('(invalid characters)');
-                        idPreviewRow.add_css_class('error');
-                        idPreviewRow.remove_css_class('warning');
-                    } else {
-                        const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
-                        const isDuplicate = existingProfiles.some(p => p.id === generatedId);
-                        if (isDuplicate) {
-                            idPreviewRow.subtitle = `${generatedId} (${_('already exists!')})`;
-                            idPreviewRow.add_css_class('warning');
-                            idPreviewRow.remove_css_class('error');
-                        } else {
-                            idPreviewRow.subtitle = generatedId;
-                            idPreviewRow.remove_css_class('error');
-                            idPreviewRow.remove_css_class('warning');
-                        }
-                    }
-                }
-            });
-        }
-
         // Power mode dropdown (Adw.ComboRow)
         const powerModel = Gtk.StringList.new(powerModeLabels);
         const powerRow = new Adw.ComboRow({
@@ -668,7 +629,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             const paramDrop = new Gtk.DropDown({
                 model: Gtk.StringList.new(paramLabels),
                 selected: rule ? Math.max(0, paramKeys.indexOf(rule.param)) : 0,
-                accessible_name: _('Condition parameter'),
+                tooltip_text: _('Condition parameter'),
             });
             paramDrop.hexpand = true;
             rowBox.append(paramDrop);
@@ -677,7 +638,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             const opDrop = new Gtk.DropDown({
                 model: Gtk.StringList.new(opLabels),
                 selected: rule ? Math.max(0, opKeys.indexOf(rule.op)) : 0,
-                accessible_name: _('Condition operator'),
+                tooltip_text: _('Condition operator'),
             });
             rowBox.append(opDrop);
 
@@ -705,7 +666,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             };
             const valueDrop = new Gtk.DropDown({
                 model: Gtk.StringList.new([]),
-                accessible_name: _('Condition value'),
+                tooltip_text: _('Condition value'),
             });
             valueDrop.hexpand = true;
             updateValueModel();
@@ -907,6 +868,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             }
         });
 
+        // Store reference to prevent GC before GTK processes the dialog
+        if (this._profileDialog)
+            this._profileDialog.disconnect(this._profileDialogClosedId);
+        this._profileDialogClosedId = dialog.connect('closed', () => {
+            this._profileDialog = null;
+            this._profileDialogClosedId = null;
+        });
+        this._profileDialog = dialog;
         dialog.present(window);
     }
 
