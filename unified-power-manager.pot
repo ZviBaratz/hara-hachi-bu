@@ -1,13 +1,13 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# Unified Power Manager - GNOME Shell Extension
+# Copyright (C) 2026 Zvi Baratz
 # This file is distributed under the same license as the unified-power-manager package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Zvi Baratz, 2026.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: unified-power-manager\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: unified-power-manager 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/ZviBaratz/unified-power-manager/issues\n"
 "POT-Creation-Date: 2026-02-09 11:10+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
