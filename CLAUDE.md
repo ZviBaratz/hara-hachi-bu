@@ -504,12 +504,36 @@ Key settings:
 - Subtitle displays "Applying [profile name]..." or "Setting [mode]..."
 - Prevents confusion during async operations
 
+### Pre-Release Quality Review
+
+**Auto-Discharge Stop Condition (end-only devices)**
+- On end-only devices (no start threshold), `startThreshold` is `-1`, so `batteryLevel <= startThreshold` never triggers
+- Added `AUTO_DISCHARGE_STOP_MARGIN = 5` constant; effective stop threshold falls back to `endThreshold - 5` on end-only devices
+- `readFileInt`/`readFileIntAsync` now correctly handle `"0"` (was treated as falsy via `if (v)`)
+
+**CSS Scoping**
+- All CSS classes now use `upm-` prefix or are scoped to `.upm-menu-scroll-section` parent
+- Renamed: `.success` → `.upm-success`, `.health-good/fair/poor` → `.upm-health-good/fair/poor`
+- `.popup-menu-status-item` scoped to `.upm-menu-scroll-section .popup-menu-status-item`
+- Profile labels use `Pango.EllipsizeMode.END` for proper overflow with ellipsis
+
+**i18n Completeness**
+- All `N_()`-marked strings now passed through `_()` at display time
+- Default profile names "Docked"/"Travel" marked with `N_()` in constants, translated at display via `profile.builtin ? _(name) : name`
+- Rule validation errors in ruleEvaluator.js now translated (uses `GLib.dgettext` for dual extension/prefs context)
+- Module-level `_()` calls in stateManager.js replaced with `N_()` markers + runtime `_()` at call sites
+
+**Async Safety**
+- `_pendingReevaluation` check in `_evaluateAndApplyRules` finally block now guards on `!this._destroyed`
+- Bare `return` in `GenericSysfsDevice.setThresholds` finally block replaced with nested `!this._destroyed` guards (bare return in finally overrides try block return value)
+- `DeviceManager` wraps each device initialization in its own try/catch; `initializedDevices` declared outside try for cleanup in catch
+- Exit code 127 (`COMMAND_NOT_FOUND`) added to `exitCode` enum with clear error messages in `GenericSysfsDevice`
 
 ## Error Handling Patterns
 
 - Controllers return boolean success/failure for operations
 - StateManager shows user notifications via Main.notify() on errors
-- Helper script uses exit codes (0=success, 1=error, 2=needs_update, 3=timeout)
+- Helper script uses exit codes (0=success, 1=error, 2=needs_update, 3=timeout, 126=privilege_required, 127=command_not_found)
 - execCheck implements mutex to prevent concurrent command execution
 - All async operations use try/catch and return safe defaults on failure
 - File monitors, rule evaluation, and dialog handlers wrapped in try/catch blocks
