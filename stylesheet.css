@@ -14,8 +14,8 @@
     padding: 8px 12px 4px 12px;
 }
 
-/* Status item styling */
-.popup-menu-status-item {
+/* Status item styling (scoped to extension scroll section) */
+.upm-menu-scroll-section .popup-menu-status-item {
     font-style: italic;
     color: inherit;
     opacity: 0.7;
@@ -43,15 +43,15 @@
 }
 
 /* Battery health color indicators (Adwaita semantic colors, dark variant) */
-.health-good {
+.upm-health-good {
     color: #57e389; /* Adwaita @success_color (dark) */
 }
 
-.health-fair {
+.upm-health-fair {
     color: #f5c211; /* Adwaita @warning_color (dark) */
 }
 
-.health-poor {
+.upm-health-poor {
     color: #ed333b; /* Adwaita @error_color (dark) */
 }
 
@@ -99,6 +99,6 @@
 }
 
 /* Success feedback styling */
-.success {
+.upm-success {
     color: #57e389; /* Adwaita @success_color (dark) */
 }
