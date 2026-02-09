@@ -33,16 +33,6 @@ export default class UnifiedPowerManager extends Extension {
         // Do not create panel if enable is triggered in lockscreen state
         if (!Main.sessionMode.isLocked && this._powerManager === null)
             this._initializePowerManager();
-
-        // Handle session mode changes
-        this._sessionId = Main.sessionMode.connect('updated', session => {
-            if (session.currentMode === 'user' || session.parentMode === 'user') {
-                if (this._powerManager === null)
-                    this._initializePowerManager();
-            } else if (session.currentMode === 'unlock-dialog') {
-                this._destroyPowerManager();
-            }
-        });
     }
 
     async _initializePowerManager() {
@@ -75,6 +65,7 @@ export default class UnifiedPowerManager extends Extension {
                 this,
                 this._stateManager
             );
+            if (this._pendingDestroy) return;
 
             // Initialize UI Patcher
             this._uiPatcher = new UIPatcher();
@@ -102,11 +93,17 @@ export default class UnifiedPowerManager extends Extension {
                 );
             }
 
-            if (this._pendingDestroy)
-                console.log('Unified Power Manager: Extension initialized but destroy pending');
-            else
-                console.log('Unified Power Manager: Extension initialized successfully');
+            console.log('Unified Power Manager: Extension initialized successfully');
         } catch (e) {
+            // Clean up partially initialized controllers to prevent leaks
+            // on next enable() call which would overwrite these fields
+            this._powerController?.destroy();
+            this._powerController = null;
+            this._batteryController?.destroy();
+            this._batteryController = null;
+            this._stateManager?.destroy();
+            this._stateManager = null;
+
             console.error(`Unified Power Manager: Failed to initialize: ${e}`);
             console.error(e.stack);
             Main.notify(_('Unified Power Manager'), _('Failed to initialize. Check logs for details.'));
@@ -177,11 +174,6 @@ export default class UnifiedPowerManager extends Extension {
 
     disable() {
         console.log('Unified Power Manager: Disabling extension');
-
-        if (this._sessionId) {
-            Main.sessionMode.disconnect(this._sessionId);
-            this._sessionId = null;
-        }
 
         this._destroyPowerManager();
         Helper.destroyExecCheck();

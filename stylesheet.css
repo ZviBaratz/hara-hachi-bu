@@ -37,7 +37,7 @@
 }
 
 /* Loading state styling - applied to the toggle widget */
-.quick-toggle.loading-state .subtitle {
+.quick-menu-toggle.upm-loading-state .subtitle {
     font-style: italic;
     opacity: 0.7;
 }
