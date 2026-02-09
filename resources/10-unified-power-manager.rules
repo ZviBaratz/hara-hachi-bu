@@ -1,6 +1,25 @@
-// Polkit rules for Unified Power Manager extension
-// This file allows users in the sudo group to run unified-power-ctl without password
-// Security: Only allows local, active sessions (not remote or background)
+// Polkit rules for Unified Power Manager GNOME Shell extension
+//
+// Security model:
+//   This rule grants passwordless access to the unified-power-ctl helper script,
+//   which writes battery charging thresholds and force-discharge mode to sysfs.
+//
+//   The helper script itself validates all inputs (integer ranges, sysfs path
+//   canonicalization, filename whitelist) before writing to specific sysfs files.
+//   It does NOT grant general root access or arbitrary command execution.
+//
+// Trust boundary (all four conditions must be true):
+//   1. action.id  — Only the extension's registered polkit action is matched.
+//                    No other pkexec commands are affected.
+//   2. isInGroup   — User must already be in "sudo" or "wheel" group, meaning
+//                    they could run the command with a password anyway. This rule
+//                    removes the password prompt, not the privilege.
+//   3. subject.local — Session must be local (not SSH or remote). Prevents
+//                      remote exploitation even if an attacker has group membership.
+//   4. subject.active — Session must be the active foreground session. Prevents
+//                       background processes or inactive sessions from writing.
+//
+// Installation: sudo cp this file to /etc/polkit-1/rules.d/
 
 polkit.addRule(function(action, subject) {
     if (action.id == "org.gnome.shell.extensions.unified-power-manager.setthreshold" &&

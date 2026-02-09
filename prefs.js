@@ -765,6 +765,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
         dialog.set_child(outerBox);
 
+        // Clear validation errors when user edits any field
+        const hideError = () => errorLabel.hide();
+        nameRow.connect('changed', hideError);
+        powerRow.connect('notify::selected', hideError);
+        batteryRow.connect('notify::selected', hideError);
+        fdRow.connect('notify::selected', hideError);
+        autoManagedRow.connect('notify::active', hideError);
+
         // Button handlers
         cancelBtn.connect('clicked', () => dialog.close());
         saveBtn.connect('clicked', () => {
