@@ -55,6 +55,11 @@
     color: #ed333b; /* Adwaita @error_color (dark) */
 }
 
+/* Profile name overflow protection */
+.upm-profile-label {
+    max-width: 200px;
+}
+
 /* Auto badge for profiles with rules */
 .upm-auto-badge {
     font-size: 0.75em;
