@@ -655,6 +655,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 margin_end: 12,
                 margin_top: 3,
                 margin_bottom: 3,
+                accessible_role: Gtk.AccessibleRole.GROUP,
             });
 
             // Parameter dropdown
@@ -709,6 +710,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             const removeBtn = new Gtk.Button({
                 icon_name: 'list-remove-symbolic',
                 css_classes: ['flat', 'circular'],
+                tooltip_text: _('Remove condition'),
             });
             removeBtn.connect('clicked', () => {
                 const index = ruleRows.indexOf(rowData);
