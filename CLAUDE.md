@@ -37,6 +37,12 @@ journalctl -f -o cat /usr/bin/gnome-shell
 gnome-extensions prefs unified-power-manager@baratzz
 ```
 
+### Translations
+```bash
+# Regenerate translation template after adding/changing translatable strings
+make pot
+```
+
 ### Package for Distribution
 ```bash
 # Create release zip for extensions.gnome.org

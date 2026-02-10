@@ -3,3 +3,7 @@
 .DS_Store
 schemas/gschemas.compiled
 *.zip
+node_modules/
+*.mo
+.idea/
+.vscode/
