@@ -14,6 +14,8 @@ A GNOME Shell extension providing unified Quick Settings control for power profi
 - **Battery Modes**: Control charging thresholds (Full Capacity, Balanced, Max Lifespan)
 - **Custom Profiles**: Combine power mode, battery mode, and force discharge into named profiles
 - **Rule-Based Auto-Switching**: Automatically activate profiles based on external display, power source, or lid state
+- **Scheduled Profiles**: Time-based profile activation with per-day and time range control (e.g., charge to 100% weekday mornings)
+- **Boost Charge**: One-click temporary charge to 100% with automatic revert on full battery, timeout, or AC disconnect
 - **Battery Health Monitoring**: Color-coded maximum capacity display (Good/Fair/Poor)
 - **Force Discharge**: Manual battery discharge control (on supported hardware)
 - **Auto-Management**: Pauses on manual override, resumes on system state changes
@@ -57,7 +59,7 @@ Laptop battery replacements cost $50–200 when available, but a degraded batter
 | Balanced | 75–80% | Good runtime with improved longevity |
 | Max Lifespan | 55–60% | Maximum battery longevity |
 
-Use **Max Lifespan** when working at a desk, and switch to **Full Capacity** before traveling — or let the built-in **Docked** and **Travel** profiles handle it automatically.
+Use **Max Lifespan** when working at a desk, and switch to **Full Capacity** before traveling — or let the built-in **Docked** and **Travel** profiles handle it automatically. For predictable schedules, set a **Scheduled Profile** to charge to full capacity on weekday mornings before you unplug. For ad-hoc needs, use the **Boost Charge** toggle.
 
 [bu-808]: https://batteryuniversity.com/article/bu-808-how-to-prolong-lithium-based-batteries
 [nature-battery]: https://www.nature.com/articles/s41467-024-54634-y
@@ -184,6 +186,36 @@ Rules use system parameters to activate profiles automatically:
 
 Profiles can have multiple conditions (all must match). When multiple profiles match, the most specific one wins (most conditions).
 
+### Scheduled Profiles
+
+Profiles can include an optional time schedule for automatic activation during specific time windows:
+
+- **Day selection**: Choose individual days (Mon–Sun), or use quick-select buttons (Weekdays, Weekends, All)
+- **Time range**: Set start and end times in 24-hour format
+- **Overnight schedules**: Setting start time after end time (e.g., 23:00–07:00) creates an overnight window
+- **Combined with rules**: A profile can have both rules and a schedule — both must match for it to activate
+- **Schedule-only profiles**: A profile with only a schedule (no rules) activates purely based on time
+
+Schedule adds +1 to profile specificity, so a profile with 2 rules + active schedule (specificity 3) beats a profile with only 2 rules (specificity 2).
+
+**Example: Morning Charge**
+
+Create a profile named "Morning Charge" with battery mode set to Full Capacity, enable auto-managed, and set a schedule for Weekdays 05:30–08:00. The extension charges to full overnight and reverts to your normal docked profile after 8am.
+
+### Boost Charge
+
+The **Boost Charge** toggle in the Quick Settings menu provides a one-click way to temporarily charge to 100%:
+
+- Available only on AC power
+- Temporarily overrides battery thresholds to 95–100% (or 100% for end-only devices)
+- Pauses auto-management during boost
+- Automatically deactivates when:
+  - Battery reaches 100%
+  - Safety timeout expires (configurable, default 4 hours)
+  - AC power is disconnected
+  - You manually change the battery mode
+- On deactivation, auto-management resumes and selects the appropriate profile for current conditions
+
 ### Manual Override
 
 When you manually change settings while auto-switching is active, auto-management pauses. It resumes when:
@@ -215,6 +247,8 @@ When you manually change settings while auto-switching is active, auto-managemen
 +--------------------------------------+
 | [switch] Force Discharge             |
 +--------------------------------------+
+| [switch] Boost Charge                |
++--------------------------------------+
 ```
 
 ## Preferences
@@ -233,7 +267,10 @@ gnome-extensions prefs unified-power-manager@baratzz
 Configure start/stop charging percentages for each battery mode. Adapts to your hardware — devices with only an end threshold show a simplified view.
 
 ### Profiles
-Create, edit, and delete profiles. Each profile combines a power mode, battery mode, and optional auto-switch rules. Built-in profiles (Docked, Travel) can be customized but not deleted.
+Create, edit, and delete profiles. Each profile combines a power mode, battery mode, and optional auto-switch rules. Built-in profiles (Docked, Travel) can be customized but not deleted. Profiles can also include a time schedule for automatic activation during specific windows.
+
+### Boost Charge
+Configure the safety timeout for boost charge (1–12 hours, default 4).
 
 ### About
 Shows extension version, helper script installation status, polkit configuration, and detected battery hardware.

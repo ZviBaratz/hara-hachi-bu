@@ -10,6 +10,8 @@ Unified Power Manager is a GNOME Shell extension that provides unified Quick Set
 - Power profile management (Performance/Balanced/Power Saver) via power-profiles-daemon
 - Battery charging threshold control via standard sysfs interface (supports devices with start+end thresholds or end-only)
 - Predefined profiles (Docked, Travel) with auto-detection
+- Scheduled profiles: time-based activation with per-day and time range control
+- Boost charge: one-click temporary charge to 100% with automatic revert
 - Force discharge control (on supported hardware)
 - External change detection via file monitoring
 - Modular device backend architecture for hardware-specific implementations
@@ -114,6 +116,7 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/).
 - **device** - Device backends (GenericSysfsDevice, MockDevice, DeviceManager)
 - **profiles** - ProfileMatcher, profile management
 - **rules** - RuleEvaluator, ParameterDetector
+- **schedule** - ScheduleUtils, schedule-related logic
 - **helper** - Helper script and utilities
 - **schema** - GSettings schema
 - **i18n** - Translations and internationalization
@@ -154,6 +157,9 @@ Profiles are now stored exclusively in custom-profiles JSON format.
 - Connects controller signals to emit unified state changes
 - Handles all state mutations (setPowerMode, setBatteryMode, setProfile)
 - Auto-detects profiles based on mode combinations
+- Schedule timer: recalculates next schedule boundary, fires re-evaluation at boundaries
+- Suspend/resume detection via LoginManager D-Bus proxy (PrepareForSleep)
+- Boost charge state machine: activate/deactivate with auto-revert on battery full, timeout, AC disconnect
 - Provides unified API for UI layer
 
 **lib/powerProfileController.js** - Power profile management
@@ -198,7 +204,9 @@ Profiles are now stored exclusively in custom-profiles JSON format.
 - Detects active profile from current power/battery mode combination
 - Manages custom profiles (create/update/delete/validate)
 - Stores profiles in JSON format in GSettings 'custom-profiles'
-- Handles migration from old profile-docked/profile-travel format
+- Profile fields: {id, name, powerMode, batteryMode, forceDischarge, rules, schedule, icon, builtin, autoManaged}
+- Schedule validation via ScheduleUtils; invalid schedules set to null with warning
+- Migration v5: adds `schedule: null` to existing profiles
 - Validates profile IDs (must match /^[a-z0-9_-]+$/)
 
 **lib/parameterDetector.js** - System parameter monitoring
@@ -213,13 +221,23 @@ Profiles are now stored exclusively in custom-profiles JSON format.
 - Implements most-specific-wins logic for profile rules
 - Evaluates conditions (param, operator, value) against current state
 - Finds best matching profile based on rule specificity
+- Schedule-aware: profiles with active schedule gain +1 specificity; schedule-only profiles valid at specificity=1
+- Conflict detection: non-overlapping schedules prevent conflict only when both profiles have schedules
 - Validates rules and detects conflicts
 - Supports operators: 'is', 'is_not'
+
+**lib/scheduleUtils.js** - Schedule utility functions
+- Pure utility module, no GObject dependency, importable from both extension and prefs
+- Functions: parseTime, timeToMinutes, formatTimeHHMM, isScheduleActive, getScheduleEndTimeToday, secondsUntilNextBoundary, schedulesOverlap, validateSchedule, formatDaysSummary
+- Overnight schedule support: start > end means crossing midnight; after-midnight portion checks yesterday's ISO day
+- Uses `GLib.dgettext` for dual extension/prefs context
 
 **lib/quickSettingsPanel.js** - Quick Settings UI integration
 - Creates menu in GNOME Shell Quick Settings panel
 - Radio button groups for profiles, power modes, battery modes
 - Toggle for force discharge
+- Boost charge toggle (AC-only, follows force discharge toggle pattern)
+- Schedule end time display in profile ornaments: "(until HH:MM)"
 - Battery status display
 
 **lib/helper.js** - Utility functions
@@ -230,7 +248,8 @@ Profiles are now stored exclusively in custom-profiles JSON format.
 
 **prefs.js** - Preferences UI (GTK4/Adwaita)
 - Battery mode threshold configuration
-- Profile customization
+- Profile customization with schedule editor (day toggles, time spinners, quick-select buttons)
+- Boost charge timeout setting (1–12 hours)
 - UI visibility settings
 
 **resources/unified-power-ctl** - Privileged helper script
@@ -264,6 +283,17 @@ Battery threshold changes must be written in the correct order to avoid kernel e
 - StateManager subscribes to ParameterDetector for rule-based auto-switching
 - Rule evaluation is debounced (300ms) to prevent rapid switching
 
+**Schedule Timer**
+- StateManager maintains a GLib timeout that fires at the next schedule boundary across all profiles
+- Timer capped at 3600s to guard against clock drift and DST transitions
+- Callback always reschedules (even when auto-management is paused) so timer is ready when unpaused
+- Suspend/resume: LoginManager D-Bus proxy listens for PrepareForSleep; on resume triggers re-evaluation + reschedule
+
+**Boost Charge State Machine**
+- activateBoostCharge: save state → pause auto-mgmt → disable force discharge → set thresholds → start timeout
+- deactivateBoostCharge: cancel timeout → smart restore (skip setBatteryMode if auto-mgmt will resume) → restore pause state → emit signals
+- Auto-revert triggers: battery full (battery-status-changed), AC disconnect (parameter-changed), timeout, manual mode change (setBatteryMode)
+
 **External Change Detection**
 - Power profiles: D-Bus property monitoring via g-properties-changed
 - Battery thresholds: Gio.FileMonitor on charge_control_end_threshold with CHANGES_DONE_HINT
@@ -281,9 +311,10 @@ Battery threshold changes must be written in the correct order to avoid kernel e
 - Prevents panel operations during locked state
 
 **Profile Migration**
-- Profiles stored as JSON array in 'custom-profiles' with {id, name, powerMode, batteryMode, forceDischarge, rules, icon, builtin}
+- Profiles stored as JSON array in 'custom-profiles' with {id, name, powerMode, batteryMode, forceDischarge, rules, schedule, icon, builtin, autoManaged}
 - Builtin profiles (docked, travel) cannot be deleted, only modified
 - Migration v2: ensures all profiles have `rules: []` and `forceDischarge: 'unspecified'` fields
+- Migration v5: adds `schedule: null` to all existing profiles
 
 **Async Safety Pattern**
 Controllers with async operations implement a `_destroyed` flag to prevent callbacks from executing on destroyed objects:
@@ -340,7 +371,7 @@ Implemented in:
 All controllers must properly clean up resources in their `destroy()` methods:
 
 ✓ **Timeouts** - Remove with `GLib.Source.remove(timeoutId)` before null
-- StateManager: `_initialRuleEvalTimeout`, `_ruleEvaluationTimeout`
+- StateManager: `_initialRuleEvalTimeout`, `_ruleEvaluationTimeout`, `_scheduleTimerId`, `_boostChargeTimeoutId`
 - QuickSettingsPanel: `_clipboardFeedbackTimeoutId`
 - BatteryThresholdController: `_forceDischargeDisableTimeout`, `_autoEnableTimeout`
 - ParameterDetector: `_debounceTimeoutId`
@@ -356,6 +387,7 @@ All controllers must properly clean up resources in their `destroy()` methods:
 - PowerProfileController: `_proxy`, `_proxySignalId`
 - BatteryThresholdController: `_proxy`, `_proxyId`
 - ParameterDetector: `_upowerProxy`, `_upowerProxyId`
+- StateManager: `_loginManagerProxy`, `_prepareForSleepId` (suspend/resume detection)
 
 ✓ **Set _destroyed flag first** - Prevents async callbacks from executing during cleanup
 
@@ -364,11 +396,12 @@ All controllers must properly clean up resources in their `destroy()` methods:
 Location: `schemas/org.gnome.shell.extensions.unified-power-manager.gschema.xml`
 
 Key settings:
-- `custom-profiles`: JSON array of profile definitions
+- `custom-profiles`: JSON array of profile definitions (including schedule field)
 - `current-power-mode`: Current active power mode
 - `current-battery-mode`: Current active battery mode
 - `threshold-*-start/end`: Battery mode threshold values
 - `force-discharge-enabled`: Force discharge toggle state
+- `boost-charge-timeout-hours`: Safety timeout for boost charge (1–12 hours, default 4)
 - `hide-builtin-power-profile`: Hide GNOME's built-in power profile indicator
 
 ## Hardware Compatibility
@@ -388,6 +421,34 @@ Key settings:
 **Force Discharge**: Requires charge_behaviour support for the detected battery (typically ThinkPad)
 
 ## Recent Improvements
+
+### Scheduled Profiles and Boost Charge
+
+**Schedule-Enabled Profiles**
+- Profiles gain optional `schedule` field: `{enabled, days: [1-7], startTime: "HH:MM", endTime: "HH:MM"}`
+- Schedule adds +1 to specificity in most-specific-wins algorithm
+- Schedule-only profiles (no rules) valid at specificity=1
+- Overnight support: start > end crosses midnight; after-midnight checks yesterday's ISO day
+- Schedule timer: `GLib.timeout_add_seconds` with 1-hour cap, recalculated at each boundary
+- Suspend/resume via `org.freedesktop.login1.Manager` D-Bus `PrepareForSleep` signal
+- Conflict detection: non-overlapping schedules prevent conflict only when both profiles have schedules
+- Prefs: day toggles (circular), quick-select (Weekdays/Weekends/All), time spinners with zero-padded output
+- Panel: profile ornaments show "(until HH:MM)" during active schedule window
+- New file: `lib/scheduleUtils.js` — pure utility, importable from both extension and prefs
+
+**Boost Charge Toggle**
+- One-click temporary charge to 100% via Quick Settings panel toggle
+- State machine: activate → save state → pause auto-mgmt → disable force discharge → set thresholds 95/100
+- Auto-revert triggers: battery full, safety timeout, AC disconnect, manual mode change
+- Smart deactivation: skips redundant setBatteryMode if auto-management will resume and pick correct mode
+- AC-only toggle sensitivity (but allows deactivation if AC disconnects mid-boost)
+- New signal: `boost-charge-changed` on StateManager
+- New GSettings key: `boost-charge-timeout-hours` (1–12, default 4)
+
+**Profile Data Model Update**
+- Migration v5: adds `schedule: null` to all existing profiles
+- `createProfile()` and `updateProfile()` handle schedule validation and conflict detection
+- Conflict detection triggers on schedule changes and autoManaged toggling
 
 ### Pre-Release Code Quality Review
 
@@ -554,6 +615,27 @@ Key settings:
 - Test profile conflict detection (same specificity)
 - Test manual override pausing auto-management
 - Test auto-management resume after timeout
+
+**Scheduled Profile Scenarios**
+- Test schedule activation at time boundary (profile becomes active/inactive)
+- Test overnight schedules (23:00–07:00): verify after-midnight portion checks yesterday's day
+- Test schedule-only profiles (no rules, specificity=1)
+- Test rules + schedule combined (both must match)
+- Test conflict detection: same specificity with overlapping schedules → conflict; non-overlapping → allowed
+- Test conflict detection: mixed (one scheduled, one not) at same specificity → conflict
+- Test suspend/resume: timer re-fires correctly after waking from sleep
+- Test profile row subtitle displays schedule summary (days + time range)
+- Test panel shows "(until HH:MM)" for active scheduled profiles
+
+**Boost Charge Scenarios**
+- Test boost charge activation on AC (thresholds set to 95–100% or 0–100% for end-only devices)
+- Test boost charge toggle disabled on battery (but enabled for deactivation if AC disconnects mid-boost)
+- Test auto-revert on battery full (level >= 100%)
+- Test auto-revert on safety timeout expiry
+- Test auto-revert on AC disconnect
+- Test manual battery mode change during boost silently deactivates boost
+- Test boost with active auto-management: pauses on activate, resumes on deactivate (rule evaluation picks correct mode)
+- Test boost disables force discharge before raising thresholds
 
 **Hardware Compatibility**
 
