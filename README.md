@@ -20,7 +20,7 @@ A GNOME Shell extension providing unified Quick Settings control for power profi
 
 ### From extensions.gnome.org
 
-1. Visit [Unified Power Manager](https://extensions.gnome.org/extension/unified-power-manager/) on EGO
+1. Visit [Unified Power Manager on extensions.gnome.org](https://extensions.gnome.org/) (search for "Unified Power Manager")
 2. Click "Install"
 3. **Important:** After installation, you must install the helper script to enable battery threshold control (see below).
 
@@ -28,7 +28,7 @@ A GNOME Shell extension providing unified Quick Settings control for power profi
 
 ```bash
 # Clone or download to extensions directory
-git clone https://github.com/zvi/unified-power-manager.git \
+git clone https://github.com/ZviBaratz/unified-power-manager.git \
     ~/.local/share/gnome-shell/extensions/unified-power-manager@baratzz
 
 # Compile schemas
@@ -172,6 +172,10 @@ Battery threshold control works on any laptop that exposes standard charge contr
 At minimum, `charge_control_end_threshold` is required; `charge_control_start_threshold` is optional (some devices like ASUS only support end threshold). This is common on ThinkPads (via `thinkpad_acpi`), Framework laptops, ASUS, and others running modern kernels.
 
 ### Power profiles not working
+
+1. Verify `power-profiles-daemon` is installed and running: `systemctl status power-profiles-daemon`
+2. Check available profiles: `powerprofilesctl list`
+3. If the daemon is not installed, install it with your package manager (e.g., `sudo apt install power-profiles-daemon`)
 
 ## Building from Source
 
