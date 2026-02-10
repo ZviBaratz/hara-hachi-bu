@@ -6,12 +6,17 @@
 
 A GNOME Shell extension providing unified Quick Settings control for power profiles and battery charging modes on supported laptops (ThinkPad, Framework, ASUS, etc.).
 
+![Quick Settings panel screenshot](screenshots/quick-settings.png)
+
 ## Features
 
 - **Power Profiles**: Switch between Performance, Balanced, and Power Saver modes
 - **Battery Modes**: Control charging thresholds (Full Capacity, Balanced, Max Lifespan)
-- **Profiles**: Pre-configured combinations (Docked, Travel) with auto-detection
-- **Force Discharge**: Manual battery discharge control (ThinkPad only)
+- **Custom Profiles**: Combine power mode, battery mode, and force discharge into named profiles
+- **Rule-Based Auto-Switching**: Automatically activate profiles based on external display, power source, or lid state
+- **Battery Health Monitoring**: Color-coded maximum capacity display (Good/Fair/Poor)
+- **Force Discharge**: Manual battery discharge control (on supported hardware)
+- **Auto-Management**: Pauses on manual override, resumes on system state changes
 - **External Change Detection**: UI updates when settings change externally
 
 ## Why Manage Battery Charging?
@@ -69,9 +74,9 @@ Use **Max Lifespan** when working at a desk, and switch to **Full Capacity** bef
 
 ### From extensions.gnome.org
 
-1. Visit [Unified Power Manager on extensions.gnome.org](https://extensions.gnome.org/extension/unified-power-manager/) or search for "Unified Power Manager"
-2. Click "Install"
-3. **Important:** After installation, you must install the helper script to enable battery threshold control (see below).
+Search for "Unified Power Manager" on [extensions.gnome.org](https://extensions.gnome.org/) and click "Install".
+
+**Important:** After installation, you must install the helper script to enable battery threshold control (see below).
 
 ### Manual Installation
 
@@ -145,12 +150,47 @@ The policy file allows active local users to run the helper without authenticati
 ### Helper Script Security
 
 The `unified-power-ctl` script:
-- Only accepts specific commands (BAT0_END, BAT0_START, BAT1_END, BAT1_START, etc.)
+- Only accepts specific commands (BAT0 through BAT3: END, START, END_START, START_END, FORCE_DISCHARGE)
 - Validates all threshold values (must be integers 0-100)
 - Uses `set -eu` to fail fast on errors
 - Only writes to specific sysfs paths
 
-## Menu Layout
+## Profiles & Auto-Switching
+
+### Built-in Profiles
+
+| Profile | Power Mode | Battery Mode | Force Discharge | Auto-Switch Rule |
+|---------|-----------|--------------|-----------------|------------------|
+| Docked  | Performance | Max Lifespan | On | External display connected |
+| Travel  | Balanced | Full Capacity | Off | On battery power |
+
+### Custom Profiles
+
+Create custom profiles in Preferences → Profiles. Each profile combines:
+- Power mode (Performance / Balanced / Power Saver)
+- Battery mode (Full Capacity / Balanced / Max Lifespan)
+- Force discharge (On / Off / Unspecified)
+- Optional auto-switch rules
+
+### Auto-Switch Rules
+
+Rules use system parameters to activate profiles automatically:
+
+| Parameter | Values |
+|-----------|--------|
+| External Display | Connected / Not Connected |
+| Power Source | AC Power / Battery |
+| Lid State | Open / Closed |
+
+Profiles can have multiple conditions (all must match). When multiple profiles match, the most specific one wins (most conditions).
+
+### Manual Override
+
+When you manually change settings while auto-switching is active, auto-management pauses. It resumes when:
+- A monitored parameter changes (display connected, power source switches, lid opens/closes)
+- You click "Resume" in the Quick Settings menu
+
+### Menu Layout
 
 ```
 +--------------------------------------+
@@ -177,15 +217,6 @@ The `unified-power-ctl` script:
 +--------------------------------------+
 ```
 
-## Profile Definitions
-
-| Profile | Power Mode | Battery Mode |
-|---------|------------|--------------|
-| Docked  | Performance | Max Lifespan (55-60%) |
-| Travel  | Balanced | Full Capacity (95-100%) |
-
-Profiles are auto-detected when you manually set matching power and battery modes.
-
 ## Preferences
 
 Open preferences with:
@@ -193,10 +224,19 @@ Open preferences with:
 gnome-extensions prefs unified-power-manager@baratzz
 ```
 
-Configure:
-- Threshold values for each battery mode
-- Profile power/battery mode combinations
-- UI visibility options (indicator, force discharge toggle)
+### General
+- **UI**: Show/hide system indicator, force discharge toggle, built-in power profile indicator
+- **Battery Health**: Enable health display with configurable severity threshold
+- **Auto-Management**: Toggle auto-switch and resume-on-state-change behavior
+
+### Thresholds
+Configure start/stop charging percentages for each battery mode. Adapts to your hardware — devices with only an end threshold show a simplified view.
+
+### Profiles
+Create, edit, and delete profiles. Each profile combines a power mode, battery mode, and optional auto-switch rules. Built-in profiles (Docked, Travel) can be customized but not deleted.
+
+### About
+Shows extension version, helper script installation status, polkit configuration, and detected battery hardware.
 
 ## Troubleshooting
 
