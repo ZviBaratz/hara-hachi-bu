@@ -160,6 +160,19 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         settings.bind('auto-manage-battery-levels', autoManageRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         batteryManageGroup.add(autoManageRow);
 
+        const boostTimeoutRow = new Adw.SpinRow({
+            title: _('Boost Charge Timeout'),
+            subtitle: _('Maximum hours before Boost Charge auto-reverts'),
+            adjustment: new Gtk.Adjustment({
+                lower: 1,
+                upper: 12,
+                step_increment: 1,
+                page_increment: 2,
+            }),
+        });
+        settings.bind('boost-charge-timeout-hours', boostTimeoutRow, 'value', Gio.SettingsBindFlags.DEFAULT);
+        batteryManageGroup.add(boostTimeoutRow);
+
         // Auto-Management Group
         const autoManageGroup = new Adw.PreferencesGroup({
             title: _('Automatic Profile Switching'),
