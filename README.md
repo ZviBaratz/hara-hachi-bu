@@ -167,7 +167,7 @@ journalctl -f -o cat /usr/bin/gnome-shell
 
 ### Device Support
 
-Battery threshold control works on any laptop that exposes standard charge control attributes in `/sys/class/power_supply/BAT0/` or `/sys/class/power_supply/BAT1/`. The extension automatically detects which battery is available (checking BAT0 first, then BAT1).
+Battery threshold control works on any laptop that exposes standard charge control attributes in `/sys/class/power_supply/`. The extension automatically enumerates all batteries and supports multi-battery systems (BAT0 through BAT3 and beyond) with synchronized thresholds.
 
 At minimum, `charge_control_end_threshold` is required; `charge_control_start_threshold` is optional (some devices like ASUS only support end threshold). This is common on ThinkPads (via `thinkpad_acpi`), Framework laptops, ASUS, and others running modern kernels.
 

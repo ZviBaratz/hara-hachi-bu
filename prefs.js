@@ -847,7 +847,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
                 // Check for conflicts
                 const profiles = ProfileMatcher.getCustomProfiles(settings);
-                const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules};
+                const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged};
                 const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
                 if (conflict) {
                     errorLabel.set_text(_('Rule conflict with profile "%s": same conditions at same specificity').format(conflict.name));
