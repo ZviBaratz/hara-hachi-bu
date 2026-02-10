@@ -1,6 +1,10 @@
 # Unified Power Manager
 
-A GNOME Shell extension providing unified Quick Settings control for power profiles and battery charging modes on supported laptops (ThinkPad, Framework, etc.).
+[![CI](https://github.com/ZviBaratz/unified-power-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/ZviBaratz/unified-power-manager/actions/workflows/ci.yml)
+[![License: GPL-3.0+](https://img.shields.io/badge/License-GPL%203.0+-blue.svg)](LICENSE)
+[![GNOME Shell 46+](https://img.shields.io/badge/GNOME%20Shell-46%20%7C%2047%20%7C%2048-blue)](metadata.json)
+
+A GNOME Shell extension providing unified Quick Settings control for power profiles and battery charging modes on supported laptops (ThinkPad, Framework, ASUS, etc.).
 
 ## Features
 
@@ -20,7 +24,7 @@ A GNOME Shell extension providing unified Quick Settings control for power profi
 
 ### From extensions.gnome.org
 
-1. Visit [Unified Power Manager on extensions.gnome.org](https://extensions.gnome.org/) (search for "Unified Power Manager")
+1. Visit [Unified Power Manager on extensions.gnome.org](https://extensions.gnome.org/extension/unified-power-manager/) or search for "Unified Power Manager"
 2. Click "Install"
 3. **Important:** After installation, you must install the helper script to enable battery threshold control (see below).
 

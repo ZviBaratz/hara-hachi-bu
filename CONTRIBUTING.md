@@ -9,6 +9,9 @@ Thank you for your interest in contributing! This guide covers development setup
 - `glib-compile-schemas` (from `libglib2.0-dev` or equivalent)
 - `power-profiles-daemon` (for power profile features)
 
+> **Note:** If you already have the extension installed from extensions.gnome.org, disable and remove it first to avoid conflicts:
+> `gnome-extensions disable unified-power-manager@baratzz`
+
 ```bash
 # Clone the repository
 git clone https://github.com/ZviBaratz/unified-power-manager.git \
@@ -154,6 +157,31 @@ See [DEVICES.md](DEVICES.md) for information on supported devices and how to add
 3. **Test on real hardware or mock mode.** Mention which you used in the PR description.
 4. **Compile schemas** if you changed the GSettings schema (`make schemas`).
 5. **Check logs** for warnings or errors after your changes (`make logs`).
+
+## Translations
+
+We welcome translation contributions! The extension uses GNU gettext for internationalization.
+
+### Adding a New Language
+
+1. Copy the translation template to a new `.po` file:
+   ```bash
+   mkdir -p po
+   cp unified-power-manager.pot po/<LANG>.po
+   # e.g., po/de.po for German, po/fr.po for French
+   ```
+2. Edit the `.po` file with a translation editor (e.g., [Poedit](https://poedit.net/), [GNOME Translation Editor](https://wiki.gnome.org/Apps/Gtranslator), or a text editor).
+3. Submit a pull request with your `.po` file.
+
+### Updating the Template
+
+After adding or changing translatable strings in code:
+
+```bash
+make pot
+```
+
+This regenerates `unified-power-manager.pot` from all `_()` and `N_()` markers. Commit the updated `.pot` alongside your code changes.
 
 ## Key Code Patterns
 
