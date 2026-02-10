@@ -1042,7 +1042,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged, schedule};
                 const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
                 if (conflict) {
-                    errorLabel.set_text(_('Rule conflict with profile "%s": same conditions at same specificity').format(conflict.name));
+                    errorLabel.set_text(_('Rule conflict with profile "%s". Tip: Add a schedule to create a time-based variant without conflict.').format(conflict.name));
                     errorLabel.show();
                     return;
                 }

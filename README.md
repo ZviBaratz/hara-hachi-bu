@@ -251,6 +251,37 @@ When you manually change settings while auto-switching is active, auto-managemen
 +--------------------------------------+
 ```
 
+## Creating Time-Based Profile Variants
+
+You can create time-based variants of existing profiles that apply during specific windows, without triggering rule conflicts:
+
+**Example: Docked + Morning Charging**
+
+1. **Base profile — "Docked"**
+   - Rules: External Display connected + AC Power
+   - Settings: Performance, Max Lifespan (60%), Force Discharge On
+   - Schedule: None (always active when rules match)
+
+2. **Time variant — "Morning Charging"**
+   - Rules: Same as Docked (External Display + AC Power)
+   - Settings: Performance, Full Capacity (100%), Force Discharge Off
+   - Schedule: Mon–Fri 07:00–09:00
+
+**Result:** During weekday mornings the laptop charges to full so it's ready to unplug. Outside those hours the base Docked profile keeps the battery at 60%.
+
+**How it works:**
+
+- When two profiles share identical rules, a scheduled variant is automatically considered more specific than the unscheduled base.
+- During the schedule window the variant wins; outside it the base profile applies as usual.
+- No manual specificity calculations are needed — just add the same rules plus a schedule.
+
+**Conflict prevention rules:**
+
+- Same rules + one has a schedule, one does not → **No conflict** (scheduled wins during its window)
+- Same rules + both scheduled with non-overlapping times → **No conflict**
+- Same rules + both scheduled with overlapping times → **Conflict** (adjust time ranges to fix)
+- Same rules + both unscheduled → **Conflict** (differentiate with rules or add a schedule)
+
 ## Preferences
 
 Open preferences with:
