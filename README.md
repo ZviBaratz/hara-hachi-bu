@@ -14,6 +14,51 @@ A GNOME Shell extension providing unified Quick Settings control for power profi
 - **Force Discharge**: Manual battery discharge control (ThinkPad only)
 - **External Change Detection**: UI updates when settings change externally
 
+## Why Manage Battery Charging?
+
+Lithium-ion batteries degrade faster when kept at high charge levels. Limiting the maximum charge — even slightly — can dramatically extend battery lifespan.
+
+### Battery Science
+
+Data from [Battery University][bu-808]:
+
+| Peak Charge Voltage | Approx. Capacity | Cycle Life |
+|---|---|---|
+| 4.20 V (100%) | Full | 300–500 cycles |
+| 4.10 V (~75%) | ~85% | 600–1,000 cycles |
+| 4.00 V (~60%) | ~75% | 850–1,500 cycles |
+
+Every 0.10 V reduction in peak charge voltage roughly doubles cycle life.
+
+Depth of discharge matters too: cycling 100% of capacity yields ~300 cycles (NMC chemistry), while cycling only 40% yields ~1,000 cycles.
+
+Storage conditions have a similar effect. A battery stored at 40% charge and 25°C retains 96% capacity after one year. At full charge and the same temperature, only 80% remains. At 40°C and full charge, capacity drops to 65%.
+
+### Environmental Impact
+
+Battery manufacturing produces 54–115 kg CO₂-eq per kWh of capacity, depending on chemistry and sourcing ([Nature Communications, 2024][nature-battery]). Around 80% of a notebook's total lifetime greenhouse gas emissions come from manufacturing, not use ([TCO Certified][tco]). Extending a laptop from 3 to 6 years of service roughly halves its annualized carbon footprint.
+
+Globally, 62 million tonnes of e-waste were generated in 2022, with less than a quarter (22.3%) properly collected and recycled — leaving an estimated US $62 billion in recoverable materials unaccounted for ([UN Global E-Waste Monitor, 2024][ewaste]).
+
+### Economic Impact
+
+Laptop battery replacements cost $50–200 when available, but a degraded battery often prompts full laptop replacement ($300–850+). Charging within the 40–80% range can extend usable battery life from ~300–500 cycles (~2 years of daily cycling) to ~1,000–1,500+ cycles (~4–5 years).
+
+### How This Extension Helps
+
+| Battery Mode | Charge Range | Optimized For |
+|---|---|---|
+| Full Capacity | 95–100% | Maximum runtime when needed |
+| Balanced | 75–80% | Good runtime with improved longevity |
+| Max Lifespan | 55–60% | Maximum battery longevity |
+
+Use **Max Lifespan** when working at a desk, and switch to **Full Capacity** before traveling — or let the built-in **Docked** and **Travel** profiles handle it automatically.
+
+[bu-808]: https://batteryuniversity.com/article/bu-808-how-to-prolong-lithium-based-batteries
+[nature-battery]: https://www.nature.com/articles/s41467-024-54634-y
+[tco]: https://tcocertified.com/news/using-a-notebook-computer-for-three-more-years-can-cut-emissions-in-half/
+[ewaste]: https://ewastemonitor.info/the-global-e-waste-monitor-2024/
+
 ## Compatibility
 
 - **GNOME Shell**: 46, 47, 48
