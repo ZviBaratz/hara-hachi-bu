@@ -424,8 +424,8 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         if (this._profileSettingsId && this._settings) {
             try {
                 this._settings.disconnect(this._profileSettingsId);
-            } catch {
-                // Ignore - already disconnected
+            } catch (e) {
+                console.debug(`Unified Power Manager: Could not disconnect settings signal: ${e.message}`);
             }
             this._profileSettingsId = null;
         }
@@ -743,7 +743,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // --- Schedule section ---
         const scheduleGroup = new Adw.PreferencesGroup({
             title: _('Schedule'),
-            description: _('Limit this profile to specific days and times.'),
+            description: _('Limit this profile to specific days and times. When a schedule ends, settings remain unchanged unless another profile matches.'),
         });
 
         // Schedule enable switch
@@ -808,13 +808,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const existingEnd = ScheduleUtils.parseTime(existingProfile?.schedule?.endTime ?? '') ?? {hours: 8, minutes: 0};
 
         // Helper to create a zero-padded SpinButton
-        const createTimeSpin = (lower, upper, step, value) => {
+        const createTimeSpin = (lower, upper, step, value, tooltipText) => {
             const spin = new Gtk.SpinButton({
                 adjustment: new Gtk.Adjustment({lower, upper, step_increment: step, page_increment: step}),
                 numeric: true,
                 wrap: true,
                 width_chars: 2,
                 valign: Gtk.Align.CENTER,
+                tooltip_text: tooltipText,
             });
             spin.value = value;
             spin.connect('output', (s) => {
@@ -826,9 +827,9 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Start time row
         const startTimeRow = new Adw.ActionRow({title: _('Start Time')});
-        const startHourSpin = createTimeSpin(0, 23, 1, existingStart.hours);
+        const startHourSpin = createTimeSpin(0, 23, 1, existingStart.hours, _('Hours'));
         const startColonLabel = new Gtk.Label({label: ':', valign: Gtk.Align.CENTER});
-        const startMinuteSpin = createTimeSpin(0, 59, 5, existingStart.minutes);
+        const startMinuteSpin = createTimeSpin(0, 59, 5, existingStart.minutes, _('Minutes'));
         startTimeRow.add_suffix(startHourSpin);
         startTimeRow.add_suffix(startColonLabel);
         startTimeRow.add_suffix(startMinuteSpin);
@@ -836,9 +837,9 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // End time row
         const endTimeRow = new Adw.ActionRow({title: _('End Time')});
-        const endHourSpin = createTimeSpin(0, 23, 1, existingEnd.hours);
+        const endHourSpin = createTimeSpin(0, 23, 1, existingEnd.hours, _('Hours'));
         const endColonLabel = new Gtk.Label({label: ':', valign: Gtk.Align.CENTER});
-        const endMinuteSpin = createTimeSpin(0, 59, 5, existingEnd.minutes);
+        const endMinuteSpin = createTimeSpin(0, 59, 5, existingEnd.minutes, _('Minutes'));
         endTimeRow.add_suffix(endHourSpin);
         endTimeRow.add_suffix(endColonLabel);
         endTimeRow.add_suffix(endMinuteSpin);
