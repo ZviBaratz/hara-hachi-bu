@@ -12,6 +12,7 @@ import Gettext from 'gettext';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import * as ProfileMatcher from './lib/profileMatcher.js';
 import * as RuleEvaluator from './lib/ruleEvaluator.js';
+import * as ScheduleUtils from './lib/scheduleUtils.js';
 import * as Constants from './lib/constants.js';
 
 const {PARAMETERS, OPERATORS} = Constants;
@@ -29,6 +30,12 @@ class ProfileRow extends Adw.ActionRow {
         if (profile.forceDischarge && profile.forceDischarge !== 'unspecified') {
             const fdLabel = Constants.FORCE_DISCHARGE_OPTIONS[profile.forceDischarge]?.label ?? profile.forceDischarge;
             subtitle = _('%s \u00b7 Force Discharge: %s').format(subtitle, _(fdLabel));
+        }
+        if (profile.schedule?.enabled) {
+            const daysSummary = ScheduleUtils.formatDaysSummary(profile.schedule.days);
+            subtitle = _('%s \u00b7 %s %s\u2013%s').format(
+                subtitle, daysSummary, profile.schedule.startTime, profile.schedule.endTime
+            );
         }
 
         super._init({
@@ -720,6 +727,139 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         autoManagedRow.connect('notify::active', updateRulesVisibility);
         updateRulesVisibility();
 
+        // --- Schedule section ---
+        const scheduleGroup = new Adw.PreferencesGroup({
+            title: _('Schedule'),
+            description: _('Limit this profile to specific days and times.'),
+        });
+
+        // Schedule enable switch
+        const scheduleEnabledRow = new Adw.SwitchRow({
+            title: _('Enable Schedule'),
+            subtitle: _('Profile only activates during the scheduled window'),
+            active: existingProfile?.schedule?.enabled ?? false,
+        });
+        scheduleGroup.add(scheduleEnabledRow);
+
+        // Day-of-week buttons
+        const dayBox = new Gtk.Box({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            spacing: 4,
+            halign: Gtk.Align.CENTER,
+            margin_top: 6,
+            margin_bottom: 6,
+        });
+        const dayButtons = {};
+        const existingDays = new Set(existingProfile?.schedule?.days ?? []);
+        for (let d = 1; d <= 7; d++) {
+            const btn = new Gtk.ToggleButton({
+                label: _(Constants.DAYS_SHORT[d]),
+                active: existingDays.has(d),
+                css_classes: ['circular'],
+                tooltip_text: _(Constants.DAYS_OF_WEEK[d]),
+            });
+            dayButtons[d] = btn;
+            dayBox.append(btn);
+        }
+        scheduleGroup.add(dayBox);
+
+        // Quick-select buttons
+        const quickSelectBox = new Gtk.Box({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            spacing: 6,
+            halign: Gtk.Align.CENTER,
+            margin_bottom: 6,
+        });
+        const weekdaysBtn = new Gtk.Button({label: _('Weekdays'), css_classes: ['pill']});
+        weekdaysBtn.connect('clicked', () => {
+            for (let d = 1; d <= 7; d++)
+                dayButtons[d].active = d <= 5;
+        });
+        const weekendsBtn = new Gtk.Button({label: _('Weekends'), css_classes: ['pill']});
+        weekendsBtn.connect('clicked', () => {
+            for (let d = 1; d <= 7; d++)
+                dayButtons[d].active = d >= 6;
+        });
+        const allDaysBtn = new Gtk.Button({label: _('All'), css_classes: ['pill']});
+        allDaysBtn.connect('clicked', () => {
+            for (let d = 1; d <= 7; d++)
+                dayButtons[d].active = true;
+        });
+        quickSelectBox.append(weekdaysBtn);
+        quickSelectBox.append(weekendsBtn);
+        quickSelectBox.append(allDaysBtn);
+        scheduleGroup.add(quickSelectBox);
+
+        // Parse existing times or use defaults
+        const existingStart = ScheduleUtils.parseTime(existingProfile?.schedule?.startTime ?? '') ?? {hours: 6, minutes: 0};
+        const existingEnd = ScheduleUtils.parseTime(existingProfile?.schedule?.endTime ?? '') ?? {hours: 8, minutes: 0};
+
+        // Helper to create a zero-padded SpinButton
+        const createTimeSpin = (lower, upper, step, value) => {
+            const spin = new Gtk.SpinButton({
+                adjustment: new Gtk.Adjustment({lower, upper, step_increment: step, page_increment: step}),
+                numeric: true,
+                wrap: true,
+                width_chars: 2,
+                valign: Gtk.Align.CENTER,
+            });
+            spin.value = value;
+            spin.connect('output', (s) => {
+                s.text = String(Math.round(s.value)).padStart(2, '0');
+                return true;
+            });
+            return spin;
+        };
+
+        // Start time row
+        const startTimeRow = new Adw.ActionRow({title: _('Start Time')});
+        const startHourSpin = createTimeSpin(0, 23, 1, existingStart.hours);
+        const startColonLabel = new Gtk.Label({label: ':', valign: Gtk.Align.CENTER});
+        const startMinuteSpin = createTimeSpin(0, 59, 5, existingStart.minutes);
+        startTimeRow.add_suffix(startHourSpin);
+        startTimeRow.add_suffix(startColonLabel);
+        startTimeRow.add_suffix(startMinuteSpin);
+        scheduleGroup.add(startTimeRow);
+
+        // End time row
+        const endTimeRow = new Adw.ActionRow({title: _('End Time')});
+        const endHourSpin = createTimeSpin(0, 23, 1, existingEnd.hours);
+        const endColonLabel = new Gtk.Label({label: ':', valign: Gtk.Align.CENTER});
+        const endMinuteSpin = createTimeSpin(0, 59, 5, existingEnd.minutes);
+        endTimeRow.add_suffix(endHourSpin);
+        endTimeRow.add_suffix(endColonLabel);
+        endTimeRow.add_suffix(endMinuteSpin);
+        scheduleGroup.add(endTimeRow);
+
+        // Overnight hint
+        const overnightHint = new Gtk.Label({
+            label: _('Tip: Set start time after end time for overnight schedules (e.g., 23:00 to 07:00)'),
+            css_classes: ['caption', 'dim-label'],
+            wrap: true,
+            margin_top: 6,
+            margin_start: 12,
+            margin_end: 12,
+        });
+        scheduleGroup.add(overnightHint);
+
+        // Schedule group visibility: only when auto-managed
+        const updateScheduleVisibility = () => {
+            scheduleGroup.visible = autoManagedRow.active;
+        };
+        autoManagedRow.connect('notify::active', updateScheduleVisibility);
+        updateScheduleVisibility();
+
+        // Schedule inner sensitivity: day buttons, spinners, quick-select sensitive only when enabled
+        const updateScheduleSensitivity = () => {
+            const enabled = scheduleEnabledRow.active;
+            dayBox.sensitive = enabled;
+            quickSelectBox.sensitive = enabled;
+            startTimeRow.sensitive = enabled;
+            endTimeRow.sensitive = enabled;
+        };
+        scheduleEnabledRow.connect('notify::active', updateScheduleSensitivity);
+        updateScheduleSensitivity();
+
         // Error label
         const errorLabel = new Gtk.Label({
             css_classes: ['error'],
@@ -735,6 +875,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const contentPage = new Adw.PreferencesPage();
         contentPage.add(mainGroup);
         contentPage.add(rulesGroup);
+        contentPage.add(scheduleGroup);
 
         // Wrap in Adw.ToolbarView for header bar with buttons
         const headerBar = new Adw.HeaderBar();
@@ -772,6 +913,13 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         batteryRow.connect('notify::selected', hideError);
         fdRow.connect('notify::selected', hideError);
         autoManagedRow.connect('notify::active', hideError);
+        scheduleEnabledRow.connect('notify::active', hideError);
+        for (const btn of Object.values(dayButtons))
+            btn.connect('toggled', hideError);
+        startHourSpin.connect('value-changed', hideError);
+        startMinuteSpin.connect('value-changed', hideError);
+        endHourSpin.connect('value-changed', hideError);
+        endMinuteSpin.connect('value-changed', hideError);
 
         // Button handlers
         cancelBtn.connect('clicked', () => dialog.close());
@@ -798,8 +946,38 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     return;
                 }
 
-                if (autoManaged && rules.length === 0) {
-                    errorLabel.set_text(_('Auto-activate is enabled but no conditions are defined. Add at least one condition or disable auto-activate.'));
+                // Collect schedule data
+                let schedule = null;
+                if (autoManaged && scheduleEnabledRow.active) {
+                    const days = [];
+                    for (let d = 1; d <= 7; d++) {
+                        if (dayButtons[d].active)
+                            days.push(d);
+                    }
+                    schedule = {
+                        enabled: true,
+                        days,
+                        startTime: ScheduleUtils.formatTimeHHMM(
+                            Math.round(startHourSpin.value),
+                            Math.round(startMinuteSpin.value)
+                        ),
+                        endTime: ScheduleUtils.formatTimeHHMM(
+                            Math.round(endHourSpin.value),
+                            Math.round(endMinuteSpin.value)
+                        ),
+                    };
+
+                    const scheduleValidation = ScheduleUtils.validateSchedule(schedule);
+                    if (!scheduleValidation.valid) {
+                        errorLabel.set_text(scheduleValidation.error);
+                        errorLabel.show();
+                        return;
+                    }
+                }
+
+                const hasSchedule = schedule?.enabled;
+                if (autoManaged && rules.length === 0 && !hasSchedule) {
+                    errorLabel.set_text(_('Auto-activate requires at least one condition or an enabled schedule.'));
                     errorLabel.show();
                     return;
                 }
@@ -847,7 +1025,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
                 // Check for conflicts
                 const profiles = ProfileMatcher.getCustomProfiles(settings);
-                const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged};
+                const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged, schedule};
                 const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
                 if (conflict) {
                     errorLabel.set_text(_('Rule conflict with profile "%s": same conditions at same specificity').format(conflict.name));
@@ -859,9 +1037,9 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 let success;
                 if (isEdit) {
                     success = ProfileMatcher.updateProfile(settings, existingProfile.id,
-                        {name, powerMode, batteryMode, forceDischarge, rules, autoManaged});
+                        {name, powerMode, batteryMode, forceDischarge, rules, autoManaged, schedule});
                 } else {
-                    success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged);
+                    success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged, schedule);
                 }
 
                 if (!success) {
