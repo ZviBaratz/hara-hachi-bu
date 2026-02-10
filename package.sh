@@ -26,6 +26,7 @@ zip -r "$OUTPUT_FILE" \
     LICENSE \
     README.md \
     install-helper.sh \
+    unified-power-manager.pot \
     schemas/org.gnome.shell.extensions.unified-power-manager.gschema.xml \
     schemas/gschemas.compiled \
     icons/ \
