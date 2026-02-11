@@ -154,8 +154,8 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         generalPage.add(batteryManageGroup);
 
         const autoManageRow = new Adw.SwitchRow({
-            title: _('Auto-Manage Battery Levels'),
-            subtitle: _('Automatically bring battery down to threshold when plugged in'),
+            title: _('Automatic Discharge to Threshold'),
+            subtitle: _('When plugged in, discharge battery to reach the configured threshold'),
         });
         settings.bind('auto-manage-battery-levels', autoManageRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         batteryManageGroup.add(autoManageRow);
@@ -176,14 +176,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Auto-Management Group
         const autoManageGroup = new Adw.PreferencesGroup({
             title: _('Automatic Profile Switching'),
-            description: _('Profiles with rules automatically activate when conditions match'),
+            description: _('Profiles with "Apply Automatically" enabled will activate based on their conditions and schedules. Manual profile selection pauses auto-switching.'),
         });
         generalPage.add(autoManageGroup);
 
         // Auto-switch profiles master toggle
         const autoSwitchRow = new Adw.SwitchRow({
             title: _('Auto-switch Profiles'),
-            subtitle: _('Automatically switch profiles based on their configured rules'),
+            subtitle: _('Enable automatic profile switching based on conditions and schedules. Manually selecting a profile or mode will pause this.'),
         });
         settings.bind('auto-switch-enabled', autoSwitchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         autoManageGroup.add(autoSwitchRow);
@@ -191,7 +191,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Resume on state change toggle
         const resumeRow = new Adw.SwitchRow({
             title: _('Resume on State Change'),
-            subtitle: _('When paused, resume auto-switching when display/power changes'),
+            subtitle: _('When paused by manual selection, automatically resume switching when system conditions change (display connected/disconnected, AC plugged/unplugged)'),
         });
         settings.bind('resume-on-state-change', resumeRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         autoManageGroup.add(resumeRow);
@@ -613,8 +613,8 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Auto-activate toggle (Adw.SwitchRow)
         const autoManagedRow = new Adw.SwitchRow({
-            title: _('Auto-activate'),
-            subtitle: _('Profile activates automatically when all conditions match'),
+            title: _('Apply Automatically'),
+            subtitle: _('Profile applies automatically when all conditions match'),
             active: isEdit ? !!existingProfile.autoManaged : false,
         });
         mainGroup.add(autoManagedRow);
@@ -991,7 +991,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
                 const hasSchedule = schedule?.enabled;
                 if (autoManaged && rules.length === 0 && !hasSchedule) {
-                    errorLabel.set_text(_('Auto-activate requires at least one condition or an enabled schedule.'));
+                    errorLabel.set_text(_('Apply Automatically requires at least one condition or an enabled schedule.'));
                     errorLabel.show();
                     return;
                 }
