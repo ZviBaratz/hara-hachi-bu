@@ -60,15 +60,13 @@
     max-width: 200px;
 }
 
-/* Auto badge for profiles with rules */
+/* Auto badge for profiles with rules - subtle accent style matching prefs */
 .upm-auto-badge {
-    font-size: 0.75em;
-    font-weight: bold;
+    font-size: 0.85em;
+    font-weight: normal;
     color: #62a0ea; /* Adwaita @accent_color (dark) */
-    background-color: rgba(98, 160, 234, 0.15);
-    border-radius: 4px;
-    padding: 2px 6px;
     margin-start: 8px;
+    opacity: 0.9;
 }
 
 /* Collapsible header styling */
