@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: unified-power-manager 1.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/ZviBaratz/unified-power-manager/"
 "issues\n"
-"POT-Creation-Date: 2026-02-11 08:35+0200\n"
+"POT-Creation-Date: 2026-02-11 09:39+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -352,17 +352,17 @@ msgstr ""
 msgid "Profile Name"
 msgstr ""
 
-#: prefs.js:584 lib/quickSettingsPanel.js:360 lib/stateManager.js:572
+#: prefs.js:584 lib/quickSettingsPanel.js:364 lib/stateManager.js:572
 #: lib/stateManager.js:590
 msgid "Power Mode"
 msgstr ""
 
-#: prefs.js:595 lib/quickSettingsPanel.js:396 lib/stateManager.js:602
+#: prefs.js:595 lib/quickSettingsPanel.js:404 lib/stateManager.js:602
 #: lib/stateManager.js:624 lib/stateManager.js:644
 msgid "Battery Mode"
 msgstr ""
 
-#: prefs.js:606 lib/quickSettingsPanel.js:478 lib/quickSettingsPanel.js:512
+#: prefs.js:606 lib/quickSettingsPanel.js:490 lib/quickSettingsPanel.js:524
 #: lib/stateManager.js:785 lib/stateManager.js:796
 msgid "Force Discharge"
 msgstr ""
@@ -707,7 +707,7 @@ msgid "Invalid battery mode"
 msgstr ""
 
 #: lib/quickSettingsPanel.js:44 lib/quickSettingsPanel.js:55
-#: lib/quickSettingsPanel.js:1034
+#: lib/quickSettingsPanel.js:1055
 msgid "Power"
 msgstr ""
 
@@ -739,184 +739,189 @@ msgstr ""
 msgid "Automatically managed profile"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:272 lib/quickSettingsPanel.js:379
-#: lib/quickSettingsPanel.js:438
+#: lib/quickSettingsPanel.js:272 lib/quickSettingsPanel.js:383
+#: lib/quickSettingsPanel.js:446
 #, javascript-format
 msgid "Applying %s..."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:293 lib/quickSettingsPanel.js:353
+#: lib/quickSettingsPanel.js:297 lib/quickSettingsPanel.js:357
 msgid "Manual Controls"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:341
+#: lib/quickSettingsPanel.js:345
 msgid "Manual Controls (expanded)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:342
+#: lib/quickSettingsPanel.js:346
 msgid "Manual Controls (collapsed)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:428
+#: lib/quickSettingsPanel.js:436
 #, javascript-format
 msgid "charge to %d%%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:480
+#: lib/quickSettingsPanel.js:492
 msgid "Force Discharge: use battery power while connected to AC"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:489
+#: lib/quickSettingsPanel.js:501
 msgid "Applying force discharge..."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:511
+#: lib/quickSettingsPanel.js:523
 msgid "Force Discharge (AC only)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:521
+#: lib/quickSettingsPanel.js:533
 msgid "Auto-switch profiles"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:526
+#: lib/quickSettingsPanel.js:538
 msgid ""
 "Auto-switch profiles: automatically apply profiles when system conditions "
 "change"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:535
+#: lib/quickSettingsPanel.js:547
 msgid "Auto-switching paused — you manually selected a profile or mode"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:540
+#: lib/quickSettingsPanel.js:552
 msgid "Resume"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:543
+#: lib/quickSettingsPanel.js:555
 msgid "Resume automatic profile switching"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:616 lib/quickSettingsPanel.js:675
+#: lib/quickSettingsPanel.js:629 lib/quickSettingsPanel.js:688
 #, javascript-format
 msgid "Maximum Capacity: %d%%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:694
+#: lib/quickSettingsPanel.js:707
 msgid "Good"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:697
+#: lib/quickSettingsPanel.js:710
 msgid "Fair"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:700
+#: lib/quickSettingsPanel.js:713
 msgid "Poor"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:703
+#: lib/quickSettingsPanel.js:716
 #, javascript-format
 msgid "Maximum Capacity: %d%% (%s)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:710
+#: lib/quickSettingsPanel.js:723
 msgid "Power Settings"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:740 lib/quickSettingsPanel.js:783
-#: lib/quickSettingsPanel.js:788 lib/quickSettingsPanel.js:869
+#: lib/quickSettingsPanel.js:753 lib/quickSettingsPanel.js:796
+#: lib/quickSettingsPanel.js:801 lib/quickSettingsPanel.js:890
 msgid "Boost Charge"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:744
+#: lib/quickSettingsPanel.js:757
 msgid "Boost Charge: temporarily charge to 100%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:752
+#: lib/quickSettingsPanel.js:765
 msgid "Applying boost charge..."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:781
+#: lib/quickSettingsPanel.js:794
 #, javascript-format
 msgid "Boost Charge (until %s)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:787
+#: lib/quickSettingsPanel.js:800
 msgid "Boost Charge (AC only)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:838
+#: lib/quickSettingsPanel.js:851
 #, javascript-format
 msgid "%dh %dm"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:839
+#: lib/quickSettingsPanel.js:852
 #, javascript-format
 msgid "%dm"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:857
+#: lib/quickSettingsPanel.js:872
+#, javascript-format
+msgid "%s (manual)"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:878
 msgid "Manual"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:860
+#: lib/quickSettingsPanel.js:881
 #, javascript-format
 msgid "%d%%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:867
+#: lib/quickSettingsPanel.js:888
 #, javascript-format
 msgid "Boost Charge (%s remaining)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:876
+#: lib/quickSettingsPanel.js:897
 #, javascript-format
 msgid "Charging (%s remaining)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:878
+#: lib/quickSettingsPanel.js:899
 msgid "Charging"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:884
+#: lib/quickSettingsPanel.js:905
 #, javascript-format
 msgid "Force discharging (%s remaining)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:885
+#: lib/quickSettingsPanel.js:906
 #, javascript-format
 msgid "Discharging (%s remaining)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:887
+#: lib/quickSettingsPanel.js:908
 msgid "Force discharging"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:887
+#: lib/quickSettingsPanel.js:908
 msgid "Discharging"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:892
+#: lib/quickSettingsPanel.js:913
 #, javascript-format
 msgid "Not charging (limit: %d%%)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:894
+#: lib/quickSettingsPanel.js:915
 msgid "Not charging"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:896
+#: lib/quickSettingsPanel.js:917
 msgid "Full"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:918 lib/quickSettingsPanel.js:944
+#: lib/quickSettingsPanel.js:939 lib/quickSettingsPanel.js:965
 msgid "applies automatically"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:920 lib/quickSettingsPanel.js:945
+#: lib/quickSettingsPanel.js:941 lib/quickSettingsPanel.js:966
 msgid "active"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:938
+#: lib/quickSettingsPanel.js:959
 #, javascript-format
 msgid "%s (until %s)"
 msgstr ""
