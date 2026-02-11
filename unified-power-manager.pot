@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: unified-power-manager 1.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/ZviBaratz/unified-power-manager/"
 "issues\n"
-"POT-Creation-Date: 2026-02-11 09:39+0200\n"
+"POT-Creation-Date: 2026-02-11 10:25+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,8 +19,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: extension.js:91 extension.js:109 prefs.js:320 lib/quickSettingsPanel.js:200
-#: lib/stateManager.js:434 lib/stateManager.js:518 lib/stateManager.js:997
-#: lib/stateManager.js:1062
+#: lib/stateManager.js:484 lib/stateManager.js:568 lib/stateManager.js:1054
+#: lib/stateManager.js:1119
 msgid "Unified Power Manager"
 msgstr ""
 
@@ -49,7 +49,7 @@ msgstr ""
 msgid "%s · %s %s–%s"
 msgstr ""
 
-#: prefs.js:49 lib/quickSettingsPanel.js:251
+#: prefs.js:49 lib/quickSettingsPanel.js:260
 msgid "Auto"
 msgstr ""
 
@@ -126,7 +126,9 @@ msgid "Automatic Discharge to Threshold"
 msgstr ""
 
 #: prefs.js:158
-msgid "When plugged in, discharge battery to reach the configured threshold"
+msgid ""
+"When plugged in and battery is above the stop-charging threshold, use force "
+"discharge to bring it down. Requires force discharge support."
 msgstr ""
 
 #: prefs.js:164
@@ -144,7 +146,8 @@ msgstr ""
 #: prefs.js:179
 msgid ""
 "Profiles with \"Apply Automatically\" enabled will activate based on their "
-"conditions and schedules. Manual profile selection pauses auto-switching."
+"conditions and schedules. Manually selecting a profile or mode pauses auto-"
+"switching. When no profile matches, settings remain unchanged."
 msgstr ""
 
 #: prefs.js:185
@@ -299,242 +302,262 @@ msgid "Installation"
 msgstr ""
 
 #: prefs.js:412
-msgid "Run install-helper.sh or see README.md for manual installation"
+msgid "The helper script is required for battery threshold control"
 msgstr ""
 
-#: prefs.js:417
+#: prefs.js:419
 msgid "Helper Installation"
 msgstr ""
 
-#: prefs.js:418
-msgid "sudo ./install-helper.sh (in extension directory)"
+#: prefs.js:426 prefs.js:437
+msgid "Copy install command"
 msgstr ""
 
-#: prefs.js:443
+#: prefs.js:433
+msgid "Copied!"
+msgstr ""
+
+#: prefs.js:464
 msgid "Start Charging At"
 msgstr ""
 
-#: prefs.js:445 prefs.js:478
+#: prefs.js:466 prefs.js:499
 #, javascript-format
 msgid "Battery will start charging when it drops to %d%%"
 msgstr ""
 
-#: prefs.js:447
+#: prefs.js:468
 msgid "Not supported on this device – only end threshold is used"
 msgstr ""
 
-#: prefs.js:460
+#: prefs.js:481
 msgid "Stop Charging At"
 msgstr ""
 
-#: prefs.js:461 prefs.js:486
+#: prefs.js:482 prefs.js:507
 #, javascript-format
 msgid "Battery will stop charging when it reaches %d%%"
 msgstr ""
 
-#: prefs.js:503
+#: prefs.js:524
 msgid "Reset to Defaults"
 msgstr ""
 
-#: prefs.js:506
+#: prefs.js:527
 msgid "Reset"
 msgstr ""
 
-#: prefs.js:542
+#: prefs.js:563
 msgid "No profiles"
 msgstr ""
 
-#: prefs.js:543
+#: prefs.js:564
 msgid "Click \"Add Profile\" to create one"
 msgstr ""
 
-#: prefs.js:576
+#: prefs.js:585
+#, javascript-format
+msgid "Maximum of %d profiles reached"
+msgstr ""
+
+#: prefs.js:606
 msgid "Profile Name"
 msgstr ""
 
-#: prefs.js:584 lib/quickSettingsPanel.js:364 lib/stateManager.js:572
-#: lib/stateManager.js:590
+#: prefs.js:614 lib/quickSettingsPanel.js:380 lib/stateManager.js:622
+#: lib/stateManager.js:640
 msgid "Power Mode"
 msgstr ""
 
-#: prefs.js:595 lib/quickSettingsPanel.js:404 lib/stateManager.js:602
-#: lib/stateManager.js:624 lib/stateManager.js:644
+#: prefs.js:625 lib/quickSettingsPanel.js:420 lib/stateManager.js:652
+#: lib/stateManager.js:679 lib/stateManager.js:699
 msgid "Battery Mode"
 msgstr ""
 
-#: prefs.js:606 lib/quickSettingsPanel.js:490 lib/quickSettingsPanel.js:524
-#: lib/stateManager.js:785 lib/stateManager.js:796
+#: prefs.js:636 lib/quickSettingsPanel.js:507 lib/quickSettingsPanel.js:541
+#: lib/stateManager.js:840 lib/stateManager.js:851
 msgid "Force Discharge"
 msgstr ""
 
-#: prefs.js:616
+#: prefs.js:646
 msgid "Apply Automatically"
 msgstr ""
 
-#: prefs.js:617
+#: prefs.js:647
 msgid "Profile applies automatically when all conditions match"
 msgstr ""
 
-#: prefs.js:624
-msgid "Conditions"
+#: prefs.js:654
+msgid "Activation Conditions"
 msgstr ""
 
-#: prefs.js:625
+#: prefs.js:655
 msgid "When all conditions match, this profile activates automatically."
 msgstr ""
 
-#: prefs.js:654
+#: prefs.js:684
 msgid "Condition parameter"
 msgstr ""
 
-#: prefs.js:663
+#: prefs.js:693
 msgid "Condition operator"
 msgstr ""
 
-#: prefs.js:691
+#: prefs.js:721
 msgid "Condition value"
 msgstr ""
 
-#: prefs.js:702
+#: prefs.js:732
 msgid "Remove condition"
 msgstr ""
 
-#: prefs.js:728
+#: prefs.js:758
 msgid "Add Condition"
 msgstr ""
 
-#: prefs.js:745
+#: prefs.js:775
 msgid "Schedule"
 msgstr ""
 
-#: prefs.js:746
+#: prefs.js:776
 msgid ""
-"Limit this profile to specific days and times. When a schedule ends, "
-"settings remain unchanged unless another profile matches."
+"Limit this profile to specific days and times. Both conditions AND schedule "
+"must match for activation. When a schedule ends, settings remain unchanged "
+"unless another profile matches."
 msgstr ""
 
-#: prefs.js:751
+#: prefs.js:781
 msgid "Enable Schedule"
 msgstr ""
 
-#: prefs.js:752
+#: prefs.js:782
 msgid "Profile only activates during the scheduled window"
 msgstr ""
 
-#: prefs.js:786 lib/scheduleUtils.js:398
+#: prefs.js:816 lib/scheduleUtils.js:398
 msgid "Weekdays"
 msgstr ""
 
-#: prefs.js:791 lib/scheduleUtils.js:400
+#: prefs.js:821 lib/scheduleUtils.js:400
 msgid "Weekends"
 msgstr ""
 
-#: prefs.js:796
+#: prefs.js:826
 msgid "All"
 msgstr ""
 
-#: prefs.js:829
+#: prefs.js:831
+msgid "Clear"
+msgstr ""
+
+#: prefs.js:865
 msgid "Start Time"
 msgstr ""
 
-#: prefs.js:830 prefs.js:840
+#: prefs.js:866 prefs.js:876
 msgid "Hours"
 msgstr ""
 
-#: prefs.js:832 prefs.js:842
+#: prefs.js:868 prefs.js:878
 msgid "Minutes"
 msgstr ""
 
-#: prefs.js:839
+#: prefs.js:875
 msgid "End Time"
 msgstr ""
 
-#: prefs.js:850
+#: prefs.js:886
 msgid ""
 "Tip: Set start time after end time for overnight schedules (e.g., 23:00 to "
 "07:00)"
 msgstr ""
 
-#: prefs.js:897 prefs.js:1102
+#: prefs.js:933 prefs.js:1146
 msgid "Cancel"
 msgstr ""
 
-#: prefs.js:901
+#: prefs.js:937
 msgid "Save"
 msgstr ""
 
-#: prefs.js:901
+#: prefs.js:937
 msgid "Create"
 msgstr ""
 
-#: prefs.js:917
+#: prefs.js:953
 msgid "Edit Profile"
 msgstr ""
 
-#: prefs.js:917
+#: prefs.js:953
 msgid "Create Profile"
-msgstr ""
-
-#: prefs.js:958
-msgid ""
-"Some conditions are incomplete. Please complete or remove them before saving."
 msgstr ""
 
 #: prefs.js:994
 msgid ""
+"Some conditions are incomplete. Please complete or remove them before saving."
+msgstr ""
+
+#: prefs.js:1034
+msgid ""
 "Apply Automatically requires at least one condition or an enabled schedule."
 msgstr ""
 
-#: prefs.js:1005
-msgid "Profile name must contain at least one letter or number."
+#: prefs.js:1046
+msgid "Please enter a profile name."
 msgstr ""
 
-#: prefs.js:1027
+#: prefs.js:1048
+msgid ""
+"Profile name must contain at least one letter or number (used to generate an "
+"internal ID)."
+msgstr ""
+
+#: prefs.js:1071
 msgid "A profile with this name already exists"
 msgstr ""
 
-#: prefs.js:1045
+#: prefs.js:1089
 #, javascript-format
 msgid ""
 "Condition conflict with profile \"%s\". Tip: Add a schedule to create a time-"
 "based variant without conflict."
 msgstr ""
 
-#: prefs.js:1060
+#: prefs.js:1104
 msgid "Failed to save profile. Check for conflicts or limit reached."
 msgstr ""
 
-#: prefs.js:1068
+#: prefs.js:1112
 msgid "An unexpected error occurred. Check logs for details."
 msgstr ""
 
-#: prefs.js:1092
+#: prefs.js:1136
 msgid "This action cannot be undone."
 msgstr ""
 
-#: prefs.js:1094
+#: prefs.js:1138
 msgid ""
 "This profile is currently active. Deleting it will switch to manual mode."
 msgstr ""
 
-#: prefs.js:1098
+#: prefs.js:1142
 #, javascript-format
 msgid "Delete \"%s\"?"
 msgstr ""
 
-#: prefs.js:1103
+#: prefs.js:1147
 msgid "Delete"
 msgstr ""
 
-#: prefs.js:1116
+#: prefs.js:1160
 msgid "Delete Failed"
 msgstr ""
 
-#: prefs.js:1117
+#: prefs.js:1161
 msgid "Failed to delete profile. Please try again."
 msgstr ""
 
-#: prefs.js:1119
+#: prefs.js:1163
 msgid "OK"
 msgstr ""
 
@@ -542,12 +565,24 @@ msgstr ""
 msgid "Full Capacity"
 msgstr ""
 
+#: lib/constants.js:39
+msgid "Full runtime — charge fully"
+msgstr ""
+
 #: lib/constants.js:46 lib/constants.js:70
 msgid "Balanced"
 msgstr ""
 
+#: lib/constants.js:47
+msgid "Balance runtime and battery longevity"
+msgstr ""
+
 #: lib/constants.js:54
 msgid "Max Lifespan"
+msgstr ""
+
+#: lib/constants.js:55
+msgid "Extend battery life — best for desk use"
 msgstr ""
 
 #: lib/constants.js:66
@@ -567,7 +602,7 @@ msgid "Off"
 msgstr ""
 
 #: lib/constants.js:83
-msgid "Unspecified"
+msgid "Don't change"
 msgstr ""
 
 #: lib/constants.js:90
@@ -678,36 +713,36 @@ msgstr ""
 msgid "Travel"
 msgstr ""
 
-#: lib/profileMatcher.js:542
+#: lib/profileMatcher.js:549
 msgid "Profile name is required"
 msgstr ""
 
-#: lib/profileMatcher.js:545
+#: lib/profileMatcher.js:552
 msgid "Profile name too long (max 50 characters)"
 msgstr ""
 
-#: lib/profileMatcher.js:548
+#: lib/profileMatcher.js:555
 msgid "Invalid profile ID"
 msgstr ""
 
-#: lib/profileMatcher.js:553
-msgid "Profile ID already exists"
+#: lib/profileMatcher.js:560
+msgid "A profile with a similar name already exists. Try a more distinct name."
 msgstr ""
 
-#: lib/profileMatcher.js:556
+#: lib/profileMatcher.js:563
 msgid "Maximum profile limit reached"
 msgstr ""
 
-#: lib/profileMatcher.js:561
+#: lib/profileMatcher.js:568
 msgid "Invalid power mode"
 msgstr ""
 
-#: lib/profileMatcher.js:565
+#: lib/profileMatcher.js:572
 msgid "Invalid battery mode"
 msgstr ""
 
 #: lib/quickSettingsPanel.js:44 lib/quickSettingsPanel.js:55
-#: lib/quickSettingsPanel.js:1055
+#: lib/quickSettingsPanel.js:1073
 msgid "Power"
 msgstr ""
 
@@ -721,7 +756,7 @@ msgid "Manage power profiles and battery charging modes"
 msgstr ""
 
 #: lib/quickSettingsPanel.js:169
-msgid "Battery Thresholds: Setup Required"
+msgid "Setup Required — tap to copy install command"
 msgstr ""
 
 #: lib/quickSettingsPanel.js:182
@@ -735,193 +770,201 @@ msgid ""
 "Open terminal and paste (Ctrl+Shift+V) to enable battery threshold control."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:256
+#: lib/quickSettingsPanel.js:241
+msgid "Create profiles in Settings to save mode combinations"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:265
 msgid "Automatically managed profile"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:272 lib/quickSettingsPanel.js:383
-#: lib/quickSettingsPanel.js:446
+#: lib/quickSettingsPanel.js:281 lib/quickSettingsPanel.js:399
+#: lib/quickSettingsPanel.js:463
 #, javascript-format
 msgid "Applying %s..."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:297 lib/quickSettingsPanel.js:357
+#: lib/quickSettingsPanel.js:306 lib/quickSettingsPanel.js:373
 msgid "Manual Controls"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:345
+#: lib/quickSettingsPanel.js:354
 msgid "Manual Controls (expanded)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:346
+#: lib/quickSettingsPanel.js:355
 msgid "Manual Controls (collapsed)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:436
+#: lib/quickSettingsPanel.js:452
 #, javascript-format
 msgid "charge to %d%%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:492
+#: lib/quickSettingsPanel.js:509
 msgid "Force Discharge: use battery power while connected to AC"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:501
+#: lib/quickSettingsPanel.js:518
 msgid "Applying force discharge..."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:523
+#: lib/quickSettingsPanel.js:540
 msgid "Force Discharge (AC only)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:533
+#: lib/quickSettingsPanel.js:550
 msgid "Auto-switch profiles"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:538
+#: lib/quickSettingsPanel.js:555
 msgid ""
 "Auto-switch profiles: automatically apply profiles when system conditions "
 "change"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:547
-msgid "Auto-switching paused — you manually selected a profile or mode"
+#: lib/quickSettingsPanel.js:564
+msgid "Auto-switching paused"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:552
+#: lib/quickSettingsPanel.js:569
 msgid "Resume"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:555
+#: lib/quickSettingsPanel.js:572
 msgid "Resume automatic profile switching"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:629 lib/quickSettingsPanel.js:688
+#: lib/quickSettingsPanel.js:646 lib/quickSettingsPanel.js:705
 #, javascript-format
 msgid "Maximum Capacity: %d%%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:707
+#: lib/quickSettingsPanel.js:724
 msgid "Good"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:710
+#: lib/quickSettingsPanel.js:727
 msgid "Fair"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:713
+#: lib/quickSettingsPanel.js:730
 msgid "Poor"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:716
+#: lib/quickSettingsPanel.js:733
 #, javascript-format
 msgid "Maximum Capacity: %d%% (%s)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:723
+#: lib/quickSettingsPanel.js:740
 msgid "Power Settings"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:753 lib/quickSettingsPanel.js:796
-#: lib/quickSettingsPanel.js:801 lib/quickSettingsPanel.js:890
+#: lib/quickSettingsPanel.js:770 lib/quickSettingsPanel.js:813
+#: lib/quickSettingsPanel.js:907
 msgid "Boost Charge"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:757
+#: lib/quickSettingsPanel.js:774
 msgid "Boost Charge: temporarily charge to 100%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:765
+#: lib/quickSettingsPanel.js:782
 msgid "Applying boost charge..."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:794
+#: lib/quickSettingsPanel.js:811
 #, javascript-format
 msgid "Boost Charge (until %s)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:800
+#: lib/quickSettingsPanel.js:817
 msgid "Boost Charge (AC only)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:851
+#: lib/quickSettingsPanel.js:818
+msgid "Boost Charge — temporarily charge to 100%"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:868
 #, javascript-format
 msgid "%dh %dm"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:852
+#: lib/quickSettingsPanel.js:869
 #, javascript-format
 msgid "%dm"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:872
+#: lib/quickSettingsPanel.js:889
 #, javascript-format
 msgid "%s (manual)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:878
+#: lib/quickSettingsPanel.js:895
 msgid "Manual"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:881
+#: lib/quickSettingsPanel.js:898
 #, javascript-format
 msgid "%d%%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:888
+#: lib/quickSettingsPanel.js:905
 #, javascript-format
 msgid "Boost Charge (%s remaining)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:897
+#: lib/quickSettingsPanel.js:915
 #, javascript-format
 msgid "Charging (%s remaining)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:899
+#: lib/quickSettingsPanel.js:917
 msgid "Charging"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:905
+#: lib/quickSettingsPanel.js:923
 #, javascript-format
 msgid "Force discharging (%s remaining)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:906
+#: lib/quickSettingsPanel.js:924
 #, javascript-format
 msgid "Discharging (%s remaining)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:908
+#: lib/quickSettingsPanel.js:926
 msgid "Force discharging"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:908
+#: lib/quickSettingsPanel.js:926
 msgid "Discharging"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:913
+#: lib/quickSettingsPanel.js:931
 #, javascript-format
 msgid "Not charging (limit: %d%%)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:915
+#: lib/quickSettingsPanel.js:933
 msgid "Not charging"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:917
+#: lib/quickSettingsPanel.js:935
 msgid "Full"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:939 lib/quickSettingsPanel.js:965
+#: lib/quickSettingsPanel.js:957 lib/quickSettingsPanel.js:983
 msgid "applies automatically"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:941 lib/quickSettingsPanel.js:966
+#: lib/quickSettingsPanel.js:959 lib/quickSettingsPanel.js:984
 msgid "active"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:959
+#: lib/quickSettingsPanel.js:977
 #, javascript-format
 msgid "%s (until %s)"
 msgstr ""
@@ -1022,137 +1065,137 @@ msgstr ""
 msgid "Daily"
 msgstr ""
 
-#: lib/stateManager.js:37
+#: lib/stateManager.js:40
 msgid "Setup Required"
 msgstr ""
 
-#: lib/stateManager.js:38
+#: lib/stateManager.js:41
 msgid ""
 "Helper script not installed. Open Settings → About to copy installation "
 "command."
 msgstr ""
 
-#: lib/stateManager.js:144
+#: lib/stateManager.js:147
 msgid "State Restoration"
 msgstr ""
 
-#: lib/stateManager.js:145
+#: lib/stateManager.js:148
 msgid "Failed to restore force-discharge mode. Check extension logs."
 msgstr ""
 
-#: lib/stateManager.js:215
+#: lib/stateManager.js:219
 msgid "Partial Failure"
 msgstr ""
 
-#: lib/stateManager.js:216
+#: lib/stateManager.js:220
 #, javascript-format
 msgid "Threshold set on %s but failed on %s"
 msgstr ""
 
-#: lib/stateManager.js:413
+#: lib/stateManager.js:452
 #, javascript-format
 msgid "Switched to %s profile"
 msgstr ""
 
-#: lib/stateManager.js:420
+#: lib/stateManager.js:459
 #, javascript-format
 msgid "schedule until %s"
 msgstr ""
 
-#: lib/stateManager.js:422
+#: lib/stateManager.js:461
 msgid "schedule active"
 msgstr ""
 
-#: lib/stateManager.js:426
+#: lib/stateManager.js:476
 msgid "conditions matched"
 msgstr ""
 
-#: lib/stateManager.js:430
+#: lib/stateManager.js:480
 #, javascript-format
 msgid "Switched to %s (%s)"
 msgstr ""
 
-#: lib/stateManager.js:572
+#: lib/stateManager.js:622
 msgid "Power profile control is not available. Install power-profiles-daemon."
 msgstr ""
 
-#: lib/stateManager.js:590
+#: lib/stateManager.js:640
 #, javascript-format
 msgid ""
 "Failed to apply power mode %s. Check that power-profiles-daemon is running."
 msgstr ""
 
-#: lib/stateManager.js:602
+#: lib/stateManager.js:652
 msgid "Battery threshold control is not available"
 msgstr ""
 
-#: lib/stateManager.js:624
+#: lib/stateManager.js:679
 #, javascript-format
 msgid "Invalid battery mode: %s"
 msgstr ""
 
-#: lib/stateManager.js:645
+#: lib/stateManager.js:700
 msgid ""
 "Failed to apply battery thresholds. Try: 1) Run install-helper.sh to set up "
 "battery control, 2) Check Settings → About for installation instructions."
 msgstr ""
 
-#: lib/stateManager.js:669
+#: lib/stateManager.js:724
 msgid "Profile Switch Failed"
 msgstr ""
 
-#: lib/stateManager.js:670
+#: lib/stateManager.js:725
 #, javascript-format
 msgid "Profile \"%s\" does not exist."
 msgstr ""
 
-#: lib/stateManager.js:693
+#: lib/stateManager.js:748
 msgid "power mode"
 msgstr ""
 
-#: lib/stateManager.js:711
+#: lib/stateManager.js:766
 msgid "battery mode"
 msgstr ""
 
-#: lib/stateManager.js:734
+#: lib/stateManager.js:789
 msgid "force discharge"
 msgstr ""
 
-#: lib/stateManager.js:774
+#: lib/stateManager.js:829
 msgid "Profile Partially Applied"
 msgstr ""
 
-#: lib/stateManager.js:775
+#: lib/stateManager.js:830
 #, javascript-format
 msgid "Profile \"%s\": failed to apply %s"
 msgstr ""
 
-#: lib/stateManager.js:785
+#: lib/stateManager.js:840
 msgid "Force discharge is not supported on this device"
 msgstr ""
 
-#: lib/stateManager.js:796
+#: lib/stateManager.js:851
 msgid "Failed to change force discharge mode"
 msgstr ""
 
-#: lib/stateManager.js:998
+#: lib/stateManager.js:1055
 msgid ""
 "Boost Charge activated — charging to 100% (auto-stops in %d hours or when "
 "full)"
 msgstr ""
 
-#: lib/stateManager.js:1056 lib/stateManager.js:1063
+#: lib/stateManager.js:1113 lib/stateManager.js:1120
 msgid "Boost charge deactivated"
 msgstr ""
 
-#: lib/stateManager.js:1057
+#: lib/stateManager.js:1114
 msgid "Boost charge complete — battery is full"
 msgstr ""
 
-#: lib/stateManager.js:1058
+#: lib/stateManager.js:1115
 msgid "Boost charge timed out — reverting to previous mode"
 msgstr ""
 
-#: lib/stateManager.js:1059
+#: lib/stateManager.js:1116
 msgid "Boost charge stopped — AC power disconnected"
 msgstr ""

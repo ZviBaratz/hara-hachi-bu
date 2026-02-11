@@ -155,7 +155,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         const autoManageRow = new Adw.SwitchRow({
             title: _('Automatic Discharge to Threshold'),
-            subtitle: _('When plugged in, discharge battery to reach the configured threshold'),
+            subtitle: _('When plugged in and battery is above the stop-charging threshold, use force discharge to bring it down. Requires force discharge support.'),
         });
         settings.bind('auto-manage-battery-levels', autoManageRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         batteryManageGroup.add(autoManageRow);
@@ -176,7 +176,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Auto-Management Group
         const autoManageGroup = new Adw.PreferencesGroup({
             title: _('Automatic Profile Switching'),
-            description: _('Profiles with "Apply Automatically" enabled will activate based on their conditions and schedules. Manual profile selection pauses auto-switching.'),
+            description: _('Profiles with "Apply Automatically" enabled will activate based on their conditions and schedules. Manually selecting a profile or mode pauses auto-switching. When no profile matches, settings remain unchanged.'),
         });
         generalPage.add(autoManageGroup);
 
@@ -273,16 +273,16 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         profileListGroup.add(scrolled);
 
         // Add Profile button
-        const addButton = new Gtk.Button({
+        this._addProfileButton = new Gtk.Button({
             label: _('Add Profile'),
             halign: Gtk.Align.CENTER,
             margin_top: 12,
             css_classes: ['pill'],
         });
-        addButton.connect('clicked', () => {
+        this._addProfileButton.connect('clicked', () => {
             this._showProfileDialog(window, settings, null);
         });
-        profileListGroup.add(addButton);
+        profileListGroup.add(this._addProfileButton);
 
         // Populate profile list
         this._refreshProfileList(window, settings);
@@ -409,14 +409,35 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Installation instructions
         const installGroup = new Adw.PreferencesGroup({
             title: _('Installation'),
-            description: _('Run install-helper.sh or see README.md for manual installation'),
+            description: _('The helper script is required for battery threshold control'),
         });
         aboutPage.add(installGroup);
 
+        const extDir = this.path;
+        const installCmd = `sudo ${extDir}/install-helper.sh`;
         const installRow = new Adw.ActionRow({
             title: _('Helper Installation'),
-            subtitle: _('sudo ./install-helper.sh (in extension directory)'),
+            subtitle: installCmd,
         });
+        const copyBtn = new Gtk.Button({
+            icon_name: 'edit-copy-symbolic',
+            valign: Gtk.Align.CENTER,
+            css_classes: ['flat'],
+            tooltip_text: _('Copy install command'),
+        });
+        copyBtn.connect('clicked', () => {
+            const display = copyBtn.get_display();
+            const clipboard = display.get_clipboard();
+            clipboard.set(installCmd);
+            copyBtn.icon_name = 'emblem-ok-symbolic';
+            copyBtn.tooltip_text = _('Copied!');
+            // Reset icon after 2 seconds
+            setTimeout(() => {
+                copyBtn.icon_name = 'edit-copy-symbolic';
+                copyBtn.tooltip_text = _('Copy install command');
+            }, 2000);
+        });
+        installRow.add_suffix(copyBtn);
         installGroup.add(installRow);
     }
 
@@ -555,6 +576,15 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             );
             this._profileListBox.append(row);
         }
+
+        // Disable Add Profile button when at limit
+        if (this._addProfileButton) {
+            const atLimit = profiles.length >= ProfileMatcher.MAX_PROFILES;
+            this._addProfileButton.sensitive = !atLimit;
+            this._addProfileButton.tooltip_text = atLimit
+                ? _('Maximum of %d profiles reached').format(ProfileMatcher.MAX_PROFILES)
+                : null;
+        }
     }
 
     _showProfileDialog(window, settings, existingProfile) {
@@ -621,7 +651,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // --- Rules section ---
         const rulesGroup = new Adw.PreferencesGroup({
-            title: _('Conditions'),
+            title: _('Activation Conditions'),
             description: _('When all conditions match, this profile activates automatically.'),
         });
 
@@ -743,7 +773,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // --- Schedule section ---
         const scheduleGroup = new Adw.PreferencesGroup({
             title: _('Schedule'),
-            description: _('Limit this profile to specific days and times. When a schedule ends, settings remain unchanged unless another profile matches.'),
+            description: _('Limit this profile to specific days and times. Both conditions AND schedule must match for activation. When a schedule ends, settings remain unchanged unless another profile matches.'),
         });
 
         // Schedule enable switch
@@ -798,9 +828,15 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             for (let d = 1; d <= 7; d++)
                 dayButtons[d].active = true;
         });
+        const clearDaysBtn = new Gtk.Button({label: _('Clear'), css_classes: ['pill']});
+        clearDaysBtn.connect('clicked', () => {
+            for (let d = 1; d <= 7; d++)
+                dayButtons[d].active = false;
+        });
         quickSelectBox.append(weekdaysBtn);
         quickSelectBox.append(weekendsBtn);
         quickSelectBox.append(allDaysBtn);
+        quickSelectBox.append(clearDaysBtn);
         scheduleGroup.add(quickSelectBox);
 
         // Parse existing times or use defaults
@@ -960,17 +996,19 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     return;
                 }
 
-                // Collect schedule data
+                // Collect schedule data (always preserve user input; set enabled=false when not active)
+                const scheduleDays = [];
+                for (let d = 1; d <= 7; d++) {
+                    if (dayButtons[d].active)
+                        scheduleDays.push(d);
+                }
+                const scheduleEnabled = autoManaged && scheduleEnabledRow.active;
+                const hadSchedule = existingProfile?.schedule != null;
                 let schedule = null;
-                if (autoManaged && scheduleEnabledRow.active) {
-                    const days = [];
-                    for (let d = 1; d <= 7; d++) {
-                        if (dayButtons[d].active)
-                            days.push(d);
-                    }
+                if (scheduleEnabled || hadSchedule || scheduleDays.length > 0) {
                     schedule = {
-                        enabled: true,
-                        days,
+                        enabled: scheduleEnabled,
+                        days: scheduleDays,
                         startTime: ScheduleUtils.formatTimeHHMM(
                             Math.round(startHourSpin.value),
                             Math.round(startMinuteSpin.value)
@@ -981,11 +1019,13 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                         ),
                     };
 
-                    const scheduleValidation = ScheduleUtils.validateSchedule(schedule);
-                    if (!scheduleValidation.valid) {
-                        errorLabel.set_text(scheduleValidation.error);
-                        errorLabel.show();
-                        return;
+                    if (scheduleEnabled) {
+                        const scheduleValidation = ScheduleUtils.validateSchedule(schedule);
+                        if (!scheduleValidation.valid) {
+                            errorLabel.set_text(scheduleValidation.error);
+                            errorLabel.show();
+                            return;
+                        }
                     }
                 }
 
@@ -1002,7 +1042,11 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     : name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
 
                 if (!isEdit && id.length === 0) {
-                    errorLabel.set_text(_('Profile name must contain at least one letter or number.'));
+                    if (name.length === 0) {
+                        errorLabel.set_text(_('Please enter a profile name.'));
+                    } else {
+                        errorLabel.set_text(_('Profile name must contain at least one letter or number (used to generate an internal ID).'));
+                    }
                     errorLabel.show();
                     return;
                 }
