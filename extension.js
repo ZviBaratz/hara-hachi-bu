@@ -1,5 +1,5 @@
 /*
- * Unified Power Manager - GNOME Shell Extension
+ * Hara Hachi Bu - GNOME Shell Extension
  * Copyright (C) 2024-2026 zvi
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -8,7 +8,7 @@ import Gettext from 'gettext';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-const _ = s => Gettext.dgettext('unified-power-manager', s);
+const _ = s => Gettext.dgettext('hara-hachi-bu', s);
 
 import {PowerProfileController} from './lib/powerProfileController.js';
 import {BatteryThresholdController} from './lib/batteryThresholdController.js';
@@ -88,12 +88,12 @@ export default class UnifiedPowerManager extends Extension {
                 !this._settings.get_boolean('helper-notification-shown')) {
                 this._settings.set_boolean('helper-notification-shown', true);
                 Main.notify(
-                    _('Unified Power Manager'),
+                    _('Hara Hachi Bu'),
                     _('Battery threshold control requires setup. Open Quick Settings \u2192 Power for instructions.')
                 );
             }
 
-            console.debug('Unified Power Manager: Extension initialized successfully');
+            console.debug('Hara Hachi Bu: Extension initialized successfully');
         } catch (e) {
             // Clean up partially initialized controllers to prevent leaks
             // on next enable() call which would overwrite these fields
@@ -104,9 +104,9 @@ export default class UnifiedPowerManager extends Extension {
             this._stateManager?.destroy();
             this._stateManager = null;
 
-            console.error(`Unified Power Manager: Failed to initialize: ${e}`);
+            console.error(`Hara Hachi Bu: Failed to initialize: ${e}`);
             console.error(e.stack);
-            Main.notify(_('Unified Power Manager'), _('Failed to initialize. Check logs for details.'));
+            Main.notify(_('Hara Hachi Bu'), _('Failed to initialize. Check logs for details.'));
         } finally {
             this._initializing = false;
             // If destroy was requested during initialization, run it now
@@ -139,7 +139,7 @@ export default class UnifiedPowerManager extends Extension {
             try {
                 this._powerManager.destroy();
             } catch (e) {
-                console.error(`Unified Power Manager: Error destroying PowerManager: ${e}`);
+                console.error(`Hara Hachi Bu: Error destroying PowerManager: ${e}`);
             }
             this._powerManager = null;
         }
@@ -148,7 +148,7 @@ export default class UnifiedPowerManager extends Extension {
             try {
                 this._stateManager.destroy();
             } catch (e) {
-                console.error(`Unified Power Manager: Error destroying StateManager: ${e}`);
+                console.error(`Hara Hachi Bu: Error destroying StateManager: ${e}`);
             }
             this._stateManager = null;
         }
@@ -157,7 +157,7 @@ export default class UnifiedPowerManager extends Extension {
             try {
                 this._batteryController.destroy();
             } catch (e) {
-                console.error(`Unified Power Manager: Error destroying BatteryThresholdController: ${e}`);
+                console.error(`Hara Hachi Bu: Error destroying BatteryThresholdController: ${e}`);
             }
             this._batteryController = null;
         }
@@ -166,14 +166,14 @@ export default class UnifiedPowerManager extends Extension {
             try {
                 this._powerController.destroy();
             } catch (e) {
-                console.error(`Unified Power Manager: Error destroying PowerProfileController: ${e}`);
+                console.error(`Hara Hachi Bu: Error destroying PowerProfileController: ${e}`);
             }
             this._powerController = null;
         }
     }
 
     disable() {
-        console.debug('Unified Power Manager: Disabling extension');
+        console.debug('Hara Hachi Bu: Disabling extension');
 
         this._destroyPowerManager();
         Helper.destroyExecCheck();

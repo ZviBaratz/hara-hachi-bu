@@ -1,6 +1,6 @@
 # Adding Support for New Hardware
 
-Unified Power Manager uses a modular architecture to support different laptop vendors and battery control mechanisms. This document explains how to add support for a new device.
+Hara Hachi Bu uses a modular architecture to support different laptop vendors and battery control mechanisms. This document explains how to add support for a new device.
 
 ## Architecture
 
@@ -37,7 +37,7 @@ The extension uses a `DeviceManager` to detect and instantiate the appropriate d
 import { BaseDevice } from './BaseDevice.js';
 
 export const MyLaptop = GObject.registerClass({
-    GTypeName: 'UPMMyLaptopDevice',
+    GTypeName: 'HHBMyLaptopDevice',
 }, class MyLaptop extends BaseDevice {
     async initialize() {
         // Check for specific files or DMI vendor strings
@@ -51,7 +51,7 @@ export const MyLaptop = GObject.registerClass({
 
     async setThresholds(start, end) {
         // Write to sysfs
-        // You may need to extend the 'unified-power-ctl' helper script
+        // You may need to extend the 'hhb-power-ctl' helper script
         // if root permissions are required.
     }
 });
@@ -59,9 +59,9 @@ export const MyLaptop = GObject.registerClass({
 
 ## Extending the Helper Script
 
-If your device requires root privileges to write to sysfs files (which is common for battery thresholds), you should use the existing `unified-power-ctl` script located in `resources/`.
+If your device requires root privileges to write to sysfs files (which is common for battery thresholds), you should use the existing `hhb-power-ctl` script located in `resources/`.
 
-1.  Modify `resources/unified-power-ctl` to add a new command case for your hardware.
+1.  Modify `resources/hhb-power-ctl` to add a new command case for your hardware.
 2.  **Security Warning**: Do not allow arbitrary paths to be passed to the script. Hardcode the paths in the script and select them via a command argument (e.g., `ASUS_LIMIT`, `DELL_MODE`).
 
 ## Testing Strategy
@@ -72,8 +72,8 @@ To test the UI and logic without access to specific hardware, you can use the **
 
 1.  Create a marker file in your config directory:
     ```bash
-    mkdir -p ~/.config/unified-power-manager
-    touch ~/.config/unified-power-manager/use_mock
+    mkdir -p ~/.config/hara-hachi-bu
+    touch ~/.config/hara-hachi-bu/use_mock
     ```
 2.  Reload the extension (log out/in or restart GNOME Shell).
 3.  The extension will now use an in-memory mock battery controller. All changes will be logged to the system journal (view with `journalctl -f -o cat /usr/bin/gnome-shell`).
@@ -82,5 +82,5 @@ To test the UI and logic without access to specific hardware, you can use the **
 
 Simply remove the marker file:
 ```bash
-rm ~/.config/unified-power-manager/use_mock
+rm ~/.config/hara-hachi-bu/use_mock
 ```

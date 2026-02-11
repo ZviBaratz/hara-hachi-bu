@@ -1,7 +1,7 @@
-// Polkit rules for Unified Power Manager GNOME Shell extension
+// Polkit rules for Hara Hachi Bu GNOME Shell extension
 //
 // Security model:
-//   This rule grants passwordless access to the unified-power-ctl helper script,
+//   This rule grants passwordless access to the hhb-power-ctl helper script,
 //   which writes battery charging thresholds and force-discharge mode to sysfs.
 //
 //   The helper script itself validates all inputs (integer ranges, sysfs path
@@ -22,7 +22,7 @@
 // Installation: sudo cp this file to /etc/polkit-1/rules.d/
 
 polkit.addRule(function(action, subject) {
-    if (action.id == "org.gnome.shell.extensions.unified-power-manager.setthreshold" &&
+    if (action.id == "org.gnome.shell.extensions.hara-hachi-bu.setthreshold" &&
         (subject.isInGroup("sudo") || subject.isInGroup("wheel")) &&
         subject.local &&
         subject.active) {

@@ -1,4 +1,4 @@
-# Testing Report: Unified Power Manager Extension
+# Testing Report: Hara Hachi Bu Extension
 
 **Date**: 2026-02-04
 **Test Suite**: Sprint 4 - Comprehensive Testing and Validation
@@ -85,9 +85,9 @@ All tests **PASSED** with zero critical issues. The extension demonstrates:
 - **Result**: Docked profile automatically applied with external_display + power_source rules
 - **Logs**:
   ```
-  Unified Power Manager: Rule matched profile "Docked"
-  Unified Power Manager: Switching to profile 'docked' (power: performance, battery: max-lifespan, forceDischarge: on, auto: true)
-  Unified Power Manager: Successfully applied profile 'docked'
+  Hara Hachi Bu: Rule matched profile "Docked"
+  Hara Hachi Bu: Switching to profile 'docked' (power: performance, battery: max-lifespan, forceDischarge: on, auto: true)
+  Hara Hachi Bu: Successfully applied profile 'docked'
   ```
 
 #### Profile Application
@@ -170,7 +170,7 @@ All tests **PASSED** with zero critical issues. The extension demonstrates:
 #### Helper Script Detection
 - **Status**: PASS
 - **Result**:
-  - Helper installed at /usr/local/bin/unified-power-ctl ✓
+  - Helper installed at /usr/local/bin/hhb-power-ctl ✓
   - Correct permissions (executable by root) ✓
   - Install prompt code verified ✓
 
@@ -188,7 +188,7 @@ All tests **PASSED** with zero critical issues. The extension demonstrates:
   - Correct fallback to BAT0 ✓
   - Non-existent batteries handled gracefully ✓
   - Auto-detection working ✓
-- **Logs**: `Unified Power Manager: Detected standard sysfs battery control for BAT0`
+- **Logs**: `Hara Hachi Bu: Detected standard sysfs battery control for BAT0`
 
 ---
 

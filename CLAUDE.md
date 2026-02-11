@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Unified Power Manager is a GNOME Shell extension that provides unified Quick Settings control for power profiles and battery charging thresholds. It supports any laptop with standard Linux sysfs battery control interfaces (ThinkPad, Framework, ASUS, etc.). It integrates with GNOME Shell's extension system and uses privileged operations via polkit for battery threshold control.
+Hara Hachi Bu is a GNOME Shell extension that provides unified Quick Settings control for power profiles and battery charging thresholds. It supports any laptop with standard Linux sysfs battery control interfaces (ThinkPad, Framework, ASUS, etc.). It integrates with GNOME Shell's extension system and uses privileged operations via polkit for battery threshold control.
 
 **Key Features:**
 - Power profile management (Performance/Balanced/Power Saver) via power-profiles-daemon
@@ -24,10 +24,10 @@ Unified Power Manager is a GNOME Shell extension that provides unified Quick Set
 glib-compile-schemas schemas/
 
 # Enable the extension
-gnome-extensions enable unified-power-manager@baratzz
+gnome-extensions enable hara-hachi-bu@ZviBaratz
 
 # Disable the extension
-gnome-extensions disable unified-power-manager@baratzz
+gnome-extensions disable hara-hachi-bu@ZviBaratz
 
 # Restart GNOME Shell to reload extension (X11 only)
 # Alt+F2, type 'r', press Enter
@@ -36,7 +36,7 @@ gnome-extensions disable unified-power-manager@baratzz
 journalctl -f -o cat /usr/bin/gnome-shell
 
 # Open preferences UI
-gnome-extensions prefs unified-power-manager@baratzz
+gnome-extensions prefs hara-hachi-bu@ZviBaratz
 ```
 
 ### Translations
@@ -50,7 +50,7 @@ make pot
 # Create release zip for extensions.gnome.org
 ./package.sh
 
-# Output: unified-power-manager@baratzz.zip
+# Output: hara-hachi-bu@ZviBaratz.zip
 # Note: The resources/ directory IS included in the zip, but the helper script
 # and polkit files require manual installation to system paths.
 ```
@@ -61,15 +61,15 @@ make pot
 sudo ./install-helper.sh
 
 # Manual installation
-sudo cp resources/unified-power-ctl /usr/local/bin/
-sudo chmod +x /usr/local/bin/unified-power-ctl
-sudo cp resources/10-unified-power-manager.rules /etc/polkit-1/rules.d/
+sudo cp resources/hhb-power-ctl /usr/local/bin/
+sudo chmod +x /usr/local/bin/hhb-power-ctl
+sudo cp resources/10-hara-hachi-bu.rules /etc/polkit-1/rules.d/
 ```
 
 ### Testing Battery Thresholds
 ```bash
 # Test helper script manually
-pkexec unified-power-ctl BAT0_END_START 60 55
+pkexec hhb-power-ctl BAT0_END_START 60 55
 
 # Check current thresholds
 cat /sys/class/power_supply/BAT0/charge_control_end_threshold
@@ -197,7 +197,7 @@ Profiles are now stored exclusively in custom-profiles JSON format.
 
 **lib/device/MockDevice.js** - Testing device
 - In-memory implementation for UI testing without hardware
-- Enabled by creating `~/.config/unified-power-manager/use_mock` file
+- Enabled by creating `~/.config/hara-hachi-bu/use_mock` file
 
 **lib/profileMatcher.js** - Profile detection and management
 - Defines battery modes (full-capacity, balanced, max-lifespan) with threshold ranges
@@ -222,7 +222,8 @@ Profiles are now stored exclusively in custom-profiles JSON format.
 - Evaluates conditions (param, operator, value) against current state
 - Finds best matching profile based on rule specificity
 - Schedule-aware: profiles with active schedule gain +1 specificity; schedule-only profiles valid at specificity=1
-- Conflict detection: non-overlapping schedules prevent conflict only when both profiles have schedules
+- Tiebreaker: when specificity ties, the profile with an active schedule wins (scheduled profile takes priority during its window)
+- Conflict detection: one scheduled + one not at same specificity = no conflict (runtime tiebreaker resolves); both scheduled = check overlap
 - Validates rules and detects conflicts
 - Supports operators: 'is', 'is_not'
 
@@ -252,7 +253,7 @@ Profiles are now stored exclusively in custom-profiles JSON format.
 - Boost charge timeout setting (1–12 hours)
 - UI visibility settings
 
-**resources/unified-power-ctl** - Privileged helper script
+**resources/hhb-power-ctl** - Privileged helper script
 - Bash script that accepts validated commands for sysfs writes
 - BAT0 Commands: BAT0_END, BAT0_START, BAT0_END_START, BAT0_START_END, FORCE_DISCHARGE_BAT0
 - BAT1 Commands: BAT1_END, BAT1_START, BAT1_END_START, BAT1_START_END, FORCE_DISCHARGE_BAT1
@@ -393,7 +394,7 @@ All controllers must properly clean up resources in their `destroy()` methods:
 
 ## GSettings Schema
 
-Location: `schemas/org.gnome.shell.extensions.unified-power-manager.gschema.xml`
+Location: `schemas/org.gnome.shell.extensions.hara-hachi-bu.gschema.xml`
 
 Key settings:
 - `custom-profiles`: JSON array of profile definitions (including schedule field)
@@ -431,7 +432,8 @@ Key settings:
 - Overnight support: start > end crosses midnight; after-midnight checks yesterday's ISO day
 - Schedule timer: `GLib.timeout_add_seconds` with 1-hour cap, recalculated at each boundary
 - Suspend/resume via `org.freedesktop.login1.Manager` D-Bus `PrepareForSleep` signal
-- Conflict detection: non-overlapping schedules prevent conflict only when both profiles have schedules
+- Conflict detection: one scheduled + one not at same specificity = no conflict; both scheduled = check time overlap; both unscheduled = conflict
+- Runtime tiebreaker: when specificity ties, scheduled profile wins during its active window
 - Prefs: day toggles (circular), quick-select (Weekdays/Weekends/All), time spinners with zero-padded output
 - Panel: profile ornaments show "(until HH:MM)" during active schedule window
 - New file: `lib/scheduleUtils.js` — pure utility, importable from both extension and prefs
@@ -528,7 +530,7 @@ Key settings:
 ### Hardware Support Enhancements
 
 **Multi-Battery Systems**
-- unified-power-ctl now supports BAT2 and BAT3 in addition to BAT0 and BAT1
+- hhb-power-ctl now supports BAT2 and BAT3 in addition to BAT0 and BAT1
 - Commands: BAT2_END, BAT2_START, BAT2_END_START, BAT2_START_END, FORCE_DISCHARGE_BAT2
 - Commands: BAT3_END, BAT3_START, BAT3_END_START, BAT3_START_END, FORCE_DISCHARGE_BAT3
 - Full support for systems with 3-4 batteries
@@ -579,9 +581,9 @@ Key settings:
 - `readFileInt`/`readFileIntAsync` now correctly handle `"0"` (was treated as falsy via `if (v)`)
 
 **CSS Scoping**
-- All CSS classes now use `upm-` prefix or are scoped to `.upm-menu-scroll-section` parent
-- Renamed: `.success` → `.upm-success`, `.health-good/fair/poor` → `.upm-health-good/fair/poor`
-- `.popup-menu-status-item` scoped to `.upm-menu-scroll-section .popup-menu-status-item`
+- All CSS classes now use `hhb-` prefix or are scoped to `.hhb-menu-scroll-section` parent
+- Renamed: `.success` → `.hhb-success`, `.health-good/fair/poor` → `.hhb-health-good/fair/poor`
+- `.popup-menu-status-item` scoped to `.hhb-menu-scroll-section .popup-menu-status-item`
 - Profile labels use `Pango.EllipsizeMode.END` for proper overflow with ellipsis
 
 **i18n Completeness**
@@ -622,7 +624,9 @@ Key settings:
 - Test schedule-only profiles (no rules, specificity=1)
 - Test rules + schedule combined (both must match)
 - Test conflict detection: same specificity with overlapping schedules → conflict; non-overlapping → allowed
-- Test conflict detection: mixed (one scheduled, one not) at same specificity → conflict
+- Test conflict detection: mixed (one scheduled, one not) at same specificity → no conflict (tiebreaker resolves)
+- Test conflict detection: both unscheduled at same specificity with overlapping rules → conflict
+- Test tiebreaker: scheduled profile wins over unscheduled at same specificity during active window
 - Test suspend/resume: timer re-fires correctly after waking from sleep
 - Test profile row subtitle displays schedule summary (days + time range)
 - Test panel shows "(until HH:MM)" for active scheduled profiles
@@ -646,5 +650,5 @@ Key settings:
 - Helper script may not be installed (show appropriate error, read-only mode)
 - polkit rules may not be configured (operation fails with permission error)
 - Handle external changes to thresholds and profiles correctly
-- Use MockDevice for UI testing: create `~/.config/unified-power-manager/use_mock` file
+- Use MockDevice for UI testing: create `~/.config/hara-hachi-bu/use_mock` file
 - Test multi-battery systems (BAT2, BAT3 support added in commit 517cd2b)

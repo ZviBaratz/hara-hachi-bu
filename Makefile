@@ -1,6 +1,6 @@
-# Makefile for Unified Power Manager extension
+# Makefile for Hara Hachi Bu extension
 
-EXTENSION_UUID = unified-power-manager@baratzz
+EXTENSION_UUID = hara-hachi-bu@ZviBaratz
 # Detect if we are running in the installation directory
 CURRENT_DIR = $(shell pwd)
 INSTALL_BASE = $(HOME)/.local/share/gnome-shell/extensions
@@ -58,11 +58,11 @@ pot:
 	@xgettext --from-code=UTF-8 \
 		--keyword=_ --keyword=N_ --keyword=C_:1c,2 \
 		--add-comments=Translators \
-		--package-name="unified-power-manager" \
+		--package-name="hara-hachi-bu" \
 		--package-version="1.0.0" \
-		--msgid-bugs-address="https://github.com/ZviBaratz/unified-power-manager/issues" \
+		--msgid-bugs-address="https://github.com/ZviBaratz/hara-hachi-bu/issues" \
 		--copyright-holder="Zvi Baratz" \
-		--output=unified-power-manager.pot \
+		--output=hara-hachi-bu.pot \
 		extension.js prefs.js lib/*.js lib/device/*.js
 
 clean:

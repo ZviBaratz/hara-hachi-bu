@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-# unified-power-ctl - Helper script for Unified Power Manager extension
+# hhb-power-ctl - Helper script for Hara Hachi Bu extension
 # Handles privileged operations: setting battery thresholds, force-discharge
 # Security: This script is intended to be run via polkit with root privileges.
 
@@ -12,7 +12,7 @@ EXIT_ERROR=1
 
 # Log action to system journal
 log_action() {
-    logger -t unified-power-ctl "[ACTION] uid=${PKEXEC_UID:-?} $*"
+    logger -t hhb-power-ctl "[ACTION] uid=${PKEXEC_UID:-?} $*"
 }
 
 # Validate that a sysfs path exists and is a regular file

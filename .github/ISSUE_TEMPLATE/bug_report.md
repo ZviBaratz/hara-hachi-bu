@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug in Unified Power Manager
+about: Report a bug in Hara Hachi Bu
 labels: bug
 ---
 
@@ -36,7 +36,7 @@ What actually happened.
 Please include relevant log output:
 
 ```
-journalctl -o cat /usr/bin/gnome-shell --since "5 minutes ago" | grep -i unified
+journalctl -o cat /usr/bin/gnome-shell --since "5 minutes ago" | grep -i hara-hachi-bu
 ```
 
 ## Additional Context

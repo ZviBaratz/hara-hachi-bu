@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Package script for Unified Power Manager extension
+# Package script for Hara Hachi Bu extension
 # Creates a zip file suitable for extensions.gnome.org submission
 
 set -eu
 
-EXTENSION_UUID="unified-power-manager@baratzz"
+EXTENSION_UUID="hara-hachi-bu@ZviBaratz"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUTPUT_FILE="${SCRIPT_DIR}/${EXTENSION_UUID}.zip"
 
@@ -26,8 +26,8 @@ zip -r "$OUTPUT_FILE" \
     LICENSE \
     README.md \
     install-helper.sh \
-    unified-power-manager.pot \
-    schemas/org.gnome.shell.extensions.unified-power-manager.gschema.xml \
+    hara-hachi-bu.pot \
+    schemas/org.gnome.shell.extensions.hara-hachi-bu.gschema.xml \
     schemas/gschemas.compiled \
     icons/ \
     lib/ \
@@ -41,8 +41,8 @@ echo "Package created: $OUTPUT_FILE"
 echo ""
 echo "Note: The resources/ directory IS included in the package, but the following files"
 echo "require manual installation to system paths for battery threshold control to work:"
-echo "  - resources/unified-power-ctl -> /usr/local/bin/unified-power-ctl"
-echo "  - resources/10-unified-power-manager.rules -> /etc/polkit-1/rules.d/"
-echo "  - resources/org.gnome.shell.extensions.unified-power-manager.policy -> /usr/share/polkit-1/actions/"
+echo "  - resources/hhb-power-ctl -> /usr/local/bin/hhb-power-ctl"
+echo "  - resources/10-hara-hachi-bu.rules -> /etc/polkit-1/rules.d/"
+echo "  - resources/org.gnome.shell.extensions.hara-hachi-bu.policy -> /usr/share/polkit-1/actions/"
 echo ""
 echo "Run 'sudo ./install-helper.sh' or see README.md for installation instructions."

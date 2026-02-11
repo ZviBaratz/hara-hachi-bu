@@ -1,4 +1,4 @@
-# Contributing to Unified Power Manager
+# Contributing to Hara Hachi Bu
 
 Thank you for your interest in contributing! This guide covers development setup, conventions, and the pull request process.
 
@@ -10,15 +10,15 @@ Thank you for your interest in contributing! This guide covers development setup
 - `power-profiles-daemon` (for power profile features)
 
 > **Note:** If you already have the extension installed from extensions.gnome.org, disable and remove it first to avoid conflicts:
-> `gnome-extensions disable unified-power-manager@baratzz`
+> `gnome-extensions disable hara-hachi-bu@ZviBaratz`
 
 ```bash
 # Clone the repository
-git clone https://github.com/ZviBaratz/unified-power-manager.git \
-    ~/.local/share/gnome-shell/extensions/unified-power-manager@baratzz
+git clone https://github.com/ZviBaratz/hara-hachi-bu.git \
+    ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
 
 # Compile schemas
-cd ~/.local/share/gnome-shell/extensions/unified-power-manager@baratzz
+cd ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
 make schemas
 ```
 
@@ -27,8 +27,8 @@ make schemas
 You can test the extension without battery hardware by enabling mock mode:
 
 ```bash
-mkdir -p ~/.config/unified-power-manager
-touch ~/.config/unified-power-manager/use_mock
+mkdir -p ~/.config/hara-hachi-bu
+touch ~/.config/hara-hachi-bu/use_mock
 ```
 
 This activates an in-memory device backend that simulates threshold and force-discharge controls. Remove the file to return to real hardware.
@@ -59,7 +59,7 @@ This activates an in-memory device backend that simulates threshold and force-di
 make logs
 
 # Filter for extension output
-journalctl -o cat /usr/bin/gnome-shell --since "5 minutes ago" | grep -i unified
+journalctl -o cat /usr/bin/gnome-shell --since "5 minutes ago" | grep -i hara-hachi-bu
 ```
 
 ## Helper Script
@@ -167,7 +167,7 @@ We welcome translation contributions! The extension uses GNU gettext for interna
 1. Copy the translation template to a new `.po` file:
    ```bash
    mkdir -p po
-   cp unified-power-manager.pot po/<LANG>.po
+   cp hara-hachi-bu.pot po/<LANG>.po
    # e.g., po/de.po for German, po/fr.po for French
    ```
 2. Edit the `.po` file with a translation editor (e.g., [Poedit](https://poedit.net/), [GNOME Translation Editor](https://wiki.gnome.org/Apps/Gtranslator), or a text editor).
@@ -181,7 +181,7 @@ After adding or changing translatable strings in code:
 make pot
 ```
 
-This regenerates `unified-power-manager.pot` from all `_()` and `N_()` markers. Commit the updated `.pot` alongside your code changes.
+This regenerates `hara-hachi-bu.pot` from all `_()` and `N_()` markers. Commit the updated `.pot` alongside your code changes.
 
 ## Key Code Patterns
 

@@ -1,12 +1,14 @@
-# Unified Power Manager
+# Hara Hachi Bu
 
-[![CI](https://github.com/ZviBaratz/unified-power-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/ZviBaratz/unified-power-manager/actions/workflows/ci.yml)
+[![CI](https://github.com/ZviBaratz/hara-hachi-bu/actions/workflows/ci.yml/badge.svg)](https://github.com/ZviBaratz/hara-hachi-bu/actions/workflows/ci.yml)
 [![License: GPL-3.0+](https://img.shields.io/badge/License-GPL%203.0+-blue.svg)](LICENSE)
 [![GNOME Shell 46+](https://img.shields.io/badge/GNOME%20Shell-46%20%7C%2047%20%7C%2048-blue)](metadata.json)
 
 A GNOME Shell extension providing unified Quick Settings control for power profiles and battery charging modes on supported laptops (ThinkPad, Framework, ASUS, etc.).
 
 ![Quick Settings panel screenshot](screenshots/quick-settings.png)
+
+> **Why "Hara Hachi Bu"?** 腹八分目 (*hara hachi bu*) is an Okinawan practice of eating until you're 80% full — a philosophy of intentional restraint that promotes longevity. This extension applies the same principle to your laptop battery: stop charging at 80% instead of 100% to extend its lifespan.
 
 ## Features
 
@@ -76,7 +78,7 @@ Use **Max Lifespan** when working at a desk, and switch to **Full Capacity** bef
 
 ### From extensions.gnome.org
 
-Search for "Unified Power Manager" on [extensions.gnome.org](https://extensions.gnome.org/) and click "Install".
+Search for "Hara Hachi Bu" on [extensions.gnome.org](https://extensions.gnome.org/) and click "Install".
 
 **Important:** After installation, you must install the helper script to enable battery threshold control (see below).
 
@@ -84,14 +86,14 @@ Search for "Unified Power Manager" on [extensions.gnome.org](https://extensions.
 
 ```bash
 # Clone or download to extensions directory
-git clone https://github.com/ZviBaratz/unified-power-manager.git \
-    ~/.local/share/gnome-shell/extensions/unified-power-manager@baratzz
+git clone https://github.com/ZviBaratz/hara-hachi-bu.git \
+    ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
 
 # Compile schemas
-glib-compile-schemas ~/.local/share/gnome-shell/extensions/unified-power-manager@baratzz/schemas/
+glib-compile-schemas ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz/schemas/
 
 # Enable the extension
-gnome-extensions enable unified-power-manager@baratzz
+gnome-extensions enable hara-hachi-bu@ZviBaratz
 ```
 
 Then log out and log back in, or restart GNOME Shell (Alt+F2, type `r`, press Enter on X11).
@@ -103,7 +105,7 @@ Battery threshold control requires root privileges. Because GNOME Extensions can
 1. Open a terminal
 2. Navigate to the extension directory:
    ```bash
-   cd ~/.local/share/gnome-shell/extensions/unified-power-manager@baratzz
+   cd ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
    ```
 3. Run the installer:
    ```bash
@@ -114,14 +116,14 @@ Or manually:
 
 ```bash
 # Install helper script
-sudo cp resources/unified-power-ctl /usr/local/bin/
-sudo chmod +x /usr/local/bin/unified-power-ctl
+sudo cp resources/hhb-power-ctl /usr/local/bin/
+sudo chmod +x /usr/local/bin/hhb-power-ctl
 
 # Install polkit rules (modern systems with polkit >= 0.106)
-sudo cp resources/10-unified-power-manager.rules /etc/polkit-1/rules.d/
+sudo cp resources/10-hara-hachi-bu.rules /etc/polkit-1/rules.d/
 
 # OR for legacy polkit (< 0.106)
-sudo cp resources/org.gnome.shell.extensions.unified-power-manager.policy /usr/share/polkit-1/actions/
+sudo cp resources/org.gnome.shell.extensions.hara-hachi-bu.policy /usr/share/polkit-1/actions/
 ```
 
 ### Uninstallation
@@ -129,7 +131,7 @@ sudo cp resources/org.gnome.shell.extensions.unified-power-manager.policy /usr/s
 To remove the helper script and polkit rules:
 
 ```bash
-cd ~/.local/share/gnome-shell/extensions/unified-power-manager@baratzz
+cd ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
 sudo ./install-helper.sh --uninstall
 ```
 
@@ -139,7 +141,7 @@ This extension uses polkit for privilege escalation when modifying battery thres
 
 ### Polkit Rules (Modern)
 
-The rules file (`10-unified-power-manager.rules`) allows users in the `sudo` group to run the helper script without password prompts, but **only** for:
+The rules file (`10-hara-hachi-bu.rules`) allows users in the `sudo` group to run the helper script without password prompts, but **only** for:
 - Local sessions (not remote/SSH)
 - Active sessions (currently logged in)
 
@@ -151,7 +153,7 @@ The policy file allows active local users to run the helper without authenticati
 
 ### Helper Script Security
 
-The `unified-power-ctl` script:
+The `hhb-power-ctl` script:
 - Only accepts specific commands (BAT0 through BAT3: END, START, END_START, START_END, FORCE_DISCHARGE)
 - Validates all threshold values (must be integers 0-100)
 - Uses `set -eu` to fail fast on errors
@@ -226,7 +228,7 @@ When you manually change settings while auto-switching is active, auto-managemen
 
 ```
 +--------------------------------------+
-| [icon] Power Manager                 |
+| [icon] Hara Hachi Bu                 |
 |         Docked                       | <- Shows active profile
 +--------------------------------------+
 | PROFILE                              |
@@ -286,7 +288,7 @@ You can create time-based variants of existing profiles that apply during specif
 
 Open preferences with:
 ```bash
-gnome-extensions prefs unified-power-manager@baratzz
+gnome-extensions prefs hara-hachi-bu@ZviBaratz
 ```
 
 ### General
@@ -317,9 +319,9 @@ journalctl -f -o cat /usr/bin/gnome-shell
 
 ### Battery thresholds not changing
 
-1. Verify the helper is installed: `which unified-power-ctl`
+1. Verify the helper is installed: `which hhb-power-ctl`
 2. Check polkit rules are in place: `ls /etc/polkit-1/rules.d/`
-3. Test manually: `pkexec unified-power-ctl BAT0_END_START 60 55` (or `BAT1_END_START` for BAT1)
+3. Test manually: `pkexec hhb-power-ctl BAT0_END_START 60 55` (or `BAT1_END_START` for BAT1)
 4. Check if your laptop supports thresholds: `ls /sys/class/power_supply/BAT*/charge_control_*`
 
 ### Device Support
@@ -352,4 +354,4 @@ GPL-3.0-or-later
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, commit conventions,
 and pull request guidelines.
 
-Issues and pull requests welcome at https://github.com/ZviBaratz/unified-power-manager
+Issues and pull requests welcome at https://github.com/ZviBaratz/hara-hachi-bu

@@ -4,10 +4,10 @@
  "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
 <policyconfig>
 
-  <vendor>Unified Power Manager</vendor>
-  <vendor_url>https://github.com/zvi/unified-power-manager</vendor_url>
+  <vendor>Hara Hachi Bu</vendor>
+  <vendor_url>https://github.com/zvi/hara-hachi-bu</vendor_url>
 
-  <action id="org.gnome.shell.extensions.unified-power-manager.setthreshold">
+  <action id="org.gnome.shell.extensions.hara-hachi-bu.setthreshold">
     <description>Set battery charging thresholds</description>
     <message>Authentication is required to set battery charging thresholds</message>
     <defaults>
@@ -15,7 +15,7 @@
       <allow_inactive>auth_admin</allow_inactive>
       <allow_active>auth_admin_keep</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/local/bin/unified-power-ctl</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/local/bin/hhb-power-ctl</annotate>
     <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
   </action>
 

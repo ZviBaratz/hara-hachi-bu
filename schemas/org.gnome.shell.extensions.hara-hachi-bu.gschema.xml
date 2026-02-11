@@ -35,14 +35,14 @@
 
     <key name="auto-switch-enabled" type="b">
       <default>true</default>
-      <summary>Automatically switch profiles based on rules</summary>
-      <description>When enabled, profiles switch automatically based on their configured rules</description>
+      <summary>Automatically switch scenarios based on rules</summary>
+      <description>When enabled, scenarios switch automatically based on their configured rules</description>
     </key>
 
     <key name="auto-manage-paused" type="b">
       <default>false</default>
       <summary>Auto-management paused</summary>
-      <description>True when user has manually overridden auto-switching, pausing automatic profile changes</description>
+      <description>True when user has manually overridden auto-switching, pausing automatic scenario changes</description>
     </key>
 
     <key name="resume-on-state-change" type="b">
@@ -95,11 +95,11 @@
       <description>Hide GNOME Shell's built-in power profile quick settings indicator</description>
     </key>
 
-    <!-- Custom Profiles (v2.0+) -->
+    <!-- Custom Scenarios (v2.0+) -->
     <key name="custom-profiles" type="s">
       <default>'[]'</default>
-      <summary>Custom profile definitions</summary>
-      <description>JSON array of custom profile objects with structure: [{id, name, powerMode, batteryMode, rules, schedule}]. Rules are arrays of conditions: [{param, op, value}].</description>
+      <summary>Custom scenario definitions</summary>
+      <description>JSON array of custom scenario objects with structure: [{id, name, powerMode, batteryMode, rules, schedule}]. Rules are arrays of conditions: [{param, op, value}].</description>
     </key>
 
     <!-- Battery Mode Thresholds -->

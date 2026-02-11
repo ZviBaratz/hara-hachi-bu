@@ -1,12 +1,12 @@
 # Changelog
 
-All notable changes to Unified Power Manager are documented in this file.
+All notable changes to Hara Hachi Bu are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/).
 
 ## [1.0.0] — 2026-02-09
 
-First public release of Unified Power Manager, a GNOME Shell extension for unified Quick Settings control of power profiles and battery charging thresholds.
+First public release of Hara Hachi Bu, a GNOME Shell extension for unified Quick Settings control of power profiles and battery charging thresholds.
 
 ### Features
 
@@ -99,4 +99,4 @@ First public release of Unified Power Manager, a GNOME Shell extension for unifi
 - Translated error messages and user-facing strings
 - RTL-safe styling in preferences and Quick Settings UI
 
-[1.0.0]: https://github.com/ZviBaratz/unified-power-manager/releases/tag/v1.0.0
+[1.0.0]: https://github.com/ZviBaratz/hara-hachi-bu/releases/tag/v1.0.0

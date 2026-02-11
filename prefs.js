@@ -55,7 +55,7 @@ class ProfileRow extends Adw.ActionRow {
             icon_name: 'document-edit-symbolic',
             valign: Gtk.Align.CENTER,
             css_classes: ['flat'],
-            tooltip_text: _('Edit profile'),
+            tooltip_text: _('Edit scenario'),
         });
         editButton.connect('clicked', () => onEdit(profile));
         this.add_suffix(editButton);
@@ -66,7 +66,7 @@ class ProfileRow extends Adw.ActionRow {
                 icon_name: 'user-trash-symbolic',
                 valign: Gtk.Align.CENTER,
                 css_classes: ['flat'],
-                tooltip_text: _('Delete profile'),
+                tooltip_text: _('Delete scenario'),
             });
             deleteButton.connect('clicked', () => onDelete(profile));
             this.add_suffix(deleteButton);
@@ -173,15 +173,15 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Auto-Management Group
         const autoManageGroup = new Adw.PreferencesGroup({
-            title: _('Automatic Profile Switching'),
-            description: _('Profiles with "Apply Automatically" enabled will activate based on their conditions and schedules. Manually selecting a profile or mode pauses auto-switching. When no profile matches, settings remain unchanged.'),
+            title: _('Automatic Scenario Switching'),
+            description: _('Scenarios with "Apply Automatically" enabled will activate based on their conditions and schedules. Manually selecting a scenario or mode pauses auto-switching. When no scenario matches, settings remain unchanged.'),
         });
         generalPage.add(autoManageGroup);
 
-        // Auto-switch profiles master toggle
+        // Auto-switch scenarios master toggle
         const autoSwitchRow = new Adw.SwitchRow({
-            title: _('Auto-switch Profiles'),
-            subtitle: _('Enable automatic profile switching based on conditions and schedules. Manually selecting a profile or mode will pause this.'),
+            title: _('Auto-switch Scenarios'),
+            subtitle: _('Enable automatic scenario switching based on conditions and schedules. Manually selecting a scenario or mode will pause this.'),
         });
         settings.bind('auto-switch-enabled', autoSwitchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         autoManageGroup.add(autoSwitchRow);
@@ -245,17 +245,17 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             thresholdsPage.add(this._buildThresholdGroup(settings, config));
         }
 
-        // Profiles Page
+        // Scenarios Page
         const profilesPage = new Adw.PreferencesPage({
-            title: _('Profiles'),
+            title: _('Scenarios'),
             icon_name: 'view-list-symbolic',
         });
         window.add(profilesPage);
 
-        // Profile List Group
+        // Scenario List Group
         const profileListGroup = new Adw.PreferencesGroup({
-            title: _('Power Profiles'),
-            description: _('Manage custom power and battery mode combinations'),
+            title: _('Scenarios'),
+            description: _('Scenarios are saved combinations of power and battery modes that can activate automatically based on conditions.'),
         });
         profilesPage.add(profileListGroup);
 
@@ -276,17 +276,37 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
         profileListGroup.add(scrolled);
 
-        // Add Profile button
-        this._addProfileButton = new Gtk.Button({
-            label: _('Add Profile'),
+        // Action buttons
+        const profileButtonBox = new Gtk.Box({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            spacing: 12,
             halign: Gtk.Align.CENTER,
             margin_top: 12,
+        });
+
+        this._addProfileButton = new Gtk.Button({
+            label: _('Add Scenario'),
             css_classes: ['pill'],
         });
         this._addProfileButton.connect('clicked', () => {
             this._showProfileDialog(window, settings, null);
         });
-        profileListGroup.add(this._addProfileButton);
+        profileButtonBox.append(this._addProfileButton);
+
+        this._createFromCurrentButton = new Gtk.Button({
+            label: _('Create from Current Settings'),
+            css_classes: ['pill'],
+        });
+        this._createFromCurrentButton.connect('clicked', () => {
+            const template = {
+                powerMode: settings.get_string('current-power-mode'),
+                batteryMode: settings.get_string('current-battery-mode'),
+            };
+            this._showProfileDialog(window, settings, null, template);
+        });
+        profileButtonBox.append(this._createFromCurrentButton);
+
+        profileListGroup.add(profileButtonBox);
 
         // Populate profile list
         this._refreshProfileList(window, settings);
@@ -564,34 +584,38 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         if (profiles.length === 0) {
             const emptyRow = new Adw.ActionRow({
-                title: _('No profiles'),
-                subtitle: _('Click "Add Profile" to create one'),
+                title: _('No scenarios'),
+                subtitle: _('Click "Add Scenario" to create one'),
                 sensitive: false,
             });
             this._profileListBox.append(emptyRow);
-            return;
+        } else {
+            for (const profile of profiles) {
+                const row = new ProfileRow(
+                    profile,
+                    p => this._showProfileDialog(window, settings, p),
+                    p => this._showDeleteDialog(window, settings, p)
+                );
+                this._profileListBox.append(row);
+            }
         }
 
-        for (const profile of profiles) {
-            const row = new ProfileRow(
-                profile,
-                p => this._showProfileDialog(window, settings, p),
-                p => this._showDeleteDialog(window, settings, p)
-            );
-            this._profileListBox.append(row);
-        }
-
-        // Disable Add Profile button when at limit
+        // Disable action buttons when at limit
+        const atLimit = profiles.length >= ProfileMatcher.MAX_PROFILES;
+        const limitTooltip = atLimit
+            ? _('Maximum of %d scenarios reached').format(ProfileMatcher.MAX_PROFILES)
+            : null;
         if (this._addProfileButton) {
-            const atLimit = profiles.length >= ProfileMatcher.MAX_PROFILES;
             this._addProfileButton.sensitive = !atLimit;
-            this._addProfileButton.tooltip_text = atLimit
-                ? _('Maximum of %d profiles reached').format(ProfileMatcher.MAX_PROFILES)
-                : null;
+            this._addProfileButton.tooltip_text = limitTooltip;
+        }
+        if (this._createFromCurrentButton) {
+            this._createFromCurrentButton.sensitive = !atLimit;
+            this._createFromCurrentButton.tooltip_text = limitTooltip;
         }
     }
 
-    _showProfileDialog(window, settings, existingProfile) {
+    _showProfileDialog(window, settings, existingProfile, template = null) {
         const isEdit = existingProfile !== null;
 
         // Build key arrays for DropDown index-based lookup
@@ -602,9 +626,9 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // --- Build dialog content using Adw widgets ---
         const mainGroup = new Adw.PreferencesGroup();
 
-        // Profile name
+        // Scenario name
         const nameRow = new Adw.EntryRow({
-            title: _('Profile Name'),
+            title: _('Scenario Name'),
             text: isEdit ? existingProfile.name : '',
         });
         mainGroup.add(nameRow);
@@ -616,7 +640,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             model: powerModel,
             selected: isEdit
                 ? Math.max(0, powerModeKeys.indexOf(existingProfile.powerMode))
-                : powerModeKeys.indexOf('balanced'),
+                : powerModeKeys.indexOf(template?.powerMode ?? 'balanced'),
         });
         mainGroup.add(powerRow);
 
@@ -627,14 +651,80 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             model: batteryModel,
             selected: isEdit
                 ? Math.max(0, batteryModeKeys.indexOf(existingProfile.batteryMode))
-                : batteryModeKeys.indexOf('balanced'),
+                : batteryModeKeys.indexOf(template?.batteryMode ?? 'balanced'),
         });
         mainGroup.add(batteryRow);
+
+        // Restore Defaults button (builtin profiles only)
+        if (isEdit && ProfileMatcher.isBuiltinProfile(existingProfile.id)) {
+            const defaultProfile = Constants.DEFAULT_PROFILES[existingProfile.id];
+            if (defaultProfile) {
+                const restoreRow = new Adw.ActionRow({
+                    title: _('Restore Defaults'),
+                    subtitle: _('Reset this scenario to its original settings'),
+                });
+                const restoreBtn = new Gtk.Button({
+                    label: _('Restore'),
+                    valign: Gtk.Align.CENTER,
+                    css_classes: ['destructive-action'],
+                });
+                restoreBtn.connect('clicked', () => {
+                    const confirmDialog = new Adw.AlertDialog({
+                        heading: _('Restore Defaults?'),
+                        body: _('This will reset "%s" to its original power mode, battery mode, conditions, and schedule.').format(
+                            ProfileMatcher.getProfileDisplayName(existingProfile)),
+                    });
+                    confirmDialog.add_response('cancel', _('Cancel'));
+                    confirmDialog.add_response('restore', _('Restore'));
+                    confirmDialog.set_response_appearance('restore', Adw.ResponseAppearance.DESTRUCTIVE);
+                    confirmDialog.set_default_response('cancel');
+                    confirmDialog.set_close_response('cancel');
+                    confirmDialog.choose(window, null, (dlg, result) => {
+                        try {
+                            if (dlg.choose_finish(result) === 'restore') {
+                                // Apply defaults to the form fields
+                                nameRow.set_text(_(defaultProfile.name));
+                                powerRow.selected = Math.max(0, powerModeKeys.indexOf(defaultProfile.powerMode));
+                                batteryRow.selected = Math.max(0, batteryModeKeys.indexOf(defaultProfile.batteryMode));
+
+                                // Clear existing rules and add defaults
+                                for (const row of [...ruleRows]) {
+                                    const index = ruleRows.indexOf(row);
+                                    if (index > -1) {
+                                        ruleRows.splice(index, 1);
+                                        rulesGroup.remove(row.box);
+                                    }
+                                }
+                                if (defaultProfile.rules) {
+                                    for (const rule of defaultProfile.rules)
+                                        addRuleRow(rule);
+                                }
+
+                                // Reset schedule
+                                scheduleEnabledRow.active = false;
+                                for (let d = 1; d <= 7; d++)
+                                    dayButtons[d].active = false;
+                                startHourSpin.value = 6;
+                                startMinuteSpin.value = 0;
+                                endHourSpin.value = 8;
+                                endMinuteSpin.value = 0;
+
+                                onFieldChanged?.();
+                            }
+                        } catch (e) {
+                            console.error(`Hara Hachi Bu: Restore defaults error: ${e.message}`);
+                        }
+                    });
+                });
+                restoreRow.add_suffix(restoreBtn);
+                mainGroup.add(restoreRow);
+            }
+        }
 
         // --- Rules section ---
         const rulesGroup = new Adw.PreferencesGroup({
             title: _('Activation Conditions'),
-            description: _('Add conditions to make this profile activate automatically. More conditions = higher priority.'),
+            description: _('Conditions determine when this scenario activates. All conditions must match. More conditions = higher priority over other scenarios.'),
         });
 
         // Track rule rows
@@ -756,13 +846,13 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // --- Schedule section ---
         const scheduleGroup = new Adw.PreferencesGroup({
             title: _('Schedule'),
-            description: _('Limit this profile to specific days and times. Both conditions AND schedule must match for activation. When a schedule ends, settings remain unchanged unless another profile matches.'),
+            description: _('Limit this scenario to specific days and times. Both conditions AND schedule must match for activation. When a schedule ends, settings remain unchanged unless another scenario matches.'),
         });
 
         // Schedule enable switch
         const scheduleEnabledRow = new Adw.SwitchRow({
             title: _('Enable Schedule'),
-            subtitle: _('Profile only activates during the scheduled window'),
+            subtitle: _('Scenario only activates during the scheduled window'),
             active: existingProfile?.schedule?.enabled ?? false,
         });
         scheduleGroup.add(scheduleEnabledRow);
@@ -961,7 +1051,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         outerBox.append(toolbarView);
 
         const dialog = new Adw.Dialog({
-            title: isEdit ? _('Edit Profile') : _('Create Profile'),
+            title: isEdit ? _('Edit Scenario') : _('Create Scenario'),
             content_width: 450,
             content_height: 600,
         });
@@ -1145,9 +1235,9 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
                 // Name validation
                 if (!name || name.length === 0)
-                    errors.push(_('Please enter a profile name.'));
+                    errors.push(_('Please enter a scenario name.'));
                 else if (name.length > 50)
-                    errors.push(_('Profile name too long (max 50 characters)'));
+                    errors.push(_('Scenario name too long (max 50 characters)'));
 
                 // Per-rule completeness check — identify which conditions are incomplete
                 const allRules = ruleRows.map((row, i) => ({
@@ -1213,15 +1303,15 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     : name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
 
                 if (!isEdit && id.length === 0)
-                    errors.push(_('Profile name must contain at least one letter or number (used to generate an internal ID).'));
+                    errors.push(_('Scenario name must contain at least one letter or number (used to generate an internal ID).'));
 
                 // ID and limit checks for new profiles
                 const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
                 if (!isEdit) {
                     if (id.length > 0 && existingProfiles.some(p => p.id === id))
-                        errors.push(_('A profile with a similar name already exists. Try a more distinct name.'));
+                        errors.push(_('A scenario with a similar name already exists. Try a more distinct name.'));
                     if (existingProfiles.length >= ProfileMatcher.MAX_PROFILES)
-                        errors.push(_('Maximum profile limit reached'));
+                        errors.push(_('Maximum scenario limit reached'));
                 }
 
                 // Check for duplicate display name
@@ -1230,7 +1320,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     (!isEdit || p.id !== existingProfile.id)
                 );
                 if (duplicateName)
-                    errors.push(_('A profile with this name already exists'));
+                    errors.push(_('A scenario with this name already exists'));
 
                 // Rule semantic validation (contradictions, duplicates)
                 const rulesValidation = RuleEvaluator.validateRules(rules);
@@ -1265,7 +1355,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 }
 
                 if (!success) {
-                    errorLabel.set_text(_('Failed to save profile. Check for conflicts or limit reached.'));
+                    errorLabel.set_text(_('Failed to save scenario. Check for conflicts or limit reached.'));
                     errorLabel.show();
                     return;
                 }
@@ -1299,7 +1389,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         let body = _('This action cannot be undone.');
         if (isActive) {
-            body = _('This profile is currently active. Deleting it will switch to manual mode.') + ' ' + body;
+            body = _('This scenario is currently active. Deleting it will switch to manual mode.') + ' ' + body;
         }
 
         const dialog = new Adw.AlertDialog({
@@ -1322,7 +1412,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                         // Show a follow-up error dialog
                         const errDialog = new Adw.AlertDialog({
                             heading: _('Delete Failed'),
-                            body: _('Failed to delete profile. Please try again.'),
+                            body: _('Failed to delete scenario. Please try again.'),
                         });
                         errDialog.add_response('ok', _('OK'));
                         errDialog.present(window);

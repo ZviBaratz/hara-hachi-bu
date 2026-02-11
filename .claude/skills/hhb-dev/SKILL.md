@@ -1,9 +1,9 @@
 ---
-name: upm-dev
+name: hhb-dev
 description: Use when reviewing code, planning features, refactoring, debugging extension lifecycle issues, adding device support, or checking GNOME/EGO compliance. Covers architecture rules, signal flow, privilege escalation, and cleanup patterns.
 ---
 
-# Unified Power Manager - Development Skill
+# Hara Hachi Bu - Development Skill
 
 Read `CLAUDE.md` first for implementation details. This skill provides architectural rules and review heuristics.
 
@@ -27,7 +27,7 @@ lib/quickSettingsPanel.js → UI (reads from StateManager only)
 1. Create `lib/device/MyDevice.js` extending `BaseDevice`
 2. Implement: `initialize()`, `static isSupported(path)`, `getThresholds()`, `setThresholds(start, end)`
 3. Register in `DeviceManager.getDevice()`
-4. If new sysfs writes needed, update `resources/unified-power-ctl`
+4. If new sysfs writes needed, update `resources/hhb-power-ctl`
 
 ### 2. Signal Flow (Unidirectional)
 
@@ -56,7 +56,7 @@ Every resource in `enable()` must be released in `disable()`:
 
 ### 4. Privilege Escalation
 
-- All sysfs writes go through `resources/unified-power-ctl` via pkexec
+- All sysfs writes go through `resources/hhb-power-ctl` via pkexec
 - NEVER pass user-controlled paths to the helper script
 - New write operations require updates to both the script and polkit policy
 
@@ -91,7 +91,7 @@ _scheduleEvent() {
 **When testing UI changes** → Use MockDevice for rapid iteration:
 
 ```bash
-touch ~/.config/unified-power-manager/use_mock
+touch ~/.config/hara-hachi-bu/use_mock
 ```
 
 Good for: Quick Settings layout, profile switching logic, preferences UI, state transitions, signal flow.

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Installation script for Unified Power Manager helper components
+# Installation script for Hara Hachi Bu helper components
 # Run with: sudo ./install-helper.sh [options]
 
 set -e
@@ -7,7 +7,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 function show_help() {
-    echo "Unified Power Manager Helper Installer"
+    echo "Hara Hachi Bu Helper Installer"
     echo ""
     echo "Usage: sudo ./install-helper.sh [options]"
     echo ""
@@ -24,25 +24,25 @@ function uninstall() {
         exit 1
     fi
 
-    echo "Uninstalling Unified Power Manager helper components..."
-    
-    if [ -f "/usr/local/bin/unified-power-ctl" ]; then
-        echo "Removing /usr/local/bin/unified-power-ctl..."
-        rm -f "/usr/local/bin/unified-power-ctl"
+    echo "Uninstalling Hara Hachi Bu helper components..."
+
+    if [ -f "/usr/local/bin/hhb-power-ctl" ]; then
+        echo "Removing /usr/local/bin/hhb-power-ctl..."
+        rm -f "/usr/local/bin/hhb-power-ctl"
     else
-        echo "/usr/local/bin/unified-power-ctl not found, skipping."
-    fi
-    
-    if [ -f "/etc/polkit-1/rules.d/10-unified-power-manager.rules" ]; then
-        echo "Removing /etc/polkit-1/rules.d/10-unified-power-manager.rules..."
-        rm -f "/etc/polkit-1/rules.d/10-unified-power-manager.rules"
+        echo "/usr/local/bin/hhb-power-ctl not found, skipping."
     fi
 
-    if [ -f "/usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy" ]; then
-        echo "Removing /usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy..."
-        rm -f "/usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy"
+    if [ -f "/etc/polkit-1/rules.d/10-hara-hachi-bu.rules" ]; then
+        echo "Removing /etc/polkit-1/rules.d/10-hara-hachi-bu.rules..."
+        rm -f "/etc/polkit-1/rules.d/10-hara-hachi-bu.rules"
     fi
-    
+
+    if [ -f "/usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy" ]; then
+        echo "Removing /usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy..."
+        rm -f "/usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy"
+    fi
+
     echo ""
     echo "Uninstallation complete."
     exit 0
@@ -63,16 +63,16 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-echo "Installing Unified Power Manager helper components..."
+echo "Installing Hara Hachi Bu helper components..."
 
 HELPER_INSTALLED=false
 RULES_INSTALLED=false
 
 # Install the helper script
-echo "Installing unified-power-ctl to /usr/local/bin..."
-cp "${SCRIPT_DIR}/resources/unified-power-ctl" /usr/local/bin/unified-power-ctl
-chmod +x /usr/local/bin/unified-power-ctl
-if [ -f "/usr/local/bin/unified-power-ctl" ]; then
+echo "Installing hhb-power-ctl to /usr/local/bin..."
+cp "${SCRIPT_DIR}/resources/hhb-power-ctl" /usr/local/bin/hhb-power-ctl
+chmod +x /usr/local/bin/hhb-power-ctl
+if [ -f "/usr/local/bin/hhb-power-ctl" ]; then
     HELPER_INSTALLED=true
     echo "Helper script installed successfully."
 else
@@ -98,9 +98,9 @@ fi
 if [ -n "$POLKIT_VERSION" ] && printf '%s\n%s' "0.106" "$POLKIT_VERSION" | sort -V | head -n1 | grep -q "0.106"; then
     echo "Using modern polkit rules format..."
     if [ -d "/etc/polkit-1/rules.d" ]; then
-        cp "${SCRIPT_DIR}/resources/10-unified-power-manager.rules" /etc/polkit-1/rules.d/
-        chmod 644 /etc/polkit-1/rules.d/10-unified-power-manager.rules
-        if [ -f "/etc/polkit-1/rules.d/10-unified-power-manager.rules" ]; then
+        cp "${SCRIPT_DIR}/resources/10-hara-hachi-bu.rules" /etc/polkit-1/rules.d/
+        chmod 644 /etc/polkit-1/rules.d/10-hara-hachi-bu.rules
+        if [ -f "/etc/polkit-1/rules.d/10-hara-hachi-bu.rules" ]; then
             RULES_INSTALLED=true
             echo "Polkit rules installed successfully."
         else
@@ -119,10 +119,10 @@ fi
 # Always install the policy file (defines the Action ID and path mapping)
 echo "Installing policy action..."
 if [ -d "/usr/share/polkit-1/actions" ]; then
-    cp "${SCRIPT_DIR}/resources/org.gnome.shell.extensions.unified-power-manager.policy" \
+    cp "${SCRIPT_DIR}/resources/org.gnome.shell.extensions.hara-hachi-bu.policy" \
         /usr/share/polkit-1/actions/
-    chmod 644 /usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy
-    if [ -f "/usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy" ]; then
+    chmod 644 /usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy
+    if [ -f "/usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy" ]; then
         echo "Policy action installed successfully."
     else
         echo "WARNING: Failed to install policy action file."
@@ -142,7 +142,7 @@ else
 fi
 echo ""
 echo "To enable the extension, run:"
-echo "  gnome-extensions enable unified-power-manager@baratzz"
+echo "  gnome-extensions enable hara-hachi-bu@ZviBaratz"
 echo ""
 echo "Then log out and log back in, or restart GNOME Shell (Alt+F2, type 'r', press Enter)"
 

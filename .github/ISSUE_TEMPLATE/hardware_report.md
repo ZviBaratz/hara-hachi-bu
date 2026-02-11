@@ -1,6 +1,6 @@
 ---
 name: Hardware Compatibility Report
-about: Report whether your laptop works with Unified Power Manager
+about: Report whether your laptop works with Hara Hachi Bu
 labels: hardware
 ---
 
@@ -28,7 +28,7 @@ powerprofilesctl list
 
 ```bash
 # Test if the helper script works (sets threshold to 80, then revert):
-pkexec unified-power-ctl BAT0_END 80
+pkexec hhb-power-ctl BAT0_END 80
 echo $?
 cat /sys/class/power_supply/BAT0/charge_control_end_threshold
 ```

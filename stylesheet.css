@@ -55,6 +55,12 @@
     color: #ed333b; /* Adwaita @error_color (dark) */
 }
 
+/* Quick action separator (between auto-management and boost charge areas) */
+.hhb-quick-action-separator {
+    margin-top: 8px;
+    margin-bottom: 4px;
+}
+
 /* Profile name overflow protection */
 .hhb-profile-label {
     max-width: 200px;

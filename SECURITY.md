@@ -2,13 +2,13 @@
 
 ## Security Model
 
-Unified Power Manager implements a layered security architecture to safely provide privileged battery threshold control in a GNOME Shell extension.
+Hara Hachi Bu implements a layered security architecture to safely provide privileged battery threshold control in a GNOME Shell extension.
 
 ### Architecture
 
 - **Extension Code**: JavaScript runs unprivileged in the GNOME Shell process. All device queries and display operations occur without elevation.
 - **Privileged Operations**: Battery threshold writes to `/sys/class/power_supply/` require privilege escalation via polkit (pkexec).
-- **Helper Script**: `unified-power-ctl` runs as root through the polkit authorization system and implements strict validation before writing to sysfs.
+- **Helper Script**: `hhb-power-ctl` runs as root through the polkit authorization system and implements strict validation before writing to sysfs.
 
 ### Input Validation (4-Layer Defense)
 
@@ -33,7 +33,7 @@ The helper script implements defense-in-depth validation to prevent injection an
 
 ### Polkit Authorization
 
-The polkit rules (`10-unified-power-manager.rules`) enforce:
+The polkit rules (`10-hara-hachi-bu.rules`) enforce:
 - User must be in the `sudo` or `wheel` group
 - Session must be active (not locked or suspended)
 - Authentication occurs in the user's local session only
@@ -44,7 +44,7 @@ The polkit rules (`10-unified-power-manager.rules`) enforce:
 
 ### How to Report
 
-1. Visit: https://github.com/ZviBaratz/unified-power-manager/security/advisories/new
+1. Visit: https://github.com/ZviBaratz/hara-hachi-bu/security/advisories/new
 2. Provide the following information:
    - **Vulnerability Description**: Clear explanation of the issue
    - **Reproduction Steps**: Steps to reproduce the vulnerability

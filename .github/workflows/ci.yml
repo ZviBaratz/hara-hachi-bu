@@ -32,20 +32,20 @@ jobs:
 
       - name: Verify package contents
         run: |
-          unzip -t unified-power-manager@baratzz.zip
+          unzip -t hara-hachi-bu@ZviBaratz.zip
           echo "--- Package contents ---"
-          unzip -l unified-power-manager@baratzz.zip
+          unzip -l hara-hachi-bu@ZviBaratz.zip
 
       - name: Check translation template is up-to-date
         run: |
           make pot
-          if ! git diff --quiet unified-power-manager.pot; then
-            echo "::warning::Translation template (unified-power-manager.pot) is out of date. Run 'make pot' to regenerate."
+          if ! git diff --quiet hara-hachi-bu.pot; then
+            echo "::warning::Translation template (hara-hachi-bu.pot) is out of date. Run 'make pot' to regenerate."
           fi
 
       - name: Upload build artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: unified-power-manager-${{ github.sha }}
-          path: unified-power-manager@baratzz.zip
+          name: hara-hachi-bu-${{ github.sha }}
+          path: hara-hachi-bu@ZviBaratz.zip
           retention-days: 30
