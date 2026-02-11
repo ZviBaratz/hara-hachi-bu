@@ -64,15 +64,17 @@ class ProfileRow extends Adw.ActionRow {
         editButton.connect('clicked', () => onEdit(profile));
         this.add_suffix(editButton);
 
-        // Delete button
-        const deleteButton = new Gtk.Button({
-            icon_name: 'user-trash-symbolic',
-            valign: Gtk.Align.CENTER,
-            css_classes: ['flat'],
-            tooltip_text: _('Delete profile'),
-        });
-        deleteButton.connect('clicked', () => onDelete(profile));
-        this.add_suffix(deleteButton);
+        // Delete button (hidden for builtin profiles which cannot be deleted)
+        if (!profile.builtin) {
+            const deleteButton = new Gtk.Button({
+                icon_name: 'user-trash-symbolic',
+                valign: Gtk.Align.CENTER,
+                css_classes: ['flat'],
+                tooltip_text: _('Delete profile'),
+            });
+            deleteButton.connect('clicked', () => onDelete(profile));
+            this.add_suffix(deleteButton);
+        }
     }
 });
 
@@ -205,6 +207,12 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             icon_name: 'battery-symbolic',
         });
         window.add(thresholdsPage);
+
+        // Introductory description
+        const thresholdsIntro = new Adw.PreferencesGroup({
+            description: _('These thresholds define the three battery charging modes available in Quick Settings. Limiting the maximum charge extends your battery\'s overall lifespan.'),
+        });
+        thresholdsPage.add(thresholdsIntro);
 
         // Threshold mode groups
         const thresholdConfigs = [
@@ -644,7 +652,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         // Auto-activate toggle (Adw.SwitchRow)
         const autoManagedRow = new Adw.SwitchRow({
             title: _('Apply Automatically'),
-            subtitle: _('Profile applies automatically when all conditions match'),
+            subtitle: _('Activates when conditions match (requires Auto-switch in Quick Settings)'),
             active: isEdit ? !!existingProfile.autoManaged : false,
         });
         mainGroup.add(autoManagedRow);
@@ -1086,7 +1094,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged, schedule};
                 const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
                 if (conflict) {
-                    errorLabel.set_text(_('Condition conflict with profile "%s". Tip: Add a schedule to create a time-based variant without conflict.').format(conflict.name));
+                    errorLabel.set_text(_('This profile has the same conditions as "%s" and they would both activate at the same time. To distinguish them, add more conditions to one profile, or use different schedules.').format(conflict.name));
                     errorLabel.show();
                     return;
                 }

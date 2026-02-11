@@ -93,7 +93,7 @@ export default class UnifiedPowerManager extends Extension {
                 );
             }
 
-            console.log('Unified Power Manager: Extension initialized successfully');
+            console.debug('Unified Power Manager: Extension initialized successfully');
         } catch (e) {
             // Clean up partially initialized controllers to prevent leaks
             // on next enable() call which would overwrite these fields
@@ -173,7 +173,7 @@ export default class UnifiedPowerManager extends Extension {
     }
 
     disable() {
-        console.log('Unified Power Manager: Disabling extension');
+        console.debug('Unified Power Manager: Disabling extension');
 
         this._destroyPowerManager();
         Helper.destroyExecCheck();
