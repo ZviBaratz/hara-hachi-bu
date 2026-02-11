@@ -1,5 +1,5 @@
 /*
- * Unified Power Manager - GNOME Shell Extension
+ * Hara Hachi Bu - GNOME Shell Extension
  * Copyright (C) 2024-2026 zvi
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -17,7 +17,7 @@ import * as Constants from './lib/constants.js';
 
 const {PARAMETERS, OPERATORS} = Constants;
 
-const _ = s => Gettext.dgettext('unified-power-manager', s);
+const _ = s => Gettext.dgettext('hara-hachi-bu', s);
 
 // ProfileRow widget for displaying profile in the list
 const ProfileRow = GObject.registerClass(
@@ -325,7 +325,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         const version = this.metadata.version ?? '?';
         const aboutRow = new Adw.ActionRow({
-            title: _('Unified Power Manager'),
+            title: _('Hara Hachi Bu'),
             subtitle: _('Version %s\nManage power profiles and battery charging modes').format(version),
         });
         aboutGroup.add(aboutRow);
@@ -338,11 +338,11 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         aboutPage.add(statusGroup);
 
         // Check helper script
-        const helperInstalled = this._checkFileExists('/usr/local/bin/unified-power-ctl');
+        const helperInstalled = this._checkFileExists('/usr/local/bin/hhb-power-ctl');
         const helperRow = new Adw.ActionRow({
             title: _('Helper Script'),
             subtitle: helperInstalled
-                ? _('Installed at /usr/local/bin/unified-power-ctl')
+                ? _('Installed at /usr/local/bin/hhb-power-ctl')
                 : _('Not installed - battery threshold control unavailable'),
         });
         const helperIcon = new Gtk.Image({
@@ -357,8 +357,8 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         statusGroup.add(helperRow);
 
         // Check polkit rules
-        const polkitRules = this._checkFileExists('/etc/polkit-1/rules.d/10-unified-power-manager.rules');
-        const polkitPolicy = this._checkFileExists('/usr/share/polkit-1/actions/org.gnome.shell.extensions.unified-power-manager.policy');
+        const polkitRules = this._checkFileExists('/etc/polkit-1/rules.d/10-hara-hachi-bu.rules');
+        const polkitPolicy = this._checkFileExists('/usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy');
         const polkitInstalled = polkitRules || polkitPolicy;
         const polkitRow = new Adw.ActionRow({
             title: _('Polkit Configuration'),
@@ -454,7 +454,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             try {
                 this._settings.disconnect(this._profileSettingsId);
             } catch (e) {
-                console.debug(`Unified Power Manager: Could not disconnect settings signal: ${e.message}`);
+                console.debug(`Hara Hachi Bu: Could not disconnect settings signal: ${e.message}`);
             }
             this._profileSettingsId = null;
         }
@@ -918,22 +918,24 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         scheduleEnabledRow.connect('notify::active', updateScheduleSensitivity);
         updateScheduleSensitivity();
 
-        // Error label
+        // Error label (inside scrollable content so long messages aren't clipped)
+        const errorGroup = new Adw.PreferencesGroup();
         const errorLabel = new Gtk.Label({
             css_classes: ['error'],
             halign: Gtk.Align.START,
             visible: false,
             wrap: true,
-            margin_top: 12,
             margin_start: 12,
             margin_end: 12,
         });
+        errorGroup.add(errorLabel);
 
         // --- Assemble dialog layout ---
         const contentPage = new Adw.PreferencesPage();
         contentPage.add(mainGroup);
         contentPage.add(rulesGroup);
         contentPage.add(scheduleGroup);
+        contentPage.add(errorGroup);
 
         // Wrap in Adw.ToolbarView for header bar with buttons
         const headerBar = new Adw.HeaderBar();
@@ -954,7 +956,6 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const toolbarView = new Adw.ToolbarView();
         toolbarView.add_top_bar(headerBar);
         toolbarView.set_content(contentPage);
-        toolbarView.add_bottom_bar(errorLabel);
         outerBox.append(toolbarView);
 
         const dialog = new Adw.Dialog({
@@ -1094,7 +1095,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged, schedule};
                 const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
                 if (conflict) {
-                    errorLabel.set_text(_('This profile has the same conditions as "%s" and they would both activate at the same time. To distinguish them, add more conditions to one profile, or use different schedules.').format(conflict.name));
+                    errorLabel.set_text(_('Conflicts with "%s" \u2014 same conditions and priority. Add more conditions to one, or give them non-overlapping schedules.').format(conflict.name));
                     errorLabel.show();
                     return;
                 }
@@ -1116,7 +1117,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
                 dialog.close();
             } catch (e) {
-                console.error(`Unified Power Manager: Profile dialog error: ${e.message}`);
+                console.error(`Hara Hachi Bu: Profile dialog error: ${e.message}`);
                 errorLabel.set_text(_('An unexpected error occurred. Check logs for details.'));
                 errorLabel.show();
             }
@@ -1173,7 +1174,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     }
                 }
             } catch (e) {
-                console.error(`Unified Power Manager: Delete dialog error: ${e.message}`);
+                console.error(`Hara Hachi Bu: Delete dialog error: ${e.message}`);
             }
         });
     }
