@@ -27,10 +27,6 @@ class ProfileRow extends Adw.ActionRow {
         const powerLabel = _(Constants.POWER_MODES[profile.powerMode]?.label ?? profile.powerMode);
         const batteryLabel = _(Constants.BATTERY_MODES[profile.batteryMode]?.label ?? profile.batteryMode);
         let subtitle = _('%s + %s').format(powerLabel, batteryLabel);
-        if (profile.forceDischarge && profile.forceDischarge !== 'unspecified') {
-            const fdLabel = Constants.FORCE_DISCHARGE_OPTIONS[profile.forceDischarge]?.label ?? profile.forceDischarge;
-            subtitle = _('%s \u00b7 Force Discharge: %s').format(subtitle, _(fdLabel));
-        }
         if (profile.schedule?.enabled) {
             const daysSummary = ScheduleUtils.formatDaysSummary(profile.schedule.days);
             subtitle = _('%s \u00b7 %s %s\u2013%s').format(
@@ -65,7 +61,7 @@ class ProfileRow extends Adw.ActionRow {
         this.add_suffix(editButton);
 
         // Delete button (hidden for builtin profiles which cannot be deleted)
-        if (!profile.builtin) {
+        if (!ProfileMatcher.isBuiltinProfile(profile.id)) {
             const deleteButton = new Gtk.Button({
                 icon_name: 'user-trash-symbolic',
                 valign: Gtk.Align.CENTER,
@@ -603,9 +599,6 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const powerModeLabels = powerModeKeys.map(k => _(Constants.POWER_MODES[k].label));
         const batteryModeKeys = Object.keys(Constants.BATTERY_MODES);
         const batteryModeLabels = batteryModeKeys.map(k => _(Constants.BATTERY_MODES[k].label));
-        const fdKeys = Object.keys(Constants.FORCE_DISCHARGE_OPTIONS);
-        const fdLabels = fdKeys.map(k => _(Constants.FORCE_DISCHARGE_OPTIONS[k].label));
-
         // --- Build dialog content using Adw widgets ---
         const mainGroup = new Adw.PreferencesGroup();
 
@@ -638,33 +631,15 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
         mainGroup.add(batteryRow);
 
-        // Force discharge dropdown (Adw.ComboRow)
-        const fdModel = Gtk.StringList.new(fdLabels);
-        const fdRow = new Adw.ComboRow({
-            title: _('Force Discharge'),
-            model: fdModel,
-            selected: isEdit && existingProfile.forceDischarge
-                ? Math.max(0, fdKeys.indexOf(existingProfile.forceDischarge))
-                : fdKeys.indexOf('unspecified'),
-        });
-        mainGroup.add(fdRow);
-
-        // Auto-activate toggle (Adw.SwitchRow)
-        const autoManagedRow = new Adw.SwitchRow({
-            title: _('Apply Automatically'),
-            subtitle: _('Activates when conditions match (requires Auto-switch in Quick Settings)'),
-            active: isEdit ? !!existingProfile.autoManaged : false,
-        });
-        mainGroup.add(autoManagedRow);
-
         // --- Rules section ---
         const rulesGroup = new Adw.PreferencesGroup({
             title: _('Activation Conditions'),
-            description: _('When all conditions match, this profile activates automatically.'),
+            description: _('Add conditions to make this profile activate automatically. More conditions = higher priority.'),
         });
 
         // Track rule rows
         const ruleRows = [];
+        let onFieldChanged = null; // Assigned after dialog setup; called from addRuleRow closures
         const initialRules = isEdit && existingProfile.rules ? [...existingProfile.rules] : [];
 
         // Rule row builder helper arrays
@@ -730,7 +705,10 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             });
             valueDrop.hexpand = true;
             updateValueModel();
-            paramDrop.connect('notify::selected', updateValueModel);
+            paramDrop.connect('notify::selected', () => {
+                updateValueModel();
+                onFieldChanged?.();
+            });
             rowBox.append(valueDrop);
 
             // Remove button
@@ -744,6 +722,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 if (index > -1) {
                     ruleRows.splice(index, 1);
                     rulesGroup.remove(rowBox);
+                    onFieldChanged?.();
                 }
             });
             rowBox.append(removeBtn);
@@ -768,15 +747,11 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             margin_start: 12,
             margin_top: 6,
         });
-        addRuleBtn.connect('clicked', () => addRuleRow());
+        addRuleBtn.connect('clicked', () => {
+            addRuleRow();
+            onFieldChanged?.();
+        });
         rulesGroup.add(addRuleBtn);
-
-        // Toggle rules section visibility
-        const updateRulesVisibility = () => {
-            rulesGroup.visible = autoManagedRow.active;
-        };
-        autoManagedRow.connect('notify::active', updateRulesVisibility);
-        updateRulesVisibility();
 
         // --- Schedule section ---
         const scheduleGroup = new Adw.PreferencesGroup({
@@ -889,23 +864,39 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         endTimeRow.add_suffix(endMinuteSpin);
         scheduleGroup.add(endTimeRow);
 
-        // Overnight hint
+        // Dynamic overnight schedule hint (updates when times change)
         const overnightHint = new Gtk.Label({
-            label: _('Tip: Set start time after end time for overnight schedules (e.g., 23:00 to 07:00)'),
+            label: '',
             css_classes: ['caption', 'dim-label'],
             wrap: true,
             margin_top: 6,
             margin_start: 12,
             margin_end: 12,
+            visible: false,
         });
         scheduleGroup.add(overnightHint);
 
-        // Schedule group visibility: only when auto-managed
-        const updateScheduleVisibility = () => {
-            scheduleGroup.visible = autoManagedRow.active;
+        const updateOvernightHint = () => {
+            const sH = Math.round(startHourSpin.value);
+            const sM = Math.round(startMinuteSpin.value);
+            const eH = Math.round(endHourSpin.value);
+            const eM = Math.round(endMinuteSpin.value);
+            const startMin = sH * 60 + sM;
+            const endMin = eH * 60 + eM;
+            if (startMin > endMin) {
+                const startStr = ScheduleUtils.formatTimeHHMM(sH, sM);
+                const endStr = ScheduleUtils.formatTimeHHMM(eH, eM);
+                overnightHint.label = _('Overnight schedule: %s today \u2192 %s tomorrow').format(startStr, endStr);
+                overnightHint.visible = true;
+            } else {
+                overnightHint.visible = false;
+            }
         };
-        autoManagedRow.connect('notify::active', updateScheduleVisibility);
-        updateScheduleVisibility();
+        startHourSpin.connect('value-changed', updateOvernightHint);
+        startMinuteSpin.connect('value-changed', updateOvernightHint);
+        endHourSpin.connect('value-changed', updateOvernightHint);
+        endMinuteSpin.connect('value-changed', updateOvernightHint);
+        updateOvernightHint();
 
         // Schedule inner sensitivity: day buttons, spinners, quick-select sensitive only when enabled
         const updateScheduleSensitivity = () => {
@@ -929,6 +920,17 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             margin_end: 12,
         });
         errorGroup.add(errorLabel);
+
+        // Warning label for real-time conflict/schedule feedback (non-blocking)
+        const warningLabel = new Gtk.Label({
+            css_classes: ['warning'],
+            halign: Gtk.Align.START,
+            visible: false,
+            wrap: true,
+            margin_start: 12,
+            margin_end: 12,
+        });
+        errorGroup.add(warningLabel);
 
         // --- Assemble dialog layout ---
         const contentPage = new Adw.PreferencesPage();
@@ -965,45 +967,201 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
         dialog.set_child(outerBox);
 
-        // Clear validation errors when user edits any field
-        const hideError = () => errorLabel.hide();
-        nameRow.connect('changed', hideError);
-        powerRow.connect('notify::selected', hideError);
-        batteryRow.connect('notify::selected', hideError);
-        fdRow.connect('notify::selected', hideError);
-        autoManagedRow.connect('notify::active', hideError);
-        scheduleEnabledRow.connect('notify::active', hideError);
-        for (const btn of Object.values(dayButtons))
-            btn.connect('toggled', hideError);
-        startHourSpin.connect('value-changed', hideError);
-        startMinuteSpin.connect('value-changed', hideError);
-        endHourSpin.connect('value-changed', hideError);
-        endMinuteSpin.connect('value-changed', hideError);
+        // --- Real-time feedback helpers ---
 
-        // Button handlers
-        cancelBtn.connect('clicked', () => dialog.close());
+        // Build detailed conflict description showing which rules/schedules overlap
+        const buildConflictDetail = (conflictProfile, newRules, newSchedule) => {
+            const parts = [];
+
+            // Describe overlapping rules
+            if (conflictProfile.rules?.length > 0 && newRules.length > 0) {
+                const sharedRules = newRules.filter(nr =>
+                    conflictProfile.rules.some(cr =>
+                        cr.param === nr.param && cr.op === nr.op && cr.value === nr.value
+                    )
+                );
+                if (sharedRules.length > 0) {
+                    const ruleDescs = sharedRules.map(r => {
+                        const paramDef = PARAMETERS[r.param];
+                        const opDef = OPERATORS[r.op];
+                        if (paramDef && opDef)
+                            return _('%s %s %s').format(_(paramDef.label), _(opDef.label), _(paramDef.valueLabels[r.value]));
+                        return `${r.param} ${r.op} ${r.value}`;
+                    });
+                    parts.push(_('Both match when: %s').format(ruleDescs.join(_(', '))));
+                }
+            }
+
+            // Describe schedule overlap
+            if (conflictProfile.schedule?.enabled && newSchedule?.enabled) {
+                const daysSummary = ScheduleUtils.formatDaysSummary(conflictProfile.schedule.days);
+                parts.push(_('Overlapping schedule: %s %s\u2013%s').format(
+                    daysSummary,
+                    conflictProfile.schedule.startTime,
+                    conflictProfile.schedule.endTime
+                ));
+            }
+
+            if (parts.length === 0)
+                parts.push(_('Same priority and overlapping activation conditions'));
+
+            return _('Conflicts with \u201c%s\u201d \u2014 %s. Add more conditions to one, or give them non-overlapping schedules.').format(
+                ProfileMatcher.getProfileDisplayName(conflictProfile),
+                parts.join('. ')
+            );
+        };
+
+        // Real-time warning updater for conflict detection and zero-day prevention
+        const updateRealTimeWarnings = () => {
+            warningLabel.hide();
+
+            // Zero-day prevention: warn immediately when all days deselected
+            if (scheduleEnabledRow.active) {
+                let dayCount = 0;
+                for (let d = 1; d <= 7; d++) {
+                    if (dayButtons[d].active)
+                        dayCount++;
+                }
+                if (dayCount === 0) {
+                    warningLabel.set_text(_('No days selected \u2014 schedule needs at least one day'));
+                    warningLabel.show();
+                    return;
+                }
+            }
+
+            // Real-time conflict detection (non-blocking warning during editing)
+            const currentRules = ruleRows
+                .map(row => ({param: row.getParam(), op: row.getOp(), value: row.getValue()}))
+                .filter(r => r.param && r.op && r.value);
+            const scheduleEnabled = scheduleEnabledRow.active;
+            if (currentRules.length === 0 && !scheduleEnabled)
+                return;
+
+            const scheduleDays = [];
+            for (let d = 1; d <= 7; d++) {
+                if (dayButtons[d].active)
+                    scheduleDays.push(d);
+            }
+
+            let schedule = null;
+            if (scheduleEnabled && scheduleDays.length > 0) {
+                schedule = {
+                    enabled: true,
+                    days: scheduleDays,
+                    startTime: ScheduleUtils.formatTimeHHMM(
+                        Math.round(startHourSpin.value), Math.round(startMinuteSpin.value)
+                    ),
+                    endTime: ScheduleUtils.formatTimeHHMM(
+                        Math.round(endHourSpin.value), Math.round(endMinuteSpin.value)
+                    ),
+                };
+            }
+
+            const newProfile = {
+                id: isEdit ? existingProfile.id : '__new_profile__',
+                rules: currentRules,
+                schedule,
+            };
+
+            const profiles = ProfileMatcher.getCustomProfiles(settings);
+            const conflict = RuleEvaluator.findRuleConflict(
+                profiles, newProfile, isEdit ? existingProfile.id : null
+            );
+            if (conflict) {
+                warningLabel.set_text(buildConflictDetail(conflict, currentRules, schedule));
+                warningLabel.show();
+            }
+        };
+
+        // Unsaved changes detection
+        const captureState = () => JSON.stringify({
+            name: nameRow.get_text().trim(),
+            power: powerRow.selected,
+            battery: batteryRow.selected,
+            rules: ruleRows.map(r => ({p: r.getParam(), o: r.getOp(), v: r.getValue()})),
+            schedEnabled: scheduleEnabledRow.active,
+            days: Object.keys(dayButtons).filter(d => dayButtons[d].active),
+            startH: Math.round(startHourSpin.value),
+            startM: Math.round(startMinuteSpin.value),
+            endH: Math.round(endHourSpin.value),
+            endM: Math.round(endMinuteSpin.value),
+        });
+        const initialState = captureState();
+
+        // Clear save-time errors and update real-time warnings on any field change
+        onFieldChanged = () => {
+            errorLabel.hide();
+            updateRealTimeWarnings();
+        };
+        nameRow.connect('changed', onFieldChanged);
+        powerRow.connect('notify::selected', onFieldChanged);
+        batteryRow.connect('notify::selected', onFieldChanged);
+        scheduleEnabledRow.connect('notify::active', onFieldChanged);
+        for (const btn of Object.values(dayButtons))
+            btn.connect('toggled', onFieldChanged);
+        startHourSpin.connect('value-changed', onFieldChanged);
+        startMinuteSpin.connect('value-changed', onFieldChanged);
+        endHourSpin.connect('value-changed', onFieldChanged);
+        endMinuteSpin.connect('value-changed', onFieldChanged);
+
+        // Run initial real-time check (edit mode may have pre-existing conflicts)
+        updateRealTimeWarnings();
+
+        // Button handlers — Cancel with unsaved changes confirmation
+        cancelBtn.connect('clicked', () => {
+            if (captureState() !== initialState) {
+                const confirmDialog = new Adw.AlertDialog({
+                    heading: _('Discard Changes?'),
+                    body: _('You have unsaved changes that will be lost.'),
+                });
+                confirmDialog.add_response('cancel', _('Keep Editing'));
+                confirmDialog.add_response('discard', _('Discard'));
+                confirmDialog.set_response_appearance('discard', Adw.ResponseAppearance.DESTRUCTIVE);
+                confirmDialog.set_default_response('cancel');
+                confirmDialog.set_close_response('cancel');
+                confirmDialog.choose(window, null, (dlg, result) => {
+                    try {
+                        if (dlg.choose_finish(result) === 'discard')
+                            dialog.close();
+                    } catch (e) {
+                        console.error(`Hara Hachi Bu: Confirm discard error: ${e.message}`);
+                    }
+                });
+            } else {
+                dialog.close();
+            }
+        });
         saveBtn.connect('clicked', () => {
             try {
+                const errors = [];
                 errorLabel.set_text('');
                 errorLabel.hide();
+                warningLabel.hide();
                 const name = nameRow.get_text().trim();
                 const powerMode = powerModeKeys[powerRow.selected];
                 const batteryMode = batteryModeKeys[batteryRow.selected];
-                const forceDischarge = fdKeys[fdRow.selected];
-                const autoManaged = autoManagedRow.active;
 
-                // Collect rules
-                const allRules = ruleRows.map(row => ({
+                // --- Phase 1: Basic input validation (show all at once) ---
+
+                // Name validation
+                if (!name || name.length === 0)
+                    errors.push(_('Please enter a profile name.'));
+                else if (name.length > 50)
+                    errors.push(_('Profile name too long (max 50 characters)'));
+
+                // Per-rule completeness check — identify which conditions are incomplete
+                const allRules = ruleRows.map((row, i) => ({
                     param: row.getParam(),
                     op: row.getOp(),
                     value: row.getValue(),
+                    index: i,
                 }));
-                const rules = allRules.filter(r => r.param && r.op && r.value);
-                if (rules.length < allRules.length) {
-                    errorLabel.set_text(_('Some conditions are incomplete. Please complete or remove them before saving.'));
-                    errorLabel.show();
-                    return;
+                for (const r of allRules) {
+                    if (!r.value)
+                        errors.push(_('Condition %d: incomplete \u2014 fill in all fields or remove it').format(r.index + 1));
                 }
+                const completeRules = allRules.filter(r => r.param && r.op && r.value);
+                const rules = completeRules.map(({param, op, value}) => ({param, op, value}));
 
                 // Collect schedule data (always preserve user input; set enabled=false when not active)
                 const scheduleDays = [];
@@ -1011,7 +1169,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                     if (dayButtons[d].active)
                         scheduleDays.push(d);
                 }
-                const scheduleEnabled = autoManaged && scheduleEnabledRow.active;
+                const scheduleEnabled = scheduleEnabledRow.active;
                 const hadSchedule = existingProfile?.schedule != null;
                 let schedule = null;
                 if (scheduleEnabled || hadSchedule || scheduleDays.length > 0) {
@@ -1027,86 +1185,83 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                             Math.round(endMinuteSpin.value)
                         ),
                     };
+                }
 
-                    if (scheduleEnabled) {
+                // Schedule validation (zero-day + format)
+                if (scheduleEnabled) {
+                    if (scheduleDays.length === 0)
+                        errors.push(_('Schedule must have at least one day selected'));
+                    if (schedule) {
                         const scheduleValidation = ScheduleUtils.validateSchedule(schedule);
-                        if (!scheduleValidation.valid) {
-                            errorLabel.set_text(scheduleValidation.error);
-                            errorLabel.show();
-                            return;
-                        }
+                        if (!scheduleValidation.valid)
+                            errors.push(scheduleValidation.error);
                     }
                 }
 
-                const hasSchedule = schedule?.enabled;
-                if (autoManaged && rules.length === 0 && !hasSchedule) {
-                    errorLabel.set_text(_('Apply Automatically requires at least one condition or an enabled schedule.'));
+                // Show phase 1 errors if any
+                if (errors.length > 0) {
+                    errorLabel.set_text(errors.join('\n'));
                     errorLabel.show();
                     return;
                 }
+
+                // --- Phase 2: Deeper validation ---
 
                 // Generate ID from name
                 const id = isEdit
                     ? existingProfile.id
                     : name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
 
-                if (!isEdit && id.length === 0) {
-                    if (name.length === 0) {
-                        errorLabel.set_text(_('Please enter a profile name.'));
-                    } else {
-                        errorLabel.set_text(_('Profile name must contain at least one letter or number (used to generate an internal ID).'));
-                    }
-                    errorLabel.show();
-                    return;
-                }
+                if (!isEdit && id.length === 0)
+                    errors.push(_('Profile name must contain at least one letter or number (used to generate an internal ID).'));
 
-                // Validate using centralized validation
-                const validation = ProfileMatcher.validateProfileInput(
-                    settings, id, name, powerMode, batteryMode, isEdit
-                );
-                if (!validation.valid) {
-                    errorLabel.set_text(validation.error);
-                    errorLabel.show();
-                    return;
+                // ID and limit checks for new profiles
+                const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
+                if (!isEdit) {
+                    if (id.length > 0 && existingProfiles.some(p => p.id === id))
+                        errors.push(_('A profile with a similar name already exists. Try a more distinct name.'));
+                    if (existingProfiles.length >= ProfileMatcher.MAX_PROFILES)
+                        errors.push(_('Maximum profile limit reached'));
                 }
 
                 // Check for duplicate display name
-                const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
                 const duplicateName = existingProfiles.some(p =>
                     p.name.trim().toLowerCase() === name.toLowerCase() &&
                     (!isEdit || p.id !== existingProfile.id)
                 );
-                if (duplicateName) {
-                    errorLabel.set_text(_('A profile with this name already exists'));
-                    errorLabel.show();
-                    return;
-                }
+                if (duplicateName)
+                    errors.push(_('A profile with this name already exists'));
 
-                // Validate rules
+                // Rule semantic validation (contradictions, duplicates)
                 const rulesValidation = RuleEvaluator.validateRules(rules);
-                if (!rulesValidation.valid) {
-                    errorLabel.set_text(rulesValidation.errors.join('\n'));
+                if (!rulesValidation.valid)
+                    errors.push(...rulesValidation.errors);
+
+                // Show phase 2 errors if any
+                if (errors.length > 0) {
+                    errorLabel.set_text(errors.join('\n'));
                     errorLabel.show();
                     return;
                 }
 
-                // Check for conflicts
-                const profiles = ProfileMatcher.getCustomProfiles(settings);
-                const newProfile = {id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged, schedule};
-                const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
+                // --- Phase 3: Conflict detection (blocking at save time) ---
+                const newProfile = {id, name, powerMode, batteryMode, rules, schedule};
+                const conflict = RuleEvaluator.findRuleConflict(
+                    existingProfiles, newProfile, isEdit ? existingProfile.id : null
+                );
                 if (conflict) {
-                    errorLabel.set_text(_('Conflicts with "%s" \u2014 same conditions and priority. Add more conditions to one, or give them non-overlapping schedules.').format(conflict.name));
+                    errorLabel.set_text(buildConflictDetail(conflict, rules, schedule));
                     errorLabel.show();
                     return;
                 }
 
-                // Save
+                // --- Save ---
                 let success;
                 if (isEdit) {
                     success = ProfileMatcher.updateProfile(settings, existingProfile.id,
-                        {name, powerMode, batteryMode, forceDischarge, rules, autoManaged, schedule});
+                        {name, powerMode, batteryMode, rules, schedule});
                 } else {
-                    success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, forceDischarge, rules, autoManaged, schedule);
+                    success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, rules, schedule);
                 }
 
                 if (!success) {

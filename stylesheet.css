@@ -1,4 +1,4 @@
-/* Unified Power Manager - Quick Settings Styles */
+/* Hara Hachi Bu - Quick Settings Styles */
 /*
  * Color values are from the Adwaita dark palette to match GNOME Shell's
  * Quick Settings panel (always dark, even in light system theme).
@@ -6,7 +6,7 @@
  */
 
 /* Section headers in the popup menu (scoped to extension scroll section) */
-.upm-menu-scroll-section .popup-menu-section-header {
+.hhb-menu-scroll-section .popup-menu-section-header {
     font-weight: bold;
     font-size: 0.85em;
     color: inherit;
@@ -15,53 +15,53 @@
 }
 
 /* Status item styling (scoped to extension scroll section) */
-.upm-menu-scroll-section .popup-menu-status-item {
+.hhb-menu-scroll-section .popup-menu-status-item {
     font-style: italic;
     color: inherit;
     opacity: 0.7;
 }
 
 /* Ensure proper spacing for menu items (scoped to extension scroll section) */
-.upm-menu-scroll-section .popup-menu-item {
+.hhb-menu-scroll-section .popup-menu-item {
     padding: 8px 12px;
 }
 
 /* Scrollable section for the menu content */
-.upm-menu-scroll-section {
+.hhb-menu-scroll-section {
     max-height: 350px;
 }
 
 /* Error/warning item styling (e.g., missing helper script) */
-.upm-error-item {
+.hhb-error-item {
     color: #f5c211; /* Adwaita @warning_color (dark) */
 }
 
 /* Loading state styling - applied to the toggle widget */
-.quick-menu-toggle.upm-loading-state .subtitle {
+.quick-menu-toggle.hhb-loading-state .subtitle {
     font-style: italic;
     opacity: 0.7;
 }
 
 /* Battery health color indicators (Adwaita semantic colors, dark variant) */
-.upm-health-good {
+.hhb-health-good {
     color: #57e389; /* Adwaita @success_color (dark) */
 }
 
-.upm-health-fair {
+.hhb-health-fair {
     color: #f5c211; /* Adwaita @warning_color (dark) */
 }
 
-.upm-health-poor {
+.hhb-health-poor {
     color: #ed333b; /* Adwaita @error_color (dark) */
 }
 
 /* Profile name overflow protection */
-.upm-profile-label {
+.hhb-profile-label {
     max-width: 200px;
 }
 
 /* Auto badge for profiles with rules - subtle accent style matching prefs */
-.upm-auto-badge {
+.hhb-auto-badge {
     font-size: 0.85em;
     font-weight: normal;
     color: #62a0ea; /* Adwaita @accent_color (dark) */
@@ -70,21 +70,21 @@
 }
 
 /* Collapsible header styling */
-.upm-collapsible-header {
+.hhb-collapsible-header {
     font-weight: bold;
 }
 
-.upm-collapsible-header .popup-menu-arrow {
+.hhb-collapsible-header .popup-menu-arrow {
     margin-start: auto;
 }
 
 /* Paused indicator styling */
-.upm-paused-indicator {
+.hhb-paused-indicator {
     font-style: italic;
     opacity: 0.8;
 }
 
-.upm-paused-indicator .upm-resume-button {
+.hhb-paused-indicator .hhb-resume-button {
     margin-start: auto;
     background-color: rgba(98, 160, 234, 0.2); /* Adwaita @accent_color 20% */
     border-radius: 12px;
@@ -92,11 +92,21 @@
     font-size: 0.9em;
 }
 
-.upm-paused-indicator .upm-resume-button:hover {
+.hhb-paused-indicator .hhb-resume-button:hover {
     background-color: rgba(98, 160, 234, 0.4); /* Adwaita @accent_color 40% */
 }
 
 /* Success feedback styling */
-.upm-success {
+.hhb-success {
+    color: #57e389; /* Adwaita @success_color (dark) */
+}
+
+/* Inline operation error styling */
+.hhb-inline-error {
+    color: #ed333b; /* Adwaita @error_color (dark) */
+}
+
+/* Success confirmation on subtitle */
+.quick-menu-toggle.hhb-success-state .subtitle {
     color: #57e389; /* Adwaita @success_color (dark) */
 }
