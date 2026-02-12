@@ -27,6 +27,12 @@ class ProfileRow extends Adw.ActionRow {
         const powerLabel = _(Constants.POWER_MODES[profile.powerMode]?.label ?? profile.powerMode);
         const batteryLabel = _(Constants.BATTERY_MODES[profile.batteryMode]?.label ?? profile.batteryMode);
         let subtitle = _('%s + %s').format(powerLabel, batteryLabel);
+        if (profile.rules?.length > 0) {
+            const count = profile.rules.length;
+            const conditionText = count === 1
+                ? _('1 condition') : _('%d conditions').format(count);
+            subtitle = _('%s \u00b7 %s').format(subtitle, conditionText);
+        }
         if (profile.schedule?.enabled) {
             const daysSummary = ScheduleUtils.formatDaysSummary(profile.schedule.days);
             subtitle = _('%s \u00b7 %s %s\u2013%s').format(
@@ -307,6 +313,14 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         profileButtonBox.append(this._createFromCurrentButton);
 
         profileListGroup.add(profileButtonBox);
+
+        // Profile count label
+        this._profileCountLabel = new Gtk.Label({
+            css_classes: ['caption', 'dim-label'],
+            halign: Gtk.Align.CENTER,
+            margin_top: 4,
+        });
+        profileListGroup.add(this._profileCountLabel);
 
         // Populate profile list
         this._refreshProfileList(window, settings);
@@ -600,6 +614,10 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             }
         }
 
+        // Update profile count label
+        if (this._profileCountLabel)
+            this._profileCountLabel.label = _('%d / %d scenarios').format(profiles.length, ProfileMatcher.MAX_PROFILES);
+
         // Disable action buttons when at limit
         const atLimit = profiles.length >= ProfileMatcher.MAX_PROFILES;
         const limitTooltip = atLimit
@@ -632,6 +650,30 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             text: isEdit ? existingProfile.name : '',
         });
         mainGroup.add(nameRow);
+
+        // ID preview label (create mode only)
+        const idPreviewLabel = new Gtk.Label({
+            css_classes: ['caption', 'dim-label'],
+            halign: Gtk.Align.START,
+            margin_start: 12,
+            visible: !isEdit,
+        });
+        if (!isEdit) {
+            const updateIdPreview = () => {
+                const name = nameRow.get_text().trim();
+                if (!name) {
+                    idPreviewLabel.label = _('ID: (enter a name)');
+                    return;
+                }
+                const id = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+                idPreviewLabel.label = id.length > 0
+                    ? _('ID: %s').format(id)
+                    : _('ID: (name must contain letters or numbers)');
+            };
+            nameRow.connect('changed', updateIdPreview);
+            updateIdPreview();
+        }
+        mainGroup.add(idPreviewLabel);
 
         // Power mode dropdown (Adw.ComboRow)
         const powerModel = Gtk.StringList.new(powerModeLabels);
@@ -699,6 +741,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                                     for (const rule of defaultProfile.rules)
                                         addRuleRow(rule);
                                 }
+                                updateMoveButtonSensitivity();
 
                                 // Reset schedule
                                 scheduleEnabledRow.active = false;
@@ -801,6 +844,38 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             });
             rowBox.append(valueDrop);
 
+            // Move up button
+            const moveUpBtn = new Gtk.Button({
+                icon_name: 'go-up-symbolic',
+                css_classes: ['flat', 'circular'],
+                tooltip_text: _('Move condition up'),
+            });
+            moveUpBtn.connect('clicked', () => {
+                const idx = ruleRows.indexOf(rowData);
+                if (idx > 0) {
+                    [ruleRows[idx - 1], ruleRows[idx]] = [ruleRows[idx], ruleRows[idx - 1]];
+                    rebuildRuleDisplay();
+                    onFieldChanged?.();
+                }
+            });
+            rowBox.append(moveUpBtn);
+
+            // Move down button
+            const moveDownBtn = new Gtk.Button({
+                icon_name: 'go-down-symbolic',
+                css_classes: ['flat', 'circular'],
+                tooltip_text: _('Move condition down'),
+            });
+            moveDownBtn.connect('clicked', () => {
+                const idx = ruleRows.indexOf(rowData);
+                if (idx >= 0 && idx < ruleRows.length - 1) {
+                    [ruleRows[idx], ruleRows[idx + 1]] = [ruleRows[idx + 1], ruleRows[idx]];
+                    rebuildRuleDisplay();
+                    onFieldChanged?.();
+                }
+            });
+            rowBox.append(moveDownBtn);
+
             // Remove button
             const removeBtn = new Gtk.Button({
                 icon_name: 'list-remove-symbolic',
@@ -812,19 +887,41 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
                 if (index > -1) {
                     ruleRows.splice(index, 1);
                     rulesGroup.remove(rowBox);
+                    updateMoveButtonSensitivity();
                     onFieldChanged?.();
                 }
             });
             rowBox.append(removeBtn);
+
+            // Accessible name helper
+            const updateAccessibleName = () => {
+                const n = ruleRows.indexOf(rowData) + 1;
+                const pLabel = paramLabels[paramDrop.selected] ?? '';
+                const oLabel = opLabels[opDrop.selected] ?? '';
+                const vLabel = valueLabelsArr[valueDrop.selected] ?? '';
+                rowBox.update_property(
+                    [Gtk.AccessibleProperty.LABEL],
+                    [_('Condition %d: %s %s %s').format(n, pLabel, oLabel, vLabel)]
+                );
+            };
 
             const rowData = {
                 box: rowBox,
                 getParam: () => paramKeys[paramDrop.selected],
                 getOp: () => opKeys[opDrop.selected],
                 getValue: () => valueKeys[valueDrop.selected] ?? null,
+                updateAccessibleName,
+                moveUpBtn,
+                moveDownBtn,
             };
             ruleRows.push(rowData);
             rulesGroup.add(rowBox);
+
+            // Set initial accessible name and update on dropdown changes
+            updateAccessibleName();
+            paramDrop.connect('notify::selected', updateAccessibleName);
+            opDrop.connect('notify::selected', updateAccessibleName);
+            valueDrop.connect('notify::selected', updateAccessibleName);
         };
 
         // Add existing rules
@@ -839,9 +936,32 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         });
         addRuleBtn.connect('clicked', () => {
             addRuleRow();
+            updateMoveButtonSensitivity();
             onFieldChanged?.();
         });
         rulesGroup.add(addRuleBtn);
+
+        // Rule reorder helpers
+        const updateMoveButtonSensitivity = () => {
+            for (let i = 0; i < ruleRows.length; i++) {
+                ruleRows[i].moveUpBtn.sensitive = i > 0;
+                ruleRows[i].moveDownBtn.sensitive = i < ruleRows.length - 1;
+            }
+            ruleRows.forEach(r => r.updateAccessibleName());
+        };
+
+        const rebuildRuleDisplay = () => {
+            for (const row of ruleRows)
+                rulesGroup.remove(row.box);
+            rulesGroup.remove(addRuleBtn);
+            for (const row of ruleRows)
+                rulesGroup.add(row.box);
+            rulesGroup.add(addRuleBtn);
+            updateMoveButtonSensitivity();
+        };
+
+        // Set initial move button sensitivity
+        updateMoveButtonSensitivity();
 
         // --- Schedule section ---
         const scheduleGroup = new Adw.PreferencesGroup({
@@ -938,7 +1058,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const startTimeRow = new Adw.ActionRow({title: _('Start Time')});
         const startHourSpin = createTimeSpin(0, 23, 1, existingStart.hours, _('Hours'));
         const startColonLabel = new Gtk.Label({label: ':', valign: Gtk.Align.CENTER});
-        const startMinuteSpin = createTimeSpin(0, 59, 5, existingStart.minutes, _('Minutes'));
+        const startMinuteSpin = createTimeSpin(0, 59, 1, existingStart.minutes, _('Minutes'));
         startTimeRow.add_suffix(startHourSpin);
         startTimeRow.add_suffix(startColonLabel);
         startTimeRow.add_suffix(startMinuteSpin);
@@ -948,7 +1068,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         const endTimeRow = new Adw.ActionRow({title: _('End Time')});
         const endHourSpin = createTimeSpin(0, 23, 1, existingEnd.hours, _('Hours'));
         const endColonLabel = new Gtk.Label({label: ':', valign: Gtk.Align.CENTER});
-        const endMinuteSpin = createTimeSpin(0, 59, 5, existingEnd.minutes, _('Minutes'));
+        const endMinuteSpin = createTimeSpin(0, 59, 1, existingEnd.minutes, _('Minutes'));
         endTimeRow.add_suffix(endHourSpin);
         endTimeRow.add_suffix(endColonLabel);
         endTimeRow.add_suffix(endMinuteSpin);

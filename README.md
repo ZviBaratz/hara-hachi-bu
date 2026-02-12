@@ -200,6 +200,8 @@ Profiles can include an optional time schedule for automatic activation during s
 
 Schedule adds +1 to profile specificity, so a profile with 2 rules + active schedule (specificity 3) beats a profile with only 2 rules (specificity 2).
 
+> **Note on DST transitions**: During daylight saving time changes, a schedule boundary may fire up to one hour late. The extension self-corrects within the hour — no manual intervention needed.
+
 **Example: Morning Charge**
 
 Create a profile named "Morning Charge" with battery mode set to Full Capacity, enable auto-managed, and set a schedule for Weekdays 05:30–08:00. The extension charges to full overnight and reverts to your normal docked profile after 8am.
