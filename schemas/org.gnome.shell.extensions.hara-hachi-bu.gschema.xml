@@ -162,7 +162,7 @@
     <!-- Boost Charge -->
     <key name="boost-charge-timeout-hours" type="i">
       <range min="1" max="12"/>
-      <default>4</default>
+      <default>2</default>
       <summary>Boost charge safety timeout (hours)</summary>
       <description>Maximum duration for boost charge before auto-reverting to previous battery mode</description>
     </key>

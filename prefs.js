@@ -165,8 +165,8 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         batteryManageGroup.add(autoManageRow);
 
         const boostTimeoutRow = new Adw.SpinRow({
-            title: _('Boost Charge Timeout'),
-            subtitle: _('Maximum hours before Boost Charge auto-reverts'),
+            title: _('Boost Charge Safety Timeout'),
+            subtitle: _('Maximum hours as a safety fallback (boost normally stops when battery is full)'),
             adjustment: new Gtk.Adjustment({
                 lower: 1,
                 upper: 12,

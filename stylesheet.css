@@ -112,6 +112,12 @@
     color: #ed333b; /* Adwaita @error_color (dark) */
 }
 
+/* Boost Charge toggle subtitle (dim secondary text) */
+.hhb-boost-subtitle {
+    font-size: 0.85em;
+    opacity: 0.6;
+}
+
 /* Success confirmation on subtitle */
 .quick-menu-toggle.hhb-success-state .subtitle {
     color: #57e389; /* Adwaita @success_color (dark) */
