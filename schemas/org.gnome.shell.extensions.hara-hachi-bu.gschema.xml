@@ -11,8 +11,8 @@
 
     <key name="show-force-discharge" type="b">
       <default>false</default>
-      <summary>Show force discharge toggle</summary>
-      <description>Show force discharge toggle in the menu</description>
+      <summary>Show "Use Battery While Plugged In" toggle</summary>
+      <description>Show "Use Battery While Plugged In" toggle in the menu</description>
     </key>
 
     <key name="indicator-position" type="i">

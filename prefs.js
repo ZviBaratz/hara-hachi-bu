@@ -111,7 +111,7 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
 
         // Show force discharge toggle
         const forceDischargeRow = new Adw.SwitchRow({
-            title: _('Show Force Discharge Toggle'),
+            title: _('Show "Use Battery While Plugged In"'),
             subtitle: _('Display force discharge toggle in the menu'),
         });
         settings.bind('show-force-discharge', forceDischargeRow, 'active', Gio.SettingsBindFlags.DEFAULT);
