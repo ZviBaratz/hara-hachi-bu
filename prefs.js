@@ -66,17 +66,15 @@ class ProfileRow extends Adw.ActionRow {
         editButton.connect('clicked', () => onEdit(profile));
         this.add_suffix(editButton);
 
-        // Delete button (hidden for builtin profiles which cannot be deleted)
-        if (!ProfileMatcher.isBuiltinProfile(profile.id)) {
-            const deleteButton = new Gtk.Button({
-                icon_name: 'user-trash-symbolic',
-                valign: Gtk.Align.CENTER,
-                css_classes: ['flat'],
-                tooltip_text: _('Delete scenario'),
-            });
-            deleteButton.connect('clicked', () => onDelete(profile));
-            this.add_suffix(deleteButton);
-        }
+        // Delete button
+        const deleteButton = new Gtk.Button({
+            icon_name: 'user-trash-symbolic',
+            valign: Gtk.Align.CENTER,
+            css_classes: ['flat'],
+            tooltip_text: _('Delete scenario'),
+        });
+        deleteButton.connect('clicked', () => onDelete(profile));
+        this.add_suffix(deleteButton);
     }
 });
 
@@ -599,10 +597,33 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
         if (profiles.length === 0) {
             const emptyRow = new Adw.ActionRow({
                 title: _('No scenarios'),
-                subtitle: _('Click "Add Scenario" to create one'),
+                subtitle: _('Create a new scenario or restore the defaults'),
                 sensitive: false,
             });
             this._profileListBox.append(emptyRow);
+
+            const restoreRow = new Adw.ActionRow({
+                title: _('Restore Default Scenarios'),
+                subtitle: _('Re-create the Docked and Travel scenarios'),
+            });
+            const restoreBtn = new Gtk.Button({
+                label: _('Restore'),
+                valign: Gtk.Align.CENTER,
+                css_classes: ['suggested-action'],
+            });
+            restoreBtn.connect('clicked', () => {
+                for (const def of Object.values(Constants.DEFAULT_PROFILES)) {
+                    ProfileMatcher.createProfile(
+                        settings, def.id, _(def.name),
+                        def.powerMode, def.batteryMode,
+                        def.rules, def.schedule
+                    );
+                }
+                this._refreshProfileList(window, settings);
+            });
+            restoreRow.add_suffix(restoreBtn);
+            restoreRow.set_activatable_widget(restoreBtn);
+            this._profileListBox.append(restoreRow);
         } else {
             for (const profile of profiles) {
                 const row = new ProfileRow(

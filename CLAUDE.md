@@ -313,7 +313,7 @@ Battery threshold changes must be written in the correct order to avoid kernel e
 
 **Profile Migration**
 - Profiles stored as JSON array in 'custom-profiles' with {id, name, powerMode, batteryMode, forceDischarge, rules, schedule, icon, builtin, autoManaged}
-- Builtin profiles (docked, travel) cannot be deleted, only modified
+- Builtin profiles (docked, travel) can be deleted; if all profiles are deleted, the empty state shows a "Restore Default Scenarios" button to re-create them
 - Migration v2: ensures all profiles have `rules: []` and `forceDischarge: 'unspecified'` fields
 - Migration v5: adds `schedule: null` to all existing profiles
 
