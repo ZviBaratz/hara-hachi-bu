@@ -26,7 +26,6 @@ zip -r "$OUTPUT_FILE" \
     LICENSE \
     README.md \
     install-helper.sh \
-    hara-hachi-bu.pot \
     schemas/org.gnome.shell.extensions.hara-hachi-bu.gschema.xml \
     schemas/gschemas.compiled \
     icons/ \

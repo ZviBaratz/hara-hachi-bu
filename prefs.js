@@ -6,6 +6,7 @@
 'use strict';
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import Gtk from 'gi://Gtk';
 import GObject from 'gi://GObject';
 import Gettext from 'gettext';
@@ -29,8 +30,9 @@ class ProfileRow extends Adw.ActionRow {
         let subtitle = _('%s + %s').format(powerLabel, batteryLabel);
         if (profile.rules?.length > 0) {
             const count = profile.rules.length;
-            const conditionText = count === 1
-                ? _('1 condition') : _('%d conditions').format(count);
+            const conditionText = Gettext.dngettext(
+                'hara-hachi-bu', '%d condition', '%d conditions', count
+            ).format(count);
             subtitle = _('%s \u00b7 %s').format(subtitle, conditionText);
         }
         if (profile.schedule?.enabled) {
@@ -46,6 +48,7 @@ class ProfileRow extends Adw.ActionRow {
         });
 
         // Add "auto" badge if profile is auto-managed
+        // Translators: Badge label meaning "automatically managed"
         if (ProfileMatcher.isAutoManaged(profile)) {
             const autoBadge = new Gtk.Label({
                 label: _('Auto'),
@@ -78,7 +81,7 @@ class ProfileRow extends Adw.ActionRow {
     }
 });
 
-export default class UnifiedPowerManagerPreferences extends ExtensionPreferences {
+export default class HaraHachiBuPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
 
@@ -468,16 +471,26 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             copyBtn.icon_name = 'emblem-ok-symbolic';
             copyBtn.tooltip_text = _('Copied!');
             // Reset icon after 2 seconds
-            setTimeout(() => {
+            if (this._copyFeedbackTimeoutId) {
+                GLib.Source.remove(this._copyFeedbackTimeoutId);
+                this._copyFeedbackTimeoutId = null;
+            }
+            this._copyFeedbackTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
+                this._copyFeedbackTimeoutId = null;
                 copyBtn.icon_name = 'edit-copy-symbolic';
                 copyBtn.tooltip_text = _('Copy install command');
-            }, 2000);
+                return GLib.SOURCE_REMOVE;
+            });
         });
         installRow.add_suffix(copyBtn);
         installGroup.add(installRow);
     }
 
     _cleanupSettingsConnection() {
+        if (this._copyFeedbackTimeoutId) {
+            GLib.Source.remove(this._copyFeedbackTimeoutId);
+            this._copyFeedbackTimeoutId = null;
+        }
         if (this._profileSettingsId && this._settings) {
             try {
                 this._settings.disconnect(this._profileSettingsId);
@@ -1005,7 +1018,12 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             halign: Gtk.Align.CENTER,
             margin_top: 6,
             margin_bottom: 6,
+            accessible_role: Gtk.AccessibleRole.GROUP,
         });
+        dayBox.update_property(
+            [Gtk.AccessibleProperty.LABEL],
+            [_('Schedule day selection')]
+        );
         const dayButtons = {};
         const existingDays = new Set(existingProfile?.schedule?.days ?? []);
         for (let d = 1; d <= 7; d++) {
@@ -1037,11 +1055,13 @@ export default class UnifiedPowerManagerPreferences extends ExtensionPreferences
             for (let d = 1; d <= 7; d++)
                 dayButtons[d].active = d >= 6;
         });
+        // Translators: Button to select all days of the week
         const allDaysBtn = new Gtk.Button({label: _('All'), css_classes: ['pill']});
         allDaysBtn.connect('clicked', () => {
             for (let d = 1; d <= 7; d++)
                 dayButtons[d].active = true;
         });
+        // Translators: Button to deselect all days of the week
         const clearDaysBtn = new Gtk.Button({label: _('Clear'), css_classes: ['pill']});
         clearDaysBtn.connect('clicked', () => {
             for (let d = 1; d <= 7; d++)

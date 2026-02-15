@@ -18,8 +18,9 @@ import * as Helper from './lib/helper.js';
 import * as ProfileMatcher from './lib/profileMatcher.js';
 import {UIPatcher} from './lib/uiPatcher.js';
 
-export default class UnifiedPowerManager extends Extension {
+export default class HaraHachiBuExtension extends Extension {
     enable() {
+        Helper.initExecCheck();
         this._settings = this.getSettings();
         this._initializing = false;
         this._pendingDestroy = false;

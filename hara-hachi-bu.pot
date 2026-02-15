@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: hara-hachi-bu 1.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/ZviBaratz/hara-hachi-bu/issues\n"
-"POT-Creation-Date: 2026-02-13 19:32+0200\n"
+"POT-Creation-Date: 2026-02-15 10:27+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,664 +16,677 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: extension.js:91 extension.js:109 prefs.js:358 lib/quickSettingsPanel.js:219
-#: lib/stateManager.js:496 lib/stateManager.js:579 lib/stateManager.js:1053
-#: lib/stateManager.js:1125
+#: extension.js:92 extension.js:110 prefs.js:359 lib/quickSettingsPanel.js:220
+#: lib/stateManager.js:496 lib/stateManager.js:579 lib/stateManager.js:1051
+#: lib/stateManager.js:1123
 msgid "Hara Hachi Bu"
 msgstr ""
 
-#: extension.js:92
+#: extension.js:93
 msgid ""
 "Battery threshold control requires setup. Open Quick Settings → Power for "
 "instructions."
 msgstr ""
 
-#: extension.js:109
+#: extension.js:110
 msgid "Failed to initialize. Check logs for details."
 msgstr ""
 
-#: prefs.js:29
+#: prefs.js:30
 #, javascript-format
 msgid "%s + %s"
 msgstr ""
 
-#: prefs.js:33
-msgid "1 condition"
-msgstr ""
-
-#: prefs.js:33
-#, javascript-format
-msgid "%d conditions"
-msgstr ""
-
 #: prefs.js:34
+#, javascript-format
+msgid "%d condition"
+msgid_plural "%d conditions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: prefs.js:36
 #, javascript-format
 msgid "%s · %s"
 msgstr ""
 
-#: prefs.js:38
+#: prefs.js:40
 #, javascript-format
 msgid "%s · %s %s–%s"
 msgstr ""
 
-#: prefs.js:51 lib/quickSettingsPanel.js:281
+#: prefs.js:54 lib/quickSettingsPanel.js:283
 msgid "Auto"
 msgstr ""
 
-#: prefs.js:64
+#: prefs.js:67
 msgid "Edit scenario"
 msgstr ""
 
-#: prefs.js:75
+#: prefs.js:77
 msgid "Delete scenario"
 msgstr ""
 
-#: prefs.js:92
+#: prefs.js:93
 msgid "General"
 msgstr ""
 
-#: prefs.js:99
+#: prefs.js:100
 msgid "User Interface"
 msgstr ""
 
-#: prefs.js:100
+#: prefs.js:101
 msgid "Configure the appearance of the extension"
 msgstr ""
 
-#: prefs.js:106
+#: prefs.js:107
 msgid "Show System Indicator"
 msgstr ""
 
-#: prefs.js:107
+#: prefs.js:108
 msgid "Display indicator icon in the top bar"
 msgstr ""
 
-#: prefs.js:114
-msgid "Show Force Discharge Toggle"
+#: prefs.js:115
+msgid "Show \"Use Battery While Plugged In\""
 msgstr ""
 
-#: prefs.js:115
+#: prefs.js:116
 msgid "Display force discharge toggle in the menu"
 msgstr ""
 
-#: prefs.js:122
+#: prefs.js:123
 msgid "Hide Built-in Power Profile"
 msgstr ""
 
-#: prefs.js:123
+#: prefs.js:124
 msgid "Replace GNOME Shell's power profile quick settings with this extension"
 msgstr ""
 
-#: prefs.js:130
+#: prefs.js:131
 msgid "Show Battery Health in Quick Settings"
 msgstr ""
 
-#: prefs.js:131
+#: prefs.js:132
 msgid "Display battery capacity degradation information"
 msgstr ""
 
-#: prefs.js:138
+#: prefs.js:139
 msgid "Battery Health Threshold"
 msgstr ""
 
-#: prefs.js:139
+#: prefs.js:140
 msgid "Show health only when below this percentage (100 = always show)"
 msgstr ""
 
-#: prefs.js:155
+#: prefs.js:156
 msgid "Battery Management"
 msgstr ""
 
-#: prefs.js:156
+#: prefs.js:157
 msgid "Configure automatic battery level management"
 msgstr ""
 
-#: prefs.js:161
+#: prefs.js:162
 msgid "Automatic Discharge to Threshold"
 msgstr ""
 
-#: prefs.js:162
+#: prefs.js:163
 msgid ""
 "When plugged in and battery is above the stop-charging threshold, use force "
 "discharge to bring it down. Requires force discharge support."
 msgstr ""
 
-#: prefs.js:168
+#: prefs.js:169
 msgid "Boost Charge Safety Timeout"
 msgstr ""
 
-#: prefs.js:169
+#: prefs.js:170
 msgid ""
 "Maximum hours as a safety fallback (boost normally stops when battery is "
 "full)"
 msgstr ""
 
-#: prefs.js:182
+#: prefs.js:183
 msgid "Automatic Scenario Switching"
 msgstr ""
 
-#: prefs.js:183
+#: prefs.js:184
 msgid ""
 "Scenarios with \"Apply Automatically\" enabled will activate based on their "
 "conditions and schedules. Manually selecting a scenario or mode pauses auto-"
 "switching. When no scenario matches, settings remain unchanged."
 msgstr ""
 
-#: prefs.js:189
+#: prefs.js:190
 msgid "Auto-switch Scenarios"
 msgstr ""
 
-#: prefs.js:190
+#: prefs.js:191
 msgid ""
 "Enable automatic scenario switching based on conditions and schedules. "
 "Manually selecting a scenario or mode will pause this."
 msgstr ""
 
-#: prefs.js:197
+#: prefs.js:198
 msgid "Resume on State Change"
 msgstr ""
 
-#: prefs.js:198
+#: prefs.js:199
 msgid ""
 "When paused by manual selection, automatically resume switching when system "
 "conditions change (display connected/disconnected, AC plugged/unplugged)"
 msgstr ""
 
-#: prefs.js:208
+#: prefs.js:209
 msgid "Thresholds"
 msgstr ""
 
-#: prefs.js:215
+#: prefs.js:216
 msgid ""
 "These thresholds define the three battery charging modes available in Quick "
 "Settings. Limiting the maximum charge extends your battery's overall "
 "lifespan."
 msgstr ""
 
-#: prefs.js:222
+#: prefs.js:223
 msgid "Full Capacity Mode"
 msgstr ""
 
-#: prefs.js:223
+#: prefs.js:224
 msgid "Maximum battery capacity for travel"
 msgstr ""
 
-#: prefs.js:231
+#: prefs.js:232
 msgid "Balanced Mode"
 msgstr ""
 
-#: prefs.js:232
+#: prefs.js:233
 msgid "Balance between capacity and battery lifespan"
 msgstr ""
 
-#: prefs.js:240
+#: prefs.js:241
 msgid "Max Lifespan Mode"
 msgstr ""
 
-#: prefs.js:241
+#: prefs.js:242
 msgid "Maximize battery lifespan for desk work"
 msgstr ""
 
-#: prefs.js:256 prefs.js:263 lib/quickSettingsPanel.js:233
+#: prefs.js:257 prefs.js:264 lib/quickSettingsPanel.js:234
 msgid "Scenarios"
 msgstr ""
 
-#: prefs.js:264
+#: prefs.js:265
 msgid ""
 "Scenarios are saved combinations of power and battery modes that can "
 "activate automatically based on conditions."
 msgstr ""
 
-#: prefs.js:294
+#: prefs.js:295
 msgid "Add Scenario"
 msgstr ""
 
-#: prefs.js:303
+#: prefs.js:304
 msgid "Create from Current Settings"
 msgstr ""
 
-#: prefs.js:348
+#: prefs.js:349
 msgid "About"
 msgstr ""
 
-#: prefs.js:359
+#: prefs.js:360
 #, javascript-format
 msgid ""
 "Version %s\n"
 "Manage power profiles and battery charging modes"
 msgstr ""
 
-#: prefs.js:365
+#: prefs.js:366
 msgid "System Status"
 msgstr ""
 
-#: prefs.js:366
+#: prefs.js:367
 msgid "Component installation and hardware support status"
 msgstr ""
 
-#: prefs.js:373
+#: prefs.js:374
 msgid "Helper Script"
 msgstr ""
 
-#: prefs.js:375
+#: prefs.js:376
 msgid "Installed at /usr/local/bin/hhb-power-ctl"
 msgstr ""
 
-#: prefs.js:376
+#: prefs.js:377
 msgid "Not installed - battery threshold control unavailable"
 msgstr ""
 
-#: prefs.js:384
+#: prefs.js:385
 msgid "Installed"
 msgstr ""
 
-#: prefs.js:384
+#: prefs.js:385
 msgid "Not installed"
 msgstr ""
 
-#: prefs.js:394
+#: prefs.js:395
 msgid "Polkit Configuration"
 msgstr ""
 
-#: prefs.js:396
+#: prefs.js:397
 msgid "Rules installed"
 msgstr ""
 
-#: prefs.js:396
+#: prefs.js:397
 msgid "Legacy policy installed"
 msgstr ""
 
-#: prefs.js:397
+#: prefs.js:398
 msgid "Not installed - may require password for each change"
 msgstr ""
 
-#: prefs.js:405
+#: prefs.js:406
 msgid "Configured"
 msgstr ""
 
-#: prefs.js:405
+#: prefs.js:406
 msgid "Not configured"
 msgstr ""
 
-#: prefs.js:411
+#: prefs.js:412
 msgid "No compatible battery detected"
 msgstr ""
 
-#: prefs.js:423
+#: prefs.js:424
 #, javascript-format
 msgid "Compatible battery detected (%s) - Full threshold control"
 msgstr ""
 
-#: prefs.js:425
+#: prefs.js:426
 #, javascript-format
 msgid ""
 "Compatible battery detected (%s) - End threshold only (Start threshold "
 "ignored)"
 msgstr ""
 
-#: prefs.js:433
+#: prefs.js:434
 msgid "Battery Threshold Support"
 msgstr ""
 
-#: prefs.js:449
+#: prefs.js:450
 msgid "Installation"
 msgstr ""
 
-#: prefs.js:450
+#: prefs.js:451
 msgid "The helper script is required for battery threshold control"
 msgstr ""
 
-#: prefs.js:457
+#: prefs.js:458
 msgid "Helper Installation"
 msgstr ""
 
-#: prefs.js:464 prefs.js:475
+#: prefs.js:465 prefs.js:481
 msgid "Copy install command"
 msgstr ""
 
-#: prefs.js:471
+#: prefs.js:472
 msgid "Copied!"
 msgstr ""
 
-#: prefs.js:502
+#: prefs.js:513
 msgid "Start Charging At"
 msgstr ""
 
-#: prefs.js:504 prefs.js:537
+#: prefs.js:515 prefs.js:548
 #, javascript-format
 msgid "Battery will start charging when it drops to %d%%"
 msgstr ""
 
-#: prefs.js:506
+#: prefs.js:517
 msgid "Not supported on this device – only end threshold is used"
 msgstr ""
 
-#: prefs.js:519
+#: prefs.js:530
 msgid "Stop Charging At"
 msgstr ""
 
-#: prefs.js:520 prefs.js:545
+#: prefs.js:531 prefs.js:556
 #, javascript-format
 msgid "Battery will stop charging when it reaches %d%%"
 msgstr ""
 
-#: prefs.js:562
+#: prefs.js:573
 msgid "Reset to Defaults"
 msgstr ""
 
-#: prefs.js:565
+#: prefs.js:576
 msgid "Reset"
 msgstr ""
 
-#: prefs.js:601
+#: prefs.js:612
 msgid "No scenarios"
 msgstr ""
 
-#: prefs.js:602
-msgid "Click \"Add Scenario\" to create one"
+#: prefs.js:613
+msgid "Create a new scenario or restore the defaults"
 msgstr ""
 
 #: prefs.js:619
+msgid "Restore Default Scenarios"
+msgstr ""
+
+#: prefs.js:620
+msgid "Re-create the Docked and Travel scenarios"
+msgstr ""
+
+#: prefs.js:623 prefs.js:743 prefs.js:754
+msgid "Restore"
+msgstr ""
+
+#: prefs.js:653
 #, javascript-format
 msgid "%d / %d scenarios"
 msgstr ""
 
-#: prefs.js:624
+#: prefs.js:658
 #, javascript-format
 msgid "Maximum of %d scenarios reached"
 msgstr ""
 
-#: prefs.js:649
+#: prefs.js:683
 msgid "Scenario Name"
 msgstr ""
 
-#: prefs.js:665
+#: prefs.js:699
 msgid "ID: (enter a name)"
 msgstr ""
 
-#: prefs.js:670
+#: prefs.js:704
 #, javascript-format
 msgid "ID: %s"
 msgstr ""
 
-#: prefs.js:671
+#: prefs.js:705
 msgid "ID: (name must contain letters or numbers)"
 msgstr ""
 
-#: prefs.js:681 lib/quickSettingsPanel.js:415 lib/stateManager.js:633
+#: prefs.js:715 lib/quickSettingsPanel.js:417 lib/stateManager.js:633
 #: lib/stateManager.js:651
 msgid "Power Mode"
 msgstr ""
 
-#: prefs.js:692 lib/quickSettingsPanel.js:457 lib/stateManager.js:663
+#: prefs.js:726 lib/quickSettingsPanel.js:459 lib/stateManager.js:663
 #: lib/stateManager.js:690 lib/stateManager.js:710
 msgid "Battery Mode"
 msgstr ""
 
-#: prefs.js:705
+#: prefs.js:739
 msgid "Restore Defaults"
 msgstr ""
 
-#: prefs.js:706
+#: prefs.js:740
 msgid "Reset this scenario to its original settings"
 msgstr ""
 
-#: prefs.js:709 prefs.js:720
-msgid "Restore"
-msgstr ""
-
-#: prefs.js:715
+#: prefs.js:749
 msgid "Restore Defaults?"
 msgstr ""
 
-#: prefs.js:716
+#: prefs.js:750
 #, javascript-format
 msgid ""
 "This will reset \"%s\" to its original power mode, battery mode, conditions, "
 "and schedule."
 msgstr ""
 
-#: prefs.js:719 prefs.js:1155 prefs.js:1520
+#: prefs.js:753 prefs.js:1196 prefs.js:1561
 msgid "Cancel"
 msgstr ""
 
-#: prefs.js:769
+#: prefs.js:803
 msgid "Activation Conditions"
 msgstr ""
 
-#: prefs.js:770
+#: prefs.js:804
 msgid ""
 "Conditions determine when this scenario activates. All conditions must "
 "match. More conditions = higher priority over other scenarios."
 msgstr ""
 
-#: prefs.js:800
+#: prefs.js:834
 msgid "Condition parameter"
 msgstr ""
 
-#: prefs.js:809
+#: prefs.js:843
 msgid "Condition operator"
 msgstr ""
 
-#: prefs.js:837
+#: prefs.js:871
 msgid "Condition value"
 msgstr ""
 
-#: prefs.js:851
+#: prefs.js:885
 msgid "Move condition up"
 msgstr ""
 
-#: prefs.js:867
+#: prefs.js:901
 msgid "Move condition down"
 msgstr ""
 
-#: prefs.js:883
+#: prefs.js:917
 msgid "Remove condition"
 msgstr ""
 
-#: prefs.js:904
+#: prefs.js:938
 #, javascript-format
 msgid "Condition %d: %s %s %s"
 msgstr ""
 
-#: prefs.js:932
+#: prefs.js:966
 msgid "Add Condition"
 msgstr ""
 
-#: prefs.js:968
+#: prefs.js:1002
 msgid "Schedule"
 msgstr ""
 
-#: prefs.js:969
+#: prefs.js:1003
 msgid ""
 "Limit this scenario to specific days and times. Both conditions AND schedule "
 "must match for activation. When a schedule ends, settings remain unchanged "
 "unless another scenario matches."
 msgstr ""
 
-#: prefs.js:974
+#: prefs.js:1008
 msgid "Enable Schedule"
 msgstr ""
 
-#: prefs.js:975
+#: prefs.js:1009
 msgid "Scenario only activates during the scheduled window"
 msgstr ""
 
-#: prefs.js:1009 lib/scheduleUtils.js:408
+#: prefs.js:1025
+msgid "Schedule day selection"
+msgstr ""
+
+#: prefs.js:1048 lib/scheduleUtils.js:408
 msgid "Weekdays"
 msgstr ""
 
-#: prefs.js:1014 lib/scheduleUtils.js:410
+#: prefs.js:1053 lib/scheduleUtils.js:410
 msgid "Weekends"
 msgstr ""
 
-#: prefs.js:1019
+#. Translators: Button to select all days of the week
+#: prefs.js:1059
 msgid "All"
 msgstr ""
 
-#: prefs.js:1024
+#. Translators: Button to deselect all days of the week
+#: prefs.js:1065
 msgid "Clear"
 msgstr ""
 
-#: prefs.js:1058
+#: prefs.js:1099
 msgid "Start Time"
 msgstr ""
 
-#: prefs.js:1059 prefs.js:1069
+#: prefs.js:1100 prefs.js:1110
 msgid "Hours"
 msgstr ""
 
-#: prefs.js:1061 prefs.js:1071
+#: prefs.js:1102 prefs.js:1112
 msgid "Minutes"
 msgstr ""
 
-#: prefs.js:1068
+#: prefs.js:1109
 msgid "End Time"
 msgstr ""
 
-#: prefs.js:1099
+#: prefs.js:1140
 #, javascript-format
 msgid "Overnight schedule: %s today → %s tomorrow"
 msgstr ""
 
-#: prefs.js:1159
+#: prefs.js:1200
 msgid "Save"
 msgstr ""
 
-#: prefs.js:1159
+#: prefs.js:1200
 msgid "Create"
 msgstr ""
 
-#: prefs.js:1174
+#: prefs.js:1215
 msgid "Edit Scenario"
 msgstr ""
 
-#: prefs.js:1174
+#: prefs.js:1215
 msgid "Create Scenario"
 msgstr ""
 
-#: prefs.js:1198
+#: prefs.js:1239
 #, javascript-format
 msgid "%s %s %s"
 msgstr ""
 
-#: prefs.js:1201
+#: prefs.js:1242
 #, javascript-format
 msgid "Both match when: %s"
 msgstr ""
 
-#: prefs.js:1201
+#: prefs.js:1242
 msgid ", "
 msgstr ""
 
-#: prefs.js:1208
+#: prefs.js:1249
 #, javascript-format
 msgid "Overlapping schedule: %s %s–%s"
 msgstr ""
 
-#: prefs.js:1216
+#: prefs.js:1257
 msgid "Same priority and overlapping activation conditions"
 msgstr ""
 
-#: prefs.js:1218
+#: prefs.js:1259
 #, javascript-format
 msgid ""
 "Conflicts with “%s” — %s. Add more conditions to one, or give them non-"
 "overlapping schedules."
 msgstr ""
 
-#: prefs.js:1236
+#: prefs.js:1277
 msgid "No days selected — schedule needs at least one day"
 msgstr ""
 
-#: prefs.js:1324
+#: prefs.js:1365
 msgid "Discard Changes?"
 msgstr ""
 
-#: prefs.js:1325
+#: prefs.js:1366
 msgid "You have unsaved changes that will be lost."
 msgstr ""
 
-#: prefs.js:1327
+#: prefs.js:1368
 msgid "Keep Editing"
 msgstr ""
 
-#: prefs.js:1328
+#: prefs.js:1369
 msgid "Discard"
 msgstr ""
 
-#: prefs.js:1358
+#: prefs.js:1399
 msgid "Please enter a scenario name."
 msgstr ""
 
-#: prefs.js:1360 lib/profileMatcher.js:536
+#: prefs.js:1401 lib/profileMatcher.js:535
 msgid "Scenario name too long (max 50 characters)"
 msgstr ""
 
-#: prefs.js:1371
+#: prefs.js:1412
 #, javascript-format
 msgid "Condition %d: incomplete — fill in all fields or remove it"
 msgstr ""
 
-#: prefs.js:1403
+#: prefs.js:1444
 msgid "Schedule must have at least one day selected"
 msgstr ""
 
-#: prefs.js:1426
+#: prefs.js:1467
 msgid ""
 "Scenario name must contain at least one letter or number (used to generate "
 "an internal ID)."
 msgstr ""
 
-#: prefs.js:1432 lib/profileMatcher.js:544
+#: prefs.js:1473 lib/profileMatcher.js:543
 msgid ""
 "A scenario with a similar name already exists. Try a more distinct name."
 msgstr ""
 
-#: prefs.js:1434 lib/profileMatcher.js:547 lib/quickSettingsPanel.js:870
+#: prefs.js:1475 lib/profileMatcher.js:546 lib/quickSettingsPanel.js:873
 msgid "Maximum scenario limit reached"
 msgstr ""
 
-#: prefs.js:1443
+#: prefs.js:1484
 msgid "A scenario with this name already exists"
 msgstr ""
 
-#: prefs.js:1478
+#: prefs.js:1519
 msgid "Failed to save scenario. Check for conflicts or limit reached."
 msgstr ""
 
-#: prefs.js:1486
+#: prefs.js:1527
 msgid "An unexpected error occurred. Check logs for details."
 msgstr ""
 
-#: prefs.js:1510
+#: prefs.js:1551
 msgid "This action cannot be undone."
 msgstr ""
 
-#: prefs.js:1512
+#: prefs.js:1553
 msgid ""
 "This scenario is currently active. Deleting it will switch to manual mode."
 msgstr ""
 
-#: prefs.js:1516
+#: prefs.js:1557
 #, javascript-format
 msgid "Delete \"%s\"?"
 msgstr ""
 
-#: prefs.js:1521
+#: prefs.js:1562
 msgid "Delete"
 msgstr ""
 
-#: prefs.js:1534
+#: prefs.js:1575
 msgid "Delete Failed"
 msgstr ""
 
-#: prefs.js:1535
+#: prefs.js:1576
 msgid "Failed to delete scenario. Please try again."
 msgstr ""
 
-#: prefs.js:1537
+#: prefs.js:1578
 msgid "OK"
 msgstr ""
 
@@ -833,316 +846,323 @@ msgstr ""
 msgid "Travel"
 msgstr ""
 
-#: lib/profileMatcher.js:533
+#: lib/profileMatcher.js:532
 msgid "Scenario name is required"
 msgstr ""
 
-#: lib/profileMatcher.js:539
+#: lib/profileMatcher.js:538
 msgid "Invalid scenario ID"
 msgstr ""
 
-#: lib/profileMatcher.js:552
+#: lib/profileMatcher.js:551
 msgid "Invalid power mode"
 msgstr ""
 
-#: lib/profileMatcher.js:556
+#: lib/profileMatcher.js:555
 msgid "Invalid battery mode"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:47 lib/quickSettingsPanel.js:58
-#: lib/quickSettingsPanel.js:1241
+#: lib/quickSettingsPanel.js:48 lib/quickSettingsPanel.js:59
+#: lib/quickSettingsPanel.js:1246
 msgid "Power"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:52
+#: lib/quickSettingsPanel.js:53
 msgid "Hara Hachi Bu - Switch power modes, battery thresholds, and scenarios"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:60
+#: lib/quickSettingsPanel.js:61
 msgid "Manage power profiles and battery charging modes"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:90 lib/quickSettingsPanel.js:1190
+#: lib/quickSettingsPanel.js:91 lib/quickSettingsPanel.js:1194
 msgid "Failed to apply — tap to dismiss"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:188
+#: lib/quickSettingsPanel.js:189
 msgid "Setup Required — tap to copy install command"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:201
+#: lib/quickSettingsPanel.js:202
 msgid "Copied! Paste in terminal"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:220
+#: lib/quickSettingsPanel.js:221
 msgid ""
 "Installation command copied to clipboard.\n"
 "\n"
 "Open terminal and paste (Ctrl+Shift+V) to enable battery threshold control."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:262
+#: lib/quickSettingsPanel.js:263
 msgid "Create scenarios in Settings to save mode combinations"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:286
+#: lib/quickSettingsPanel.js:288
 msgid "Automatically managed scenario"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:300 lib/quickSettingsPanel.js:433
-#: lib/quickSettingsPanel.js:499
+#: lib/quickSettingsPanel.js:302 lib/quickSettingsPanel.js:435
+#: lib/quickSettingsPanel.js:501
 #, javascript-format
 msgid "Applying %s..."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:308
+#: lib/quickSettingsPanel.js:310
 msgid "Failed to apply scenario"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:326
+#: lib/quickSettingsPanel.js:328
 msgid "Save as Scenario…"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:341 lib/quickSettingsPanel.js:408
+#: lib/quickSettingsPanel.js:343 lib/quickSettingsPanel.js:410
 msgid "Manual Controls"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:389
+#: lib/quickSettingsPanel.js:391
 msgid "Manual Controls (expanded)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:390
+#: lib/quickSettingsPanel.js:392
 msgid "Manual Controls (collapsed)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:441
+#: lib/quickSettingsPanel.js:443
 msgid "Failed to apply power mode"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:489
+#: lib/quickSettingsPanel.js:490
+#, javascript-format
+msgid "%d–%d%%"
+msgstr ""
+
+#: lib/quickSettingsPanel.js:491
 #, javascript-format
 msgid "charge to %d%%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:507
+#: lib/quickSettingsPanel.js:509
 msgid "Failed to apply battery mode"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:546 lib/quickSettingsPanel.js:586
+#: lib/quickSettingsPanel.js:548 lib/quickSettingsPanel.js:588
 msgid "Use Battery While Plugged In"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:548
+#: lib/quickSettingsPanel.js:550
 msgid ""
 "Use Battery While Plugged In: force the laptop to drain battery even when "
 "connected to AC"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:557
+#: lib/quickSettingsPanel.js:559
 msgid "Applying..."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:564
+#: lib/quickSettingsPanel.js:566
 msgid "Failed to apply"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:585
+#: lib/quickSettingsPanel.js:587
 msgid "Use Battery While Plugged In (AC only)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:595
+#: lib/quickSettingsPanel.js:597
 msgid "Auto-switch scenarios"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:600
+#: lib/quickSettingsPanel.js:602
 msgid ""
 "Auto-switch scenarios: automatically apply scenarios when system conditions "
 "change"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:609
+#: lib/quickSettingsPanel.js:611
 msgid "Auto-switching paused (manual override)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:614
+#: lib/quickSettingsPanel.js:616
 msgid "Resume"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:617
+#: lib/quickSettingsPanel.js:619
 msgid "Resume automatic scenario switching"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:691 lib/quickSettingsPanel.js:750
+#: lib/quickSettingsPanel.js:693 lib/quickSettingsPanel.js:752
 #, javascript-format
 msgid "Maximum Capacity: %d%%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:769
+#: lib/quickSettingsPanel.js:772
 msgid "Good"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:772
+#: lib/quickSettingsPanel.js:775
 msgid "Fair"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:775
+#: lib/quickSettingsPanel.js:778
 msgid "Poor"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:778
+#: lib/quickSettingsPanel.js:781
 #, javascript-format
 msgid "Maximum Capacity: %d%% (%s)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:785
+#: lib/quickSettingsPanel.js:788
 msgid "Power Manager Settings"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:816 lib/quickSettingsPanel.js:829
-#: lib/quickSettingsPanel.js:1016 lib/stateManager.js:1106
+#: lib/quickSettingsPanel.js:819 lib/quickSettingsPanel.js:832
+#: lib/quickSettingsPanel.js:1019 lib/stateManager.js:1104
 msgid "Boost Charge"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:820
+#: lib/quickSettingsPanel.js:823
 msgid "Boost Charge: temporarily charge to 100%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:831 lib/quickSettingsPanel.js:928
+#: lib/quickSettingsPanel.js:834 lib/quickSettingsPanel.js:931
 msgid "Temporarily charge to 100%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:844
+#: lib/quickSettingsPanel.js:847
 msgid "Applying boost charge..."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:851
+#: lib/quickSettingsPanel.js:854
 msgid "Failed to toggle boost charge"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:881
+#: lib/quickSettingsPanel.js:884
 #, javascript-format
 msgid "Custom %d"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:888
+#: lib/quickSettingsPanel.js:891
 msgid "Saving scenario..."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:900
+#: lib/quickSettingsPanel.js:903
 msgid "Failed to save scenario"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:923
+#: lib/quickSettingsPanel.js:926
 #, javascript-format
 msgid "Charging to 100%% (%d%%)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:924
+#: lib/quickSettingsPanel.js:927
 msgid "Charging to 100%..."
 msgstr ""
 
-#: lib/quickSettingsPanel.js:927
+#: lib/quickSettingsPanel.js:930
 msgid "Requires AC power"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:980
+#: lib/quickSettingsPanel.js:983
 #, javascript-format
 msgid "%dh %dm"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:981
+#: lib/quickSettingsPanel.js:984
 #, javascript-format
 msgid "%dm"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:999
+#: lib/quickSettingsPanel.js:1002
 #, javascript-format
 msgid "%s (manual)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1003
+#: lib/quickSettingsPanel.js:1006
 msgid "No scenario"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1006
+#: lib/quickSettingsPanel.js:1009
 #, javascript-format
 msgid "%d%%"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1015
+#: lib/quickSettingsPanel.js:1018
 #, javascript-format
 msgid "Boost — Charging (%d%%)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1020
+#: lib/quickSettingsPanel.js:1023
 #, javascript-format
 msgid "Charging (%s)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1021
+#: lib/quickSettingsPanel.js:1024
 msgid "Charging"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1027
+#: lib/quickSettingsPanel.js:1030
 #, javascript-format
 msgid "Using battery (%s)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1028
+#: lib/quickSettingsPanel.js:1031
 #, javascript-format
 msgid "Discharging (%s)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1030
+#: lib/quickSettingsPanel.js:1033
 msgid "Using battery on AC"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1030
+#: lib/quickSettingsPanel.js:1033
 msgid "Discharging"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1035
+#: lib/quickSettingsPanel.js:1038
 #, javascript-format
 msgid "Not charging (limit: %d%%)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1036
+#: lib/quickSettingsPanel.js:1039
 msgid "Not charging"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1038
+#. Translators: Battery status when fully charged
+#: lib/quickSettingsPanel.js:1042
 msgid "Full"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1062 lib/quickSettingsPanel.js:1101
+#: lib/quickSettingsPanel.js:1066 lib/quickSettingsPanel.js:1105
 msgid "applies automatically"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1064 lib/quickSettingsPanel.js:1102
+#: lib/quickSettingsPanel.js:1068 lib/quickSettingsPanel.js:1106
 msgid "active"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1091
+#: lib/quickSettingsPanel.js:1095
 #, javascript-format
 msgid "%s (%s until %s)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1092
+#: lib/quickSettingsPanel.js:1096
 #, javascript-format
 msgid "%s (until %s)"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1097
+#: lib/quickSettingsPanel.js:1101
 #, javascript-format
 msgid "Scheduled %s until %s"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1098
+#: lib/quickSettingsPanel.js:1102
 #, javascript-format
 msgid "Scheduled until %s"
 msgstr ""
 
-#: lib/quickSettingsPanel.js:1206
+#. Translators: Brief confirmation shown after settings are successfully applied
+#: lib/quickSettingsPanel.js:1211
 msgid "Applied"
 msgstr ""
 
@@ -1355,28 +1375,28 @@ msgstr ""
 msgid "Failed to change force discharge mode"
 msgstr ""
 
-#: lib/stateManager.js:1054
+#: lib/stateManager.js:1052
 msgid "Boost Charge activated — charging to 100%. Auto-stops when full."
 msgstr ""
 
-#: lib/stateManager.js:1107
+#: lib/stateManager.js:1105
 msgid ""
 "Could not restore previous battery mode. Thresholds may still be at boost "
 "levels."
 msgstr ""
 
-#: lib/stateManager.js:1119 lib/stateManager.js:1126
+#: lib/stateManager.js:1117 lib/stateManager.js:1124
 msgid "Boost charge deactivated"
 msgstr ""
 
-#: lib/stateManager.js:1120
+#: lib/stateManager.js:1118
 msgid "Boost charge complete — battery is full"
 msgstr ""
 
-#: lib/stateManager.js:1121
+#: lib/stateManager.js:1119
 msgid "Boost charge timed out — reverting to previous mode"
 msgstr ""
 
-#: lib/stateManager.js:1122
+#: lib/stateManager.js:1120
 msgid "Boost charge stopped — AC power disconnected"
 msgstr ""
