@@ -182,6 +182,17 @@ export default class HaraHachiBuExtension extends Extension {
     disable() {
         console.debug('Hara Hachi Bu: Disabling extension');
 
+        // Warn about persistent thresholds when user disables the extension
+        // (not during lock screen, which also triggers disable)
+        if (Main.sessionMode.currentMode === 'user' &&
+            this._batteryController?.canControlThresholds &&
+            this._stateManager?.currentBatteryMode !== 'full-capacity') {
+            Main.notify(
+                _('Hara Hachi Bu'),
+                _('Battery thresholds remain at current values. Set Full Capacity mode before disabling to reset them.')
+            );
+        }
+
         this._destroyPowerManager();
         Helper.destroyExecCheck();
         ProfileMatcher.resetCache();
