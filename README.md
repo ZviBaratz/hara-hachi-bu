@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ZviBaratz/hara-hachi-bu/actions/workflows/ci.yml/badge.svg)](https://github.com/ZviBaratz/hara-hachi-bu/actions/workflows/ci.yml)
 [![License: GPL-3.0+](https://img.shields.io/badge/License-GPL%203.0+-blue.svg)](LICENSE)
-[![GNOME Shell 46+](https://img.shields.io/badge/GNOME%20Shell-46%20%7C%2047%20%7C%2048-blue)](metadata.json)
+[![GNOME Shell 46+](https://img.shields.io/badge/GNOME%20Shell-46%20%7C%2047%20%7C%2048%20%7C%2049-blue)](metadata.json)
 
 A GNOME Shell extension providing unified Quick Settings control for power profiles and battery charging modes on supported laptops (ThinkPad, Framework, ASUS, etc.).
 
@@ -70,7 +70,7 @@ Use **Max Lifespan** when working at a desk, and switch to **Full Capacity** bef
 
 ## Compatibility
 
-- **GNOME Shell**: 46, 47, 48
+- **GNOME Shell**: 46, 47, 48, 49
 - **Hardware**: Laptops with battery charge threshold support via standard Linux sysfs (e.g., ThinkPad, Framework, some ASUS/Dell)
 - **Power Profiles**: Requires `power-profiles-daemon`
 

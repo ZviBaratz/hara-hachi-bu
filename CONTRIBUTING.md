@@ -5,7 +5,7 @@ Thank you for your interest in contributing! This guide covers development setup
 ## Quick Start
 
 **Prerequisites:**
-- GNOME Shell 46, 47, or 48
+- GNOME Shell 46, 47, 48, or 49
 - `glib-compile-schemas` (from `libglib2.0-dev` or equivalent)
 - `power-profiles-daemon` (for power profile features)
 
@@ -144,7 +144,7 @@ Profiles are now stored exclusively in custom-profiles JSON format.
 
 The extension follows a Controllers → StateManager → UI signal flow. Hardware controllers (PowerProfileController, BatteryThresholdController) detect changes and emit signals. StateManager aggregates these into a unified `state-changed` signal that the Quick Settings panel subscribes to.
 
-See [CLAUDE.md](CLAUDE.md#architecture) for detailed component documentation and implementation notes.
+See [DEVICES.md](DEVICES.md) for supported devices and [README.md](README.md) for feature documentation.
 
 ## Adding Hardware Support
 
@@ -188,7 +188,7 @@ This regenerates `hara-hachi-bu.pot` from all `_()` and `N_()` markers. Commit t
 A few patterns used throughout the codebase that are worth knowing:
 
 - **Async `_destroyed` flag:** Controllers set `this._destroyed = true` at the start of `destroy()`. All async callbacks and promise chains check this flag before accessing object state.
-- **Resource cleanup in `destroy()`:** Timeouts, signal connections, file monitors, and D-Bus proxies must all be cleaned up. See the cleanup checklist in [CLAUDE.md](CLAUDE.md#resource-lifecycle-and-cleanup-checklist).
+- **Resource cleanup in `destroy()`:** Timeouts, signal connections, file monitors, and D-Bus proxies must all be cleaned up. Audit every `connectObject`, `GLib.timeout_add`, and `Gio.FileMonitor` for matching cleanup in the corresponding `destroy()` method.
 - **Threshold write ordering:** When changing battery thresholds, start and end values must be written in the correct order to avoid kernel errors. See `GenericSysfsDevice.setThresholds()`.
 
 ## License

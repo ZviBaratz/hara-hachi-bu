@@ -699,12 +699,17 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 const name = nameRow.get_text().trim();
                 if (!name) {
                     idPreviewLabel.label = _('ID: (enter a name)');
+                    idPreviewLabel.remove_css_class('warning');
                     return;
                 }
                 const id = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
-                idPreviewLabel.label = id.length > 0
-                    ? _('ID: %s').format(id)
-                    : _('ID: (name must contain letters or numbers)');
+                if (id.length > 0) {
+                    idPreviewLabel.label = _('ID: %s').format(id);
+                    idPreviewLabel.remove_css_class('warning');
+                } else {
+                    idPreviewLabel.label = _('ID: (name must contain letters or numbers)');
+                    idPreviewLabel.add_css_class('warning');
+                }
             };
             nameRow.connect('changed', updateIdPreview);
             updateIdPreview();
@@ -744,7 +749,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 const restoreBtn = new Gtk.Button({
                     label: _('Restore'),
                     valign: Gtk.Align.CENTER,
-                    css_classes: ['destructive-action'],
+                    css_classes: ['flat'],
                 });
                 restoreBtn.connect('clicked', () => {
                     const confirmDialog = new Adw.AlertDialog({
