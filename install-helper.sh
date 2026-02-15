@@ -2,7 +2,7 @@
 # Installation script for Hara Hachi Bu helper components
 # Run with: sudo ./install-helper.sh [options]
 
-set -e
+set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

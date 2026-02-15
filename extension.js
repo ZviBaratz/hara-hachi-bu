@@ -21,12 +21,20 @@ import {UIPatcher} from './lib/uiPatcher.js';
 export default class HaraHachiBuExtension extends Extension {
     enable() {
         Helper.initExecCheck();
+
+        // If a previous init is still in-flight (rapid disable/enable cycle),
+        // clear the pending destroy so the in-flight init can complete.
+        // The finally block will not re-destroy since _pendingDestroy is cleared.
+        if (this._initializing) {
+            this._pendingDestroy = false;
+            return;
+        }
+
         this._settings = this.getSettings();
         this._initializing = false;
         this._pendingDestroy = false;
         this._powerManager = null;
         this._uiPatcher = null;
-        this._hideBuiltinId = null;
 
         // Run pending migrations
         ProfileMatcher.runMigrations(this._settings);
@@ -76,13 +84,13 @@ export default class HaraHachiBuExtension extends Extension {
                 this._uiPatcher.hideBuiltinPowerProfile();
 
             // Watch for setting changes
-            this._hideBuiltinId = this._settings.connect('changed::hide-builtin-power-profile', () => {
+            this._settings.connectObject('changed::hide-builtin-power-profile', () => {
                 if (!this._uiPatcher) return;
                 if (this._settings.get_boolean('hide-builtin-power-profile'))
                     this._uiPatcher.hideBuiltinPowerProfile();
                 else
                     this._uiPatcher.showBuiltinPowerProfile();
-            });
+            }, this);
 
             // Show one-time notification if helper script is missing
             if (this._stateManager.batteryNeedsHelper &&
@@ -126,10 +134,8 @@ export default class HaraHachiBuExtension extends Extension {
         }
 
         // Disconnect hide-builtin setting watcher (prevent accumulation on lock/unlock)
-        if (this._hideBuiltinId) {
-            this._settings.disconnect(this._hideBuiltinId);
-            this._hideBuiltinId = null;
-        }
+        if (this._settings)
+            this._settings.disconnectObject(this);
 
         if (this._uiPatcher) {
             this._uiPatcher.destroy();

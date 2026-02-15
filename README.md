@@ -215,7 +215,7 @@ The **Boost Charge** toggle in the Quick Settings menu provides a one-click way 
 - Pauses auto-management during boost
 - Automatically deactivates when:
   - Battery reaches 100%
-  - Safety timeout expires (configurable, default 4 hours)
+  - Safety timeout expires (configurable, default 2 hours)
   - AC power is disconnected
   - You manually change the battery mode
 - On deactivation, auto-management resumes and selects the appropriate profile for current conditions
@@ -302,10 +302,10 @@ gnome-extensions prefs hara-hachi-bu@ZviBaratz
 Configure start/stop charging percentages for each battery mode. Adapts to your hardware — devices with only an end threshold show a simplified view.
 
 ### Profiles
-Create, edit, and delete profiles. Each profile combines a power mode, battery mode, and optional auto-switch rules. Built-in profiles (Docked, Travel) can be customized but not deleted. Profiles can also include a time schedule for automatic activation during specific windows.
+Create, edit, and delete profiles. Each profile combines a power mode, battery mode, and optional auto-switch rules. Built-in profiles (Docked, Travel) can be customized or deleted — use "Restore Default Scenarios" to bring them back. Profiles can also include a time schedule for automatic activation during specific windows.
 
 ### Boost Charge
-Configure the safety timeout for boost charge (1–12 hours, default 4).
+Configure the safety timeout for boost charge (1–12 hours, default 2). The primary stop trigger is reaching 100% — the timeout is a safety net.
 
 ### About
 Shows extension version, helper script installation status, polkit configuration, and detected battery hardware.

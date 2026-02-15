@@ -650,7 +650,9 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
         // Update profile count label
         if (this._profileCountLabel)
-            this._profileCountLabel.label = _('%d / %d scenarios').format(profiles.length, ProfileMatcher.MAX_PROFILES);
+            this._profileCountLabel.label = Gettext.dngettext(
+                'hara-hachi-bu', '%d / %d scenario', '%d / %d scenarios', profiles.length
+            ).format(profiles.length, ProfileMatcher.MAX_PROFILES);
 
         // Disable action buttons when at limit
         const atLimit = profiles.length >= ProfileMatcher.MAX_PROFILES;
