@@ -291,6 +291,28 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             margin_top: 12,
         });
 
+        // Export button
+        const exportButton = new Gtk.Button({
+            label: _('Export All'),
+            css_classes: ['pill'],
+            tooltip_text: _('Export all scenarios to a JSON file'),
+        });
+        exportButton.connect('clicked', () => {
+            this._exportProfiles(window, settings);
+        });
+        profileButtonBox.append(exportButton);
+
+        // Import button
+        const importButton = new Gtk.Button({
+            label: _('Import'),
+            css_classes: ['pill'],
+            tooltip_text: _('Import scenarios from a JSON file'),
+        });
+        importButton.connect('clicked', () => {
+            this._importProfiles(window, settings);
+        });
+        profileButtonBox.append(importButton);
+
         this._addProfileButton = new Gtk.Button({
             label: _('Add Scenario'),
             css_classes: ['pill'],
@@ -1681,5 +1703,230 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 console.error(`Hara Hachi Bu: Delete dialog error: ${e.message}`);
             }
         });
+    }
+
+    async _exportProfiles(window, settings) {
+        const profiles = ProfileMatcher.getCustomProfiles(settings);
+        if (profiles.length === 0) {
+            const dialog = new Adw.AlertDialog({
+                heading: _('Nothing to Export'),
+                body: _('No scenarios to export. Create some scenarios first.'),
+            });
+            dialog.add_response('ok', _('OK'));
+            dialog.present(window);
+            return;
+        }
+
+        const exportData = {
+            version: 1,
+            exported: new Date().toISOString(),
+            profiles: profiles,
+        };
+
+        try {
+            const fileDialog = new Gtk.FileDialog({
+                title: _('Export Scenarios'),
+                initial_name: 'hara-hachi-bu-scenarios.json',
+            });
+
+            const file = await fileDialog.save(window, null);
+            if (!file) return;
+
+            const json = JSON.stringify(exportData, null, 2);
+            const bytes = new GLib.Bytes(new TextEncoder().encode(json));
+            const stream = await file.replace_async(null, false,
+                Gio.FileCreateFlags.REPLACE_DESTINATION, GLib.PRIORITY_DEFAULT, null);
+            await stream.write_bytes_async(bytes, GLib.PRIORITY_DEFAULT, null);
+            await stream.close_async(GLib.PRIORITY_DEFAULT, null);
+
+            const toast = new Adw.Toast({
+                title: Gettext.dngettext(
+                    'hara-hachi-bu',
+                    'Exported %d scenario',
+                    'Exported %d scenarios',
+                    profiles.length
+                ).format(profiles.length),
+                timeout: 3,
+            });
+            window.add_toast(toast);
+        } catch (e) {
+            if (e.matches?.(Gtk.DialogError, Gtk.DialogError.DISMISSED))
+                return; // User cancelled
+            console.error(`Hara Hachi Bu: Export error: ${e.message}`);
+            const dialog = new Adw.AlertDialog({
+                heading: _('Export Failed'),
+                body: e.message,
+            });
+            dialog.add_response('ok', _('OK'));
+            dialog.present(window);
+        }
+    }
+
+    async _importProfiles(window, settings) {
+        try {
+            const filter = new Gtk.FileFilter();
+            filter.add_pattern('*.json');
+            filter.set_name(_('JSON files'));
+
+            const filterList = new Gio.ListStore({item_type: Gtk.FileFilter});
+            filterList.append(filter);
+
+            const fileDialog = new Gtk.FileDialog({
+                title: _('Import Scenarios'),
+                filters: filterList,
+                default_filter: filter,
+            });
+
+            const file = await fileDialog.open(window, null);
+            if (!file) return;
+
+            const [contents] = await file.load_contents_async(null);
+            const text = new TextDecoder().decode(contents);
+
+            let importData;
+            try {
+                importData = JSON.parse(text);
+            } catch {
+                const dialog = new Adw.AlertDialog({
+                    heading: _('Import Failed'),
+                    body: _('The file does not contain valid JSON.'),
+                });
+                dialog.add_response('ok', _('OK'));
+                dialog.present(window);
+                return;
+            }
+
+            if (!importData.version || !Array.isArray(importData.profiles)) {
+                const dialog = new Adw.AlertDialog({
+                    heading: _('Import Failed'),
+                    body: _('The file is not a valid Hara Hachi Bu export.'),
+                });
+                dialog.add_response('ok', _('OK'));
+                dialog.present(window);
+                return;
+            }
+
+            const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
+            const existingIds = new Set(existingProfiles.map(p => p.id));
+
+            const toImport = [];
+            const skippedDuplicate = [];
+            const skippedInvalid = [];
+
+            for (const profile of importData.profiles) {
+                if (!profile || typeof profile !== 'object') {
+                    skippedInvalid.push('(unnamed)');
+                    continue;
+                }
+
+                if (existingIds.has(profile.id)) {
+                    skippedDuplicate.push(profile.name || profile.id);
+                    continue;
+                }
+
+                // Deep-copy to avoid mutating the import data
+                const copy = JSON.parse(JSON.stringify(profile));
+                if (ProfileMatcher.validateProfile(copy) === null) {
+                    skippedInvalid.push(profile.name || profile.id);
+                    continue;
+                }
+
+                toImport.push(copy);
+            }
+
+            if (toImport.length === 0) {
+                let body;
+                if (skippedDuplicate.length > 0)
+                    body = _('All scenarios already exist: %s').format(skippedDuplicate.join(', '));
+                else if (skippedInvalid.length > 0)
+                    body = _('No valid scenarios found in the file.');
+                else
+                    body = _('The file contains no scenarios.');
+
+                const dialog = new Adw.AlertDialog({
+                    heading: _('Nothing to Import'),
+                    body,
+                });
+                dialog.add_response('ok', _('OK'));
+                dialog.present(window);
+                return;
+            }
+
+            // Check profile limit
+            const available = ProfileMatcher.MAX_PROFILES - existingProfiles.length;
+            const importCount = Math.min(toImport.length, available);
+            const limitReached = toImport.length > available;
+
+            // Build summary
+            let bodyParts = [];
+            bodyParts.push(Gettext.dngettext(
+                'hara-hachi-bu',
+                '%d scenario will be imported',
+                '%d scenarios will be imported',
+                importCount
+            ).format(importCount));
+
+            if (skippedDuplicate.length > 0)
+                bodyParts.push(Gettext.dngettext(
+                    'hara-hachi-bu',
+                    '%d skipped (already exists)',
+                    '%d skipped (already exist)',
+                    skippedDuplicate.length
+                ).format(skippedDuplicate.length));
+
+            if (skippedInvalid.length > 0)
+                bodyParts.push(Gettext.dngettext(
+                    'hara-hachi-bu',
+                    '%d skipped (invalid)',
+                    '%d skipped (invalid)',
+                    skippedInvalid.length
+                ).format(skippedInvalid.length));
+
+            if (limitReached)
+                bodyParts.push(_('Limit reached — only the first %d will be imported').format(importCount));
+
+            const confirmDialog = new Adw.AlertDialog({
+                heading: _('Import Scenarios'),
+                body: bodyParts.join('\n'),
+            });
+            confirmDialog.add_response('cancel', _('Cancel'));
+            confirmDialog.add_response('import', _('Import'));
+            confirmDialog.set_response_appearance('import', Adw.ResponseAppearance.SUGGESTED);
+            confirmDialog.set_default_response('import');
+            confirmDialog.set_close_response('cancel');
+
+            confirmDialog.choose(window, null, (dlg, result) => {
+                try {
+                    if (dlg.choose_finish(result) !== 'import')
+                        return;
+
+                    const merged = [...existingProfiles, ...toImport.slice(0, importCount)];
+                    ProfileMatcher.saveCustomProfiles(settings, merged);
+
+                    const toast = new Adw.Toast({
+                        title: Gettext.dngettext(
+                            'hara-hachi-bu',
+                            'Imported %d scenario',
+                            'Imported %d scenarios',
+                            importCount
+                        ).format(importCount),
+                        timeout: 3,
+                    });
+                    window.add_toast(toast);
+                } catch (e) {
+                    console.error(`Hara Hachi Bu: Import save error: ${e.message}`);
+                }
+            });
+        } catch (e) {
+            if (e.matches?.(Gtk.DialogError, Gtk.DialogError.DISMISSED))
+                return;
+            console.error(`Hara Hachi Bu: Import error: ${e.message}`);
+            const dialog = new Adw.AlertDialog({
+                heading: _('Import Failed'),
+                body: e.message,
+            });
+            dialog.add_response('ok', _('OK'));
+            dialog.present(window);
+        }
     }
 }
