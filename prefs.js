@@ -819,10 +819,14 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         // Rule row builder helper arrays
         const paramKeys = Object.values(PARAMETERS).map(p => p.name);
         const paramLabels = Object.values(PARAMETERS).map(p => _(p.label));
-        const opKeys = Object.values(OPERATORS).map(o => o.name);
-        const opLabels = Object.values(OPERATORS).map(o => _(o.label));
 
-        // Function to add a rule row
+        // Operator helpers: build per-type operator lists
+        const getOperatorsForParam = (paramName) => {
+            const paramDef = PARAMETERS[paramName];
+            const paramType = paramDef?.type || 'binary';
+            return Object.values(OPERATORS).filter(o => (o.type || 'binary') === paramType);
+        };
+
         const addRuleRow = (rule = null) => {
             const rowBox = new Gtk.Box({
                 orientation: Gtk.Orientation.HORIZONTAL,
@@ -834,7 +838,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 accessible_role: Gtk.AccessibleRole.GROUP,
             });
 
-            // Parameter dropdown
+            // --- Parameter dropdown ---
             const paramDrop = new Gtk.DropDown({
                 model: Gtk.StringList.new(paramLabels),
                 selected: rule ? Math.max(0, paramKeys.indexOf(rule.param)) : 0,
@@ -843,47 +847,114 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             paramDrop.hexpand = true;
             rowBox.append(paramDrop);
 
-            // Operator dropdown
+            // --- Operator dropdown (dynamic model) ---
+            let currentOpKeys = [];
+            let currentOpLabels = [];
             const opDrop = new Gtk.DropDown({
-                model: Gtk.StringList.new(opLabels),
-                selected: rule ? Math.max(0, opKeys.indexOf(rule.op)) : 0,
+                model: Gtk.StringList.new([]),
                 tooltip_text: _('Condition operator'),
             });
             rowBox.append(opDrop);
 
-            // Value dropdown (populated based on parameter)
+            // --- Value widget: dropdown for binary, SpinButton for numeric ---
             let valueKeys = [];
             let valueLabelsArr = [];
-            const updateValueModel = () => {
-                const paramIdx = paramDrop.selected;
-                const paramName = paramKeys[paramIdx];
-                const param = PARAMETERS[paramName];
-                if (param) {
-                    valueKeys = [...param.values];
-                    valueLabelsArr = param.values.map(v => _(param.valueLabels[v]));
-                } else {
-                    valueKeys = [];
-                    valueLabelsArr = [];
-                }
-                valueDrop.model = Gtk.StringList.new(valueLabelsArr);
-                if (rule && rule.param === paramName) {
-                    const idx = valueKeys.indexOf(rule.value);
-                    valueDrop.selected = idx >= 0 ? idx : 0;
-                } else {
-                    valueDrop.selected = 0;
-                }
-            };
+
             const valueDrop = new Gtk.DropDown({
                 model: Gtk.StringList.new([]),
                 tooltip_text: _('Condition value'),
             });
             valueDrop.hexpand = true;
-            updateValueModel();
+            rowBox.append(valueDrop);
+
+            const valueSpinBox = new Gtk.Box({
+                orientation: Gtk.Orientation.HORIZONTAL,
+                spacing: 4,
+            });
+            valueSpinBox.hexpand = true;
+            const valueSpin = new Gtk.SpinButton({
+                adjustment: new Gtk.Adjustment({
+                    lower: 0, upper: 100, step_increment: 1, page_increment: 5,
+                }),
+                numeric: true,
+                value: rule ? Number(rule.value) || 50 : 50,
+                tooltip_text: _('Threshold value'),
+            });
+            valueSpin.hexpand = true;
+            const unitLabel = new Gtk.Label({
+                label: '%',
+                valign: Gtk.Align.CENTER,
+            });
+            valueSpinBox.append(valueSpin);
+            valueSpinBox.append(unitLabel);
+            rowBox.append(valueSpinBox);
+
+            // --- Update functions ---
+            const updateOperatorModel = () => {
+                const paramName = paramKeys[paramDrop.selected];
+                const ops = getOperatorsForParam(paramName);
+                currentOpKeys = ops.map(o => o.name);
+                currentOpLabels = ops.map(o => _(o.label));
+                opDrop.model = Gtk.StringList.new(currentOpLabels);
+
+                // Restore selection if possible
+                if (rule && rule.param === paramName) {
+                    const idx = currentOpKeys.indexOf(rule.op);
+                    opDrop.selected = idx >= 0 ? idx : 0;
+                } else {
+                    opDrop.selected = 0;
+                }
+            };
+
+            const updateValueWidget = () => {
+                const paramName = paramKeys[paramDrop.selected];
+                const paramDef = PARAMETERS[paramName];
+                const paramType = paramDef?.type || 'binary';
+
+                if (paramType === 'numeric') {
+                    valueDrop.visible = false;
+                    valueSpinBox.visible = true;
+                    // Update range from param definition
+                    if (paramDef.range) {
+                        valueSpin.adjustment.lower = paramDef.range[0];
+                        valueSpin.adjustment.upper = paramDef.range[1];
+                    }
+                    // Set unit label
+                    unitLabel.label = paramDef.unit || '';
+                    // Restore value for numeric
+                    if (rule && rule.param === paramName)
+                        valueSpin.value = Number(rule.value) || 50;
+                } else {
+                    valueDrop.visible = true;
+                    valueSpinBox.visible = false;
+                    // Populate value dropdown
+                    if (paramDef) {
+                        valueKeys = [...paramDef.values];
+                        valueLabelsArr = paramDef.values.map(v => _(paramDef.valueLabels[v]));
+                    } else {
+                        valueKeys = [];
+                        valueLabelsArr = [];
+                    }
+                    valueDrop.model = Gtk.StringList.new(valueLabelsArr);
+                    if (rule && rule.param === paramName) {
+                        const idx = valueKeys.indexOf(rule.value);
+                        valueDrop.selected = idx >= 0 ? idx : 0;
+                    } else {
+                        valueDrop.selected = 0;
+                    }
+                }
+            };
+
+            // Initial setup
+            updateOperatorModel();
+            updateValueWidget();
+
+            // React to parameter change
             paramDrop.connect('notify::selected', () => {
-                updateValueModel();
+                updateOperatorModel();
+                updateValueWidget();
                 onFieldChanged?.();
             });
-            rowBox.append(valueDrop);
 
             // Move up button
             const moveUpBtn = new Gtk.Button({
@@ -938,8 +1009,17 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             const updateAccessibleName = () => {
                 const n = ruleRows.indexOf(rowData) + 1;
                 const pLabel = paramLabels[paramDrop.selected] ?? '';
-                const oLabel = opLabels[opDrop.selected] ?? '';
-                const vLabel = valueLabelsArr[valueDrop.selected] ?? '';
+                const oLabel = currentOpLabels[opDrop.selected] ?? '';
+
+                const paramName = paramKeys[paramDrop.selected];
+                const paramDef = PARAMETERS[paramName];
+                const paramType = paramDef?.type || 'binary';
+                let vLabel;
+                if (paramType === 'numeric')
+                    vLabel = `${Math.round(valueSpin.value)}${paramDef.unit || ''}`;
+                else
+                    vLabel = valueLabelsArr[valueDrop.selected] ?? '';
+
                 rowBox.update_property(
                     [Gtk.AccessibleProperty.LABEL],
                     [_('Condition %d: %s %s %s').format(n, pLabel, oLabel, vLabel)]
@@ -949,8 +1029,15 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             const rowData = {
                 box: rowBox,
                 getParam: () => paramKeys[paramDrop.selected],
-                getOp: () => opKeys[opDrop.selected],
-                getValue: () => valueKeys[valueDrop.selected] ?? null,
+                getOp: () => currentOpKeys[opDrop.selected],
+                getValue: () => {
+                    const paramName = paramKeys[paramDrop.selected];
+                    const paramDef = PARAMETERS[paramName];
+                    const paramType = paramDef?.type || 'binary';
+                    if (paramType === 'numeric')
+                        return String(Math.round(valueSpin.value));
+                    return valueKeys[valueDrop.selected] ?? null;
+                },
                 updateAccessibleName,
                 moveUpBtn,
                 moveDownBtn,
@@ -958,11 +1045,15 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             ruleRows.push(rowData);
             rulesGroup.add(rowBox);
 
-            // Set initial accessible name and update on dropdown changes
+            // Set initial accessible name and update on changes
             updateAccessibleName();
             paramDrop.connect('notify::selected', updateAccessibleName);
             opDrop.connect('notify::selected', updateAccessibleName);
             valueDrop.connect('notify::selected', updateAccessibleName);
+            valueSpin.connect('value-changed', () => {
+                updateAccessibleName();
+                onFieldChanged?.();
+            });
         };
 
         // Add existing rules
