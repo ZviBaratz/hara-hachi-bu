@@ -83,6 +83,7 @@ class ProfileRow extends Adw.ActionRow {
 
 export default class HaraHachiBuPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
+        window.set_default_size(740, -1);
         const settings = this.getSettings();
 
         // Run migration
@@ -270,8 +271,6 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         this._profileListBox = new Gtk.ListBox({
             selection_mode: Gtk.SelectionMode.NONE,
             css_classes: ['boxed-list'],
-            margin_top: 12,
-            margin_bottom: 12,
         });
 
         // Wrap in scrolled window
@@ -280,6 +279,10 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             vexpand: true,
             max_content_height: 400,
             propagate_natural_height: true,
+            margin_top: 12,
+            margin_bottom: 12,
+            margin_start: 12,
+            margin_end: 12,
         });
         profileListGroup.add(scrolled);
 
@@ -714,6 +717,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             css_classes: ['caption', 'dim-label'],
             halign: Gtk.Align.START,
             margin_start: 12,
+            margin_end: 12,
             visible: !isEdit,
         });
         if (!isEdit) {
@@ -1086,6 +1090,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             label: _('Add Condition'),
             halign: Gtk.Align.START,
             margin_start: 12,
+            margin_end: 12,
             margin_top: 6,
         });
         addRuleBtn.connect('clicked', () => {
