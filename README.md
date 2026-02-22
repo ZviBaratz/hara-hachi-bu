@@ -185,6 +185,9 @@ Rules use system parameters to activate profiles automatically:
 | External Display | Connected / Not Connected |
 | Power Source | AC Power / Battery |
 | Lid State | Open / Closed |
+| Battery Level | Above / Below N% |
+
+Battery level rules include a ±2% hysteresis to prevent rapid switching at the threshold boundary.
 
 Profiles can have multiple conditions (all must match). When multiple profiles match, the most specific one wins (most conditions).
 
@@ -302,7 +305,7 @@ gnome-extensions prefs hara-hachi-bu@ZviBaratz
 Configure start/stop charging percentages for each battery mode. Adapts to your hardware — devices with only an end threshold show a simplified view.
 
 ### Profiles
-Create, edit, and delete profiles. Each profile combines a power mode, battery mode, and optional auto-switch rules. Built-in profiles (Docked, Travel) can be customized or deleted — use "Restore Default Scenarios" to bring them back. Profiles can also include a time schedule for automatic activation during specific windows.
+Create, edit, and delete profiles. Each profile combines a power mode, battery mode, and optional auto-switch rules. Built-in profiles (Docked, Travel) can be customized or deleted — use "Restore Default Scenarios" to bring them back. Profiles can also include a time schedule for automatic activation during specific windows. Profiles can be exported to a JSON file and imported on another machine — use the Export and Import buttons at the top of the Profiles page.
 
 ### Boost Charge
 Configure the safety timeout for boost charge (1–12 hours, default 2). The primary stop trigger is reaching 100% — the timeout is a safety net.

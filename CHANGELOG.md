@@ -13,13 +13,15 @@ First public release of Hara Hachi Bu, a GNOME Shell extension for unified Quick
 - **Power Profile Management**: Unified Quick Settings control for Performance, Balanced, and Power Saver profiles via power-profiles-daemon
 - **Battery Charging Thresholds**: Configure start and end charging thresholds for supported laptops (ThinkPad, Framework, ASUS, etc.)
 - **Predefined Profiles**: Built-in "Docked" and "Travel" profiles with automatic detection based on display and power source
-- **Rule-Based Automatic Switching**: Create custom profiles with rules that auto-apply based on system parameters (external display, AC power, lid state)
+- **Rule-Based Automatic Switching**: Create custom profiles with rules that auto-apply based on system parameters (external display, AC power, lid state, battery level)
+- **Battery Level Rules**: Activate profiles when battery level rises above or falls below a threshold percentage. Includes ±2% hysteresis to prevent rapid switching at the boundary
 - **Force Discharge**: Enable force discharge mode on supported hardware to manage battery health
 - **Multi-Battery Support**: Support for systems with multiple batteries (BAT0, BAT1, BAT2, BAT3)
 - **End-Only Device Support**: Works on devices with only end-charge threshold (no start threshold)
 - **Battery Health Monitoring**: Display battery capacity and charging status in Quick Settings
 - **External Change Detection**: Monitors external modifications to thresholds and power profiles
-- **Preferences UI**: Configure battery modes, manage custom profiles, control visibility settings
+- **Preferences UI**: Configure battery modes, manage custom profiles, control visibility settings. Rule editor uses a SpinButton for numeric parameters (battery level)
+- **Profile Export/Import**: Export profiles to a JSON file and import them on another machine via the Scenarios preferences page
 - **Polkit Integration**: Secure privileged operations for battery threshold writes via pkexec
 
 ### Security
@@ -71,6 +73,8 @@ First public release of Hara Hachi Bu, a GNOME Shell extension for unified Quick
 - Threshold format display adapted for end-only devices (shows end threshold only)
 - Prominent error notifications for misconfigured profiles
 - Enhanced profile validation with clear error messages
+- Boost charge countdown timer displayed in Quick Settings panel during active boost
+- Battery mode "Moderate" renamed to "Balanced" for clarity
 
 ### Code Quality
 
