@@ -141,6 +141,8 @@ sudo ./install-helper.sh --uninstall
 
 ## Profiles & Auto-Switching
 
+![Quick Settings panel](screenshots/quick-settings.gif)
+
 ### Built-in Profiles
 
 | Profile | Power Mode | Battery Mode | Force Discharge | Auto-Switch Rule |
@@ -215,8 +217,6 @@ The **Boost Charge** toggle in the Quick Settings menu provides a one-click way 
 When you manually change settings while auto-switching is active, auto-management pauses. It resumes when:
 - A monitored parameter changes (display connected, power source switches, lid opens/closes)
 - You click "Resume" in the Quick Settings menu
-
-![Quick Settings panel](screenshots/quick-settings.gif)
 
 ## Preferences
 
