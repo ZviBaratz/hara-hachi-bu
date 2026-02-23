@@ -139,30 +139,6 @@ cd ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
 sudo ./install-helper.sh --uninstall
 ```
 
-## Security Model
-
-This extension uses polkit for privilege escalation when modifying battery thresholds.
-
-### Polkit Rules (Modern)
-
-The rules file (`10-hara-hachi-bu.rules`) allows users in the `sudo` group to run the helper script without password prompts, but **only** for:
-- Local sessions (not remote/SSH)
-- Active sessions (currently logged in)
-
-This is intentional for UX - constantly prompting for password when changing power modes would be disruptive. The trade-off is that any process running as your user in an active local session can change battery thresholds.
-
-### Polkit Policy (Legacy)
-
-The policy file allows active local users to run the helper without authentication (`<allow_active>yes</allow_active>`). Remote and inactive sessions require admin authentication.
-
-### Helper Script Security
-
-The `hhb-power-ctl` script:
-- Only accepts specific commands (BAT0 through BAT3: END, START, END_START, START_END, FORCE_DISCHARGE)
-- Validates all threshold values (must be integers 0-100)
-- Uses `set -eu` to fail fast on errors
-- Only writes to specific sysfs paths
-
 ## Profiles & Auto-Switching
 
 ### Built-in Profiles
@@ -213,6 +189,13 @@ Schedule adds +1 to profile specificity, so a profile with 2 rules + active sche
 
 Create a profile named "Morning Charge" with battery mode set to Full Capacity, enable auto-managed, and set a schedule for Weekdays 05:30–08:00. The extension charges to full overnight and reverts to your normal docked profile after 8am.
 
+**Conflict rules:**
+
+- Same rules + one has a schedule, one does not → **No conflict** (scheduled wins during its window)
+- Same rules + both scheduled with non-overlapping times → **No conflict**
+- Same rules + both scheduled with overlapping times → **Conflict** (adjust time ranges to fix)
+- Same rules + both unscheduled → **Conflict** (differentiate with rules or add a schedule)
+
 ### Boost Charge
 
 The **Boost Charge** toggle in the Quick Settings menu provides a one-click way to temporarily charge to 100%:
@@ -233,67 +216,7 @@ When you manually change settings while auto-switching is active, auto-managemen
 - A monitored parameter changes (display connected, power source switches, lid opens/closes)
 - You click "Resume" in the Quick Settings menu
 
-### Menu Layout
-
-```
-+--------------------------------------+
-| [icon] Hara Hachi Bu                 |
-|         Docked                       | <- Shows active profile
-+--------------------------------------+
-| PROFILE                              |
-| * Docked                             |
-|   Travel                             |
-+--------------------------------------+
-| POWER MODE                           |
-| * Performance                        |
-|   Balanced                           |
-|   Power Saver                        |
-+--------------------------------------+
-| BATTERY MODE                         |
-|   Full Capacity (95-100%)            |
-| * Max Lifespan (55-60%)              |
-|   Balanced (75-80%)                  |
-+--------------------------------------+
-| Battery: 67% - Charging inhibited    |
-+--------------------------------------+
-| [switch] Force Discharge             |
-+--------------------------------------+
-| [switch] Boost Charge                |
-+--------------------------------------+
-```
-
 ![Quick Settings panel](screenshots/quick-settings.gif)
-
-## Creating Time-Based Profile Variants
-
-You can create time-based variants of existing profiles that apply during specific windows, without triggering rule conflicts:
-
-**Example: Docked + Morning Charging**
-
-1. **Base profile — "Docked"**
-   - Rules: External Display connected + AC Power
-   - Settings: Performance, Max Lifespan (60%), Force Discharge On
-   - Schedule: None (always active when rules match)
-
-2. **Time variant — "Morning Charging"**
-   - Rules: Same as Docked (External Display + AC Power)
-   - Settings: Performance, Full Capacity (100%), Force Discharge Off
-   - Schedule: Mon–Fri 07:00–09:00
-
-**Result:** During weekday mornings the laptop charges to full so it's ready to unplug. Outside those hours the base Docked profile keeps the battery at 60%.
-
-**How it works:**
-
-- When two profiles share identical rules, a scheduled variant is automatically considered more specific than the unscheduled base.
-- During the schedule window the variant wins; outside it the base profile applies as usual.
-- No manual specificity calculations are needed — just add the same rules plus a schedule.
-
-**Conflict prevention rules:**
-
-- Same rules + one has a schedule, one does not → **No conflict** (scheduled wins during its window)
-- Same rules + both scheduled with non-overlapping times → **No conflict**
-- Same rules + both scheduled with overlapping times → **Conflict** (adjust time ranges to fix)
-- Same rules + both unscheduled → **Conflict** (differentiate with rules or add a schedule)
 
 ## Preferences
 
@@ -310,10 +233,10 @@ gnome-extensions prefs hara-hachi-bu@ZviBaratz
 ### Thresholds
 Configure start/stop charging percentages for each battery mode. Adapts to your hardware — devices with only an end threshold show a simplified view.
 
-![Preferences Scenarios page](screenshots/preferences-scenarios.gif)
-
 ### Profiles
 Create, edit, and delete profiles. Each profile combines a power mode, battery mode, and optional auto-switch rules. Built-in profiles (Docked, Travel) can be customized or deleted — use "Restore Default Scenarios" to bring them back. Profiles can also include a time schedule for automatic activation during specific windows. Profiles can be exported to a JSON file and imported on another machine — use the Export and Import buttons at the top of the Profiles page.
+
+![Preferences Scenarios page](screenshots/preferences-scenarios.gif)
 
 ### Boost Charge
 Configure the safety timeout for boost charge (1–12 hours, default 2). The primary stop trigger is reaching 100% — the timeout is a safety net.
@@ -348,6 +271,30 @@ At minimum, `charge_control_end_threshold` is required; `charge_control_start_th
 1. Verify `power-profiles-daemon` is installed and running: `systemctl status power-profiles-daemon`
 2. Check available profiles: `powerprofilesctl list`
 3. If the daemon is not installed, install it with your package manager (e.g., `sudo apt install power-profiles-daemon`)
+
+## Security Model
+
+This extension uses polkit for privilege escalation when modifying battery thresholds.
+
+### Polkit Rules (Modern)
+
+The rules file (`10-hara-hachi-bu.rules`) allows users in the `sudo` group to run the helper script without password prompts, but **only** for:
+- Local sessions (not remote/SSH)
+- Active sessions (currently logged in)
+
+This is intentional for UX - constantly prompting for password when changing power modes would be disruptive. The trade-off is that any process running as your user in an active local session can change battery thresholds.
+
+### Polkit Policy (Legacy)
+
+The policy file allows active local users to run the helper without authentication (`<allow_active>yes</allow_active>`). Remote and inactive sessions require admin authentication.
+
+### Helper Script Security
+
+The `hhb-power-ctl` script:
+- Only accepts specific commands (BAT0 through BAT3: END, START, END_START, START_END, FORCE_DISCHARGE)
+- Validates all threshold values (must be integers 0-100)
+- Uses `set -eu` to fail fast on errors
+- Only writes to specific sysfs paths
 
 ## Building from Source
 
