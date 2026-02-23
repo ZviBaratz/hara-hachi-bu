@@ -6,11 +6,11 @@ hide:
 ---
 
 <div class="hhb-hero">
+  <img src="assets/hara-hachi-bu.png" alt="Hara Hachi Bu" class="hhb-hero-logo">
   <p class="hhb-hero-kanji">腹八分目</p>
   <h1>Hara Hachi Bu</h1>
   <p class="hhb-hero-tagline">
-    Unified Quick Settings control for power profiles and battery charging on GNOME Shell —
-    inspired by the Okinawan art of intentional restraint.
+    Unified Quick Settings control for power profiles and battery charging on GNOME Shell.
   </p>
   <div class="hhb-hero-buttons">
     <a href="installation/" class="md-button md-button--primary">Get Started</a>
