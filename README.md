@@ -6,7 +6,7 @@
 
 A GNOME Shell extension providing unified Quick Settings control for power profiles and battery charging modes on supported laptops (ThinkPad, Framework, ASUS, etc.).
 
-![Quick Settings panel screenshot](screenshots/quick-settings.png)
+![Quick Settings panel](screenshots/quick-settings.gif)
 
 > **Why "Hara Hachi Bu"?** 腹八分目 (*hara hachi bu*) is an Okinawan practice of eating until you're 80% full — a philosophy of intentional restraint that promotes longevity. This extension applies the same principle to your laptop battery: stop charging at 80% instead of 100% to extend its lifespan.
 
@@ -303,6 +303,8 @@ gnome-extensions prefs hara-hachi-bu@ZviBaratz
 
 ### Thresholds
 Configure start/stop charging percentages for each battery mode. Adapts to your hardware — devices with only an end threshold show a simplified view.
+
+![Preferences Scenarios page](screenshots/preferences-scenarios.gif)
 
 ### Profiles
 Create, edit, and delete profiles. Each profile combines a power mode, battery mode, and optional auto-switch rules. Built-in profiles (Docked, Travel) can be customized or deleted — use "Restore Default Scenarios" to bring them back. Profiles can also include a time schedule for automatic activation during specific windows. Profiles can be exported to a JSON file and imported on another machine — use the Export and Import buttons at the top of the Profiles page.
