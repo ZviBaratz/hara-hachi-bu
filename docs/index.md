@@ -1,10 +1,26 @@
-# Hara Hachi Bu
+---
+title: Hara Hachi Bu
+hide:
+  - navigation
+  - toc
+---
 
-**Unified Quick Settings control for power profiles and battery charging on GNOME Shell.**
+<div class="hhb-hero">
+  <p class="hhb-hero-kanji">腹八分目</p>
+  <h1>Hara Hachi Bu</h1>
+  <p class="hhb-hero-tagline">
+    Unified Quick Settings control for power profiles and battery charging on GNOME Shell —
+    inspired by the Okinawan art of intentional restraint.
+  </p>
+  <div class="hhb-hero-buttons">
+    <a href="installation/" class="md-button md-button--primary">Get Started</a>
+    <a href="quick-start/" class="md-button">Quick Start →</a>
+  </div>
+</div>
 
-A GNOME Shell extension for ThinkPad, Framework, ASUS, and any laptop with standard Linux battery controls. One menu to manage everything.
+A GNOME Shell extension for ThinkPad, Framework, ASUS, and any laptop with standard Linux battery controls. One menu to manage everything: power profiles, charging thresholds, named profiles, auto-switch rules, and scheduled charging windows.
 
-> **Why "Hara Hachi Bu"?** 腹八分目 (*hara hachi bu*) is an Okinawan practice of eating until you're 80% full — a philosophy of intentional restraint that promotes longevity. This extension applies the same principle to your laptop battery: stop charging before 100% to extend its lifespan.
+> **Why "Hara Hachi Bu"?** 腹八分目 is an Okinawan practice of eating until you're 80% full — a philosophy of intentional restraint that promotes longevity. This extension applies the same principle to your laptop battery: stop charging before 100% to extend its lifespan.
 
 ---
 
@@ -14,7 +30,7 @@ Hara Hachi Bu adds a unified section to your GNOME Quick Settings panel where yo
 
 - **Switch power profiles** — Performance, Balanced, Power Saver
 - **Control battery charging** — limit charge to 60%, 80%, or 100%
-- **Activate profiles** — named combinations like Docked or Travel
+- **Activate scenarios** — named combinations like Docked or Travel
 - **Automate everything** — rules based on display, power source, lid, or battery level
 - **Schedule profiles** — charge to full on weekday mornings, revert automatically
 - **Boost charge** — one-click to 100% with automatic revert
@@ -25,7 +41,7 @@ Hara Hachi Bu adds a unified section to your GNOME Quick Settings panel where yo
 |---------|-------------|
 | Power Profiles | Performance / Balanced / Power Saver via `power-profiles-daemon` |
 | Battery Modes | Full Capacity (95–100%), Balanced (75–80%), Max Lifespan (55–60%) |
-| Custom Profiles | Named combinations of power + battery mode + optional force discharge |
+| Custom Scenarios | Named combinations of power + battery mode + optional force discharge |
 | Rule-Based Auto-Switch | External display, power source, lid state, battery level |
 | Scheduled Profiles | Per-day + time range, overnight support, DST-safe |
 | Boost Charge | AC-only, auto-reverts on full battery / timeout / AC disconnect |
@@ -50,7 +66,7 @@ See [Installation](installation.md) for full details — manual install, polkit 
 |------|------|
 | New user, first time setup | [Quick Start](quick-start.md) |
 | Understand battery modes and the science | [Battery Modes](user-guide/battery-modes.md) |
-| Set up Docked / Travel profiles | [Profiles](user-guide/profiles.md) |
+| Set up Docked / Travel scenarios | [Scenarios](user-guide/profiles.md) |
 | Auto-switch based on display or power source | [Auto-Switch Rules](user-guide/rules.md) |
 | Schedule charging windows | [Scheduled Profiles](user-guide/schedules.md) |
 | Configure thresholds and preferences | [Preferences](preferences.md) |

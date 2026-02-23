@@ -7,25 +7,30 @@ edit_uri: edit/main/docs/
 
 theme:
   name: material
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: teal
+      primary: teal
+      accent: light-green
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: teal
+      primary: teal
+      accent: light-green
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
   features:
     - navigation.tabs
     - navigation.sections
-    - navigation.expand
+    - navigation.indexes
     - navigation.top
     - search.suggest
     - search.highlight
@@ -33,6 +38,9 @@ theme:
     - content.code.copy
   icon:
     repo: fontawesome/brands/github
+
+extra_css:
+  - stylesheets/extra.css
 
 nav:
   - Home: index.md
