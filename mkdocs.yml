@@ -1,0 +1,77 @@
+site_name: Hara Hachi Bu
+site_description: Unified Quick Settings control for power profiles and battery charging on GNOME Shell
+site_url: https://ZviBaratz.github.io/hara-hachi-bu
+repo_url: https://github.com/ZviBaratz/hara-hachi-bu
+repo_name: ZviBaratz/hara-hachi-bu
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quick Start: quick-start.md
+  - User Guide:
+      - Overview: user-guide/index.md
+      - Battery Modes: user-guide/battery-modes.md
+      - Profiles: user-guide/profiles.md
+      - Auto-Switch Rules: user-guide/rules.md
+      - Scheduled Profiles: user-guide/schedules.md
+      - Manual Override: user-guide/manual-override.md
+  - Preferences: preferences.md
+  - Hardware:
+      - Compatibility: hardware/compatibility.md
+      - Troubleshooting: hardware/troubleshooting.md
+  - Contributing: contributing.md
+  - Security: security.md
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+exclude_docs: plans/**
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ZviBaratz/hara-hachi-bu
