@@ -4,6 +4,8 @@ A schedule adds a time window to a profile. When the current time falls within t
 
 ## Setting Up a Schedule
 
+![Schedule editor in Preferences → Scenarios](../assets/preferences-scenarios.gif)
+
 In **Preferences → Scenarios**, select a profile and enable the **Schedule** toggle. Configure:
 
 - **Days** — select individual days (Mon–Sun) or use quick-select buttons: Weekdays, Weekends, All

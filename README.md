@@ -25,10 +25,6 @@ A GNOME Shell extension providing unified Quick Settings control for power profi
 - **Battery Health Monitoring**: Color-coded maximum capacity display
 - **Force Discharge**: Manual battery discharge control (on supported hardware)
 
-![Quick Settings panel](screenshots/quick-settings.gif)
-
-![Preferences Scenarios page](screenshots/preferences-scenarios.gif)
-
 ## Installation
 
 ```bash

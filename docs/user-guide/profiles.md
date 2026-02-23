@@ -27,6 +27,8 @@ Create your own profiles in **Preferences → Scenarios**. Each profile combines
 
 ### Creating a Profile
 
+![Preferences Scenarios page](../assets/preferences-scenarios.gif)
+
 1. Open Preferences → Scenarios
 2. Click the **+** button
 3. Set the name, power mode, and battery mode

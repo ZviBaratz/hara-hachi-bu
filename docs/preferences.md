@@ -8,6 +8,8 @@ gnome-extensions prefs hara-hachi-bu@ZviBaratz
 
 Or find it in GNOME Extensions app → Hara Hachi Bu → Settings.
 
+![Preferences window — General tab](assets/preferences.png)
+
 ## General
 
 ### User Interface

@@ -41,6 +41,8 @@ Click the system tray area in the top-right corner of your screen to open Quick 
 - Battery mode selector (Full Capacity / Balanced / Max Lifespan)
 - Battery health and status information
 
+![Quick Settings panel](assets/quick-settings.gif)
+
 ## Step 4: Try a Profile
 
 If you're at a desk with an external display connected, click **Docked**. The extension will:
