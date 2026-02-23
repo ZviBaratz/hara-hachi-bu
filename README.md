@@ -226,20 +226,17 @@ gnome-extensions prefs hara-hachi-bu@ZviBaratz
 ```
 
 ### General
-- **UI**: Show/hide system indicator, force discharge toggle, built-in power profile indicator
-- **Battery Health**: Enable health display with configurable severity threshold
-- **Auto-Management**: Toggle auto-switch and resume-on-state-change behavior
+- **User Interface**: Show/hide system indicator, force discharge toggle, built-in power profile indicator; battery health display with configurable severity threshold
+- **Battery Management**: Toggle automatic discharge to threshold; configure boost charge safety timeout (1–12 hours, default 2 — the primary stop trigger is reaching 100%)
+- **Automatic Scenario Switching**: Enable auto-switch; toggle resume-on-state-change behavior
 
 ### Thresholds
 Configure start/stop charging percentages for each battery mode. Adapts to your hardware — devices with only an end threshold show a simplified view.
 
-### Profiles
-Create, edit, and delete profiles. Each profile combines a power mode, battery mode, and optional auto-switch rules. Built-in profiles (Docked, Travel) can be customized or deleted — use "Restore Default Scenarios" to bring them back. Profiles can also include a time schedule for automatic activation during specific windows. Profiles can be exported to a JSON file and imported on another machine — use the Export and Import buttons at the top of the Profiles page.
+### Scenarios
+Create, edit, and delete scenarios. Each scenario combines a power mode, battery mode, and optional auto-switch rules. Built-in scenarios (Docked, Travel) can be customized or deleted — use "Restore Default Scenarios" to bring them back. Scenarios can also include a time schedule for automatic activation during specific windows. Scenarios can be exported to a JSON file and imported on another machine — use the Export and Import buttons at the top of the Scenarios page.
 
 ![Preferences Scenarios page](screenshots/preferences-scenarios.gif)
-
-### Boost Charge
-Configure the safety timeout for boost charge (1–12 hours, default 2). The primary stop trigger is reaching 100% — the timeout is a safety net.
 
 ### About
 Shows extension version, helper script installation status, polkit configuration, and detected battery hardware.
