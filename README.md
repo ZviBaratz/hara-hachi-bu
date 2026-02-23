@@ -1,12 +1,14 @@
-# Hara Hachi Bu
-
 <p align="center">
   <img src="assets/hara-hachi-bu.png" alt="Hara Hachi Bu" width="480">
 </p>
 
-[![CI](https://github.com/ZviBaratz/hara-hachi-bu/actions/workflows/ci.yml/badge.svg)](https://github.com/ZviBaratz/hara-hachi-bu/actions/workflows/ci.yml)
-[![License: GPL-3.0+](https://img.shields.io/badge/License-GPL%203.0+-blue.svg)](LICENSE)
-[![GNOME Shell 46+](https://img.shields.io/badge/GNOME%20Shell-46%20%7C%2047%20%7C%2048%20%7C%2049-blue)](metadata.json)
+<h1 align="center">Hara Hachi Bu</h1>
+
+<p align="center">
+  <a href="https://github.com/ZviBaratz/hara-hachi-bu/actions/workflows/ci.yml"><img src="https://github.com/ZviBaratz/hara-hachi-bu/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL%203.0+-blue.svg" alt="License: GPL-3.0+"></a>
+  <a href="metadata.json"><img src="https://img.shields.io/badge/GNOME%20Shell-46%20%7C%2047%20%7C%2048%20%7C%2049-blue" alt="GNOME Shell 46+"></a>
+</p>
 
 A GNOME Shell extension providing unified Quick Settings control for power profiles and battery charging modes on supported laptops (ThinkPad, Framework, ASUS, etc.).
 
