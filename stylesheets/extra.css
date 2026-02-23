@@ -7,6 +7,12 @@
   border-bottom: 1px solid var(--md-default-fg-color--lightest);
 }
 
+.hhb-hero-logo {
+  width: 260px;
+  max-width: 70%;
+  margin-bottom: 1.75rem;
+}
+
 .hhb-hero-kanji {
   font-size: 3.5rem;
   line-height: 1;
