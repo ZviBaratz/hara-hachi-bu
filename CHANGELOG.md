@@ -4,7 +4,7 @@ All notable changes to Hara Hachi Bu are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/).
 
-## [1.0.0] — 2026-02-09
+## [1.0.0] — 2026-02-23
 
 First public release of Hara Hachi Bu, a GNOME Shell extension for unified Quick Settings control of power profiles and battery charging thresholds.
 
