@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/hara-hachi-bu.png" alt="Hara Hachi Bu" width="480">
+  <img src="assets/hara-hachi-bu.png" alt="Hara Hachi Bu" width="360">
 </p>
 
 <h1 align="center">Hara Hachi Bu</h1>
