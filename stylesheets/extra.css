@@ -1,0 +1,107 @@
+/* ─── Hero section ──────────────────────────────────────── */
+
+.hhb-hero {
+  text-align: center;
+  padding: 4.5rem 2rem 3.5rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.hhb-hero-kanji {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin: 0 0 0.4rem;
+  opacity: 0.85;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  color: var(--md-primary-fg-color);
+}
+
+.hhb-hero h1 {
+  font-size: 2.2rem !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  margin: 0.1rem 0 1.1rem !important;
+  border-bottom: none !important;
+  padding: 0 !important;
+  color: var(--md-default-fg-color) !important;
+}
+
+.hhb-hero-tagline {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  opacity: 0.72;
+  max-width: 580px;
+  margin: 0 auto 2.2rem;
+}
+
+.hhb-hero-buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Subtle gradient tint behind hero */
+[data-md-color-scheme="default"] .hhb-hero {
+  background: linear-gradient(
+    160deg,
+    rgba(0, 150, 136, 0.07) 0%,
+    transparent 55%
+  );
+}
+
+[data-md-color-scheme="slate"] .hhb-hero {
+  background: linear-gradient(
+    160deg,
+    rgba(0, 150, 136, 0.13) 0%,
+    transparent 55%
+  );
+}
+
+/* ─── General polish ────────────────────────────────────── */
+
+/* Tighten code inside paragraphs */
+.md-typeset :not(pre) > code {
+  padding: 0.05em 0.35em;
+  font-size: 0.83em;
+}
+
+/* Tables: slightly smaller, better for dense reference tables */
+.md-typeset table:not([class]) {
+  font-size: 0.88rem;
+}
+
+/* Admonition important: use accent color for left border */
+.md-typeset .admonition.important,
+.md-typeset details.important {
+  border-color: var(--md-accent-fg-color);
+}
+
+/* Blockquotes: gentle left accent */
+.md-typeset blockquote {
+  border-left-color: var(--md-primary-fg-color);
+  opacity: 0.9;
+}
+
+/* Primary buttons: slightly more contrast */
+.md-button--primary {
+  background-color: var(--md-primary-fg-color) !important;
+  border-color: var(--md-primary-fg-color) !important;
+}
+
+/* ─── Narrow the hero on small screens ──────────────────── */
+
+@media screen and (max-width: 600px) {
+  .hhb-hero {
+    padding: 3rem 1rem 2.5rem;
+  }
+
+  .hhb-hero-kanji {
+    font-size: 2.5rem;
+  }
+
+  .hhb-hero h1 {
+    font-size: 1.75rem !important;
+  }
+}
