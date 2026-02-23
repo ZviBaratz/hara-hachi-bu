@@ -12,8 +12,6 @@
 
 A GNOME Shell extension providing unified Quick Settings control for power profiles and battery charging modes on supported laptops (ThinkPad, Framework, ASUS, etc.).
 
-![Quick Settings panel](screenshots/quick-settings.gif)
-
 > **Why "Hara Hachi Bu"?** 腹八分目 (*hara hachi bu*) is an Okinawan practice of eating until you're 80% full — a philosophy of intentional restraint that promotes longevity. This extension applies the same principle to your laptop battery: stop charging at 80% instead of 100% to extend its lifespan.
 
 ## Features
@@ -263,6 +261,8 @@ When you manually change settings while auto-switching is active, auto-managemen
 | [switch] Boost Charge                |
 +--------------------------------------+
 ```
+
+![Quick Settings panel](screenshots/quick-settings.gif)
 
 ## Creating Time-Based Profile Variants
 
