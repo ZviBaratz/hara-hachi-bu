@@ -39,14 +39,14 @@ On devices with only end threshold support (some ASUS models), only the maximum 
 
 Default ranges:
 
-| Mode | Start | End |
-|------|-------|-----|
-| Full Capacity | 95% | 100% |
-| Balanced | 75% | 80% |
-| Max Lifespan | 55% | 60% |
+| Mode          | Start | End  |
+| ------------- | ----- | ---- |
+| Full Capacity | 95%   | 100% |
+| Balanced      | 75%   | 80%  |
+| Max Lifespan  | 55%   | 60%  |
 
 !!! tip
-    The start threshold should always be at least 5% below the end threshold. If you set them too close together, the battery won't start charging until it drops very low.
+The start threshold should always be at least 5% below the end threshold. If you set them too close together, the battery won't start charging until it drops very low.
 
 ## Scenarios
 

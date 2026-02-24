@@ -61,11 +61,11 @@ Remote and inactive sessions require admin authentication (or are blocked entire
 
 1. Visit: [github.com/ZviBaratz/hara-hachi-bu/security/advisories/new](https://github.com/ZviBaratz/hara-hachi-bu/security/advisories/new)
 2. Provide:
-   - **Description**: Clear explanation of the issue
-   - **Reproduction steps**: Steps to reproduce the vulnerability
-   - **Affected versions**: Which extension versions are impacted
-   - **Potential impact**: What an attacker could accomplish
-   - **Suggested fix** (optional): If you have a mitigation in mind
+    - **Description**: Clear explanation of the issue
+    - **Reproduction steps**: Steps to reproduce the vulnerability
+    - **Affected versions**: Which extension versions are impacted
+    - **Potential impact**: What an attacker could accomplish
+    - **Suggested fix** (optional): If you have a mitigation in mind
 
 ### Response Timeline
 

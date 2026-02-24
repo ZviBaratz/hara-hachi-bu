@@ -98,7 +98,7 @@ First public release of Hara Hachi Bu, a GNOME Shell extension for unified Quick
 
 ### Translations
 
-- Support for i18n via gettext with N_() markers for compile-time extraction
+- Support for i18n via gettext with N\_() markers for compile-time extraction
 - Proper translation handling for dual-context modules (extension + preferences)
 - Translated error messages and user-facing strings
 - RTL-safe styling in preferences and Quick Settings UI

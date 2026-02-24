@@ -9,7 +9,7 @@ The extension uses a `DeviceManager` to detect and instantiate the appropriate d
 - **`lib/device/BaseDevice.js`**: The abstract base class defining the interface.
 - **`lib/device/DeviceManager.js`**: The factory that selects the correct driver.
     - `lib/device/GenericSysfsDevice.js`: The default implementation for devices using standard Linux kernel battery interfaces (e.g., ThinkPads, Framework, ASUS). It supports devices with both start/end thresholds, as well as devices with only end thresholds.
-      - **Auto-detection**: Automatically checks for `BAT0` and `BAT1` (in that order), using the first one that supports charge thresholds.
+        - **Auto-detection**: Automatically checks for `BAT0` and `BAT1` (in that order), using the first one that supports charge thresholds.
 
 ## Steps to Add a New Device
 
@@ -17,7 +17,7 @@ The extension uses a `DeviceManager` to detect and instantiate the appropriate d
     - If your device exposes `/sys/class/power_supply/BAT0/charge_control_end_threshold`, it is likely already supported by `GenericSysfsDevice.js`.
     - Devices with both `charge_control_start_threshold` and `charge_control_end_threshold` get full threshold control.
     - Devices with only `charge_control_end_threshold` (e.g., some ASUS laptops) are supported with end-only control.
-      - **Note**: End-only devices support battery mode auto-detection via end threshold range matching. The mode indicator reflects the current state based on the end threshold value.
+        - **Note**: End-only devices support battery mode auto-detection via end threshold range matching. The mode indicator reflects the current state based on the end threshold value.
     - Only create a new file if your device uses a completely different mechanism (e.g., a specific kernel module with non-standard paths).
 
 2.  **Create a new device file** in `lib/device/` (if needed), e.g., `MyLegacyLaptop.js`.
@@ -34,27 +34,30 @@ The extension uses a `DeviceManager` to detect and instantiate the appropriate d
 ## Example Implementation
 
 ```javascript
-import { BaseDevice } from './BaseDevice.js';
+import {BaseDevice} from './BaseDevice.js';
 
-export const MyLaptop = GObject.registerClass({
-    GTypeName: 'HHBMyLaptopDevice',
-}, class MyLaptop extends BaseDevice {
-    async initialize() {
-        // Check for specific files or DMI vendor strings
-        // Return true if compatible
-    }
+export const MyLaptop = GObject.registerClass(
+    {
+        GTypeName: 'HHBMyLaptopDevice',
+    },
+    class MyLaptop extends BaseDevice {
+        async initialize() {
+            // Check for specific files or DMI vendor strings
+            // Return true if compatible
+        }
 
-    static isSupported() {
-        // Return true if this is a MyLaptop
-        return false;
-    }
+        static isSupported() {
+            // Return true if this is a MyLaptop
+            return false;
+        }
 
-    async setThresholds(start, end) {
-        // Write to sysfs
-        // You may need to extend the 'hhb-power-ctl' helper script
-        // if root permissions are required.
+        async setThresholds(start, end) {
+            // Write to sysfs
+            // You may need to extend the 'hhb-power-ctl' helper script
+            // if root permissions are required.
+        }
     }
-});
+);
 ```
 
 ## Extending the Helper Script
@@ -81,6 +84,7 @@ To test the UI and logic without access to specific hardware, you can use the **
 ### Disabling Mock Mode
 
 Simply remove the marker file:
+
 ```bash
 rm ~/.config/hara-hachi-bu/use_mock
 ```

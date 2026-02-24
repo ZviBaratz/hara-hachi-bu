@@ -1,24 +1,24 @@
 name: Deploy Docs
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
+    push:
+        branches: [main]
+        paths:
+            - 'docs/**'
+            - 'mkdocs.yml'
 
 permissions:
-  contents: write
+    contents: write
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.x
-      - run: pip install mkdocs-material mkdocs-minify-plugin
-      - run: mkdocs gh-deploy --force
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: 3.x
+            - run: pip install mkdocs-material mkdocs-minify-plugin
+            - run: mkdocs gh-deploy --force

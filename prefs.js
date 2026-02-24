@@ -18,68 +18,72 @@ import * as Constants from './lib/constants.js';
 
 const {PARAMETERS, OPERATORS} = Constants;
 
-const _ = s => Gettext.dgettext('hara-hachi-bu', s);
+const _ = (s) => Gettext.dgettext('hara-hachi-bu', s);
 
 // ProfileRow widget for displaying profile in the list
 const ProfileRow = GObject.registerClass(
-class ProfileRow extends Adw.ActionRow {
-    _init(profile, onEdit, onDelete) {
-        // Build subtitle with human-readable mode labels
-        const powerLabel = _(Constants.POWER_MODES[profile.powerMode]?.label ?? profile.powerMode);
-        const batteryLabel = _(Constants.BATTERY_MODES[profile.batteryMode]?.label ?? profile.batteryMode);
-        let subtitle = _('%s + %s').format(powerLabel, batteryLabel);
-        if (profile.rules?.length > 0) {
-            const count = profile.rules.length;
-            const conditionText = Gettext.dngettext(
-                'hara-hachi-bu', '%d condition', '%d conditions', count
-            ).format(count);
-            subtitle = _('%s \u00b7 %s').format(subtitle, conditionText);
-        }
-        if (profile.schedule?.enabled) {
-            const daysSummary = ScheduleUtils.formatDaysSummary(profile.schedule.days);
-            subtitle = _('%s \u00b7 %s %s\u2013%s').format(
-                subtitle, daysSummary, profile.schedule.startTime, profile.schedule.endTime
-            );
-        }
+    class ProfileRow extends Adw.ActionRow {
+        _init(profile, onEdit, onDelete) {
+            // Build subtitle with human-readable mode labels
+            const powerLabel = _(Constants.POWER_MODES[profile.powerMode]?.label ?? profile.powerMode);
+            const batteryLabel = _(Constants.BATTERY_MODES[profile.batteryMode]?.label ?? profile.batteryMode);
+            let subtitle = _('%s + %s').format(powerLabel, batteryLabel);
+            if (profile.rules?.length > 0) {
+                const count = profile.rules.length;
+                const conditionText = Gettext.dngettext('hara-hachi-bu', '%d condition', '%d conditions', count).format(
+                    count
+                );
+                subtitle = _('%s \u00b7 %s').format(subtitle, conditionText);
+            }
+            if (profile.schedule?.enabled) {
+                const daysSummary = ScheduleUtils.formatDaysSummary(profile.schedule.days);
+                subtitle = _('%s \u00b7 %s %s\u2013%s').format(
+                    subtitle,
+                    daysSummary,
+                    profile.schedule.startTime,
+                    profile.schedule.endTime
+                );
+            }
 
-        super._init({
-            title: ProfileMatcher.getProfileDisplayName(profile),
-            subtitle: subtitle,
-        });
-
-        // Add "auto" badge if profile is auto-managed
-        // Translators: Badge label meaning "automatically managed"
-        if (ProfileMatcher.isAutoManaged(profile)) {
-            const autoBadge = new Gtk.Label({
-                label: _('Auto'),
-                css_classes: ['accent', 'caption'],
-                margin_start: 6,
-                valign: Gtk.Align.CENTER,
+            super._init({
+                title: ProfileMatcher.getProfileDisplayName(profile),
+                subtitle,
             });
-            this.add_suffix(autoBadge);
+
+            // Add "auto" badge if profile is auto-managed
+            // Translators: Badge label meaning "automatically managed"
+            if (ProfileMatcher.isAutoManaged(profile)) {
+                const autoBadge = new Gtk.Label({
+                    label: _('Auto'),
+                    css_classes: ['accent', 'caption'],
+                    margin_start: 6,
+                    valign: Gtk.Align.CENTER,
+                });
+                this.add_suffix(autoBadge);
+            }
+
+            // Edit button
+            const editButton = new Gtk.Button({
+                icon_name: 'document-edit-symbolic',
+                valign: Gtk.Align.CENTER,
+                css_classes: ['flat'],
+                tooltip_text: _('Edit scenario'),
+            });
+            editButton.connect('clicked', () => onEdit(profile));
+            this.add_suffix(editButton);
+
+            // Delete button
+            const deleteButton = new Gtk.Button({
+                icon_name: 'user-trash-symbolic',
+                valign: Gtk.Align.CENTER,
+                css_classes: ['flat'],
+                tooltip_text: _('Delete scenario'),
+            });
+            deleteButton.connect('clicked', () => onDelete(profile));
+            this.add_suffix(deleteButton);
         }
-
-        // Edit button
-        const editButton = new Gtk.Button({
-            icon_name: 'document-edit-symbolic',
-            valign: Gtk.Align.CENTER,
-            css_classes: ['flat'],
-            tooltip_text: _('Edit scenario'),
-        });
-        editButton.connect('clicked', () => onEdit(profile));
-        this.add_suffix(editButton);
-
-        // Delete button
-        const deleteButton = new Gtk.Button({
-            icon_name: 'user-trash-symbolic',
-            valign: Gtk.Align.CENTER,
-            css_classes: ['flat'],
-            tooltip_text: _('Delete scenario'),
-        });
-        deleteButton.connect('clicked', () => onDelete(profile));
-        this.add_suffix(deleteButton);
     }
-});
+);
 
 export default class HaraHachiBuPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
@@ -122,7 +126,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         // Hide built-in power profile indicator
         const hideBuiltinRow = new Adw.SwitchRow({
             title: _('Hide Built-in Power Profile'),
-            subtitle: _('Replace GNOME Shell\'s power profile quick settings with this extension'),
+            subtitle: _("Replace GNOME Shell's power profile quick settings with this extension"),
         });
         settings.bind('hide-builtin-power-profile', hideBuiltinRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         uiGroup.add(hideBuiltinRow);
@@ -161,7 +165,9 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
         const autoManageRow = new Adw.SwitchRow({
             title: _('Automatic Discharge to Threshold'),
-            subtitle: _('When plugged in and battery is above the stop-charging threshold, use force discharge to bring it down. Requires force discharge support.'),
+            subtitle: _(
+                'When plugged in and battery is above the stop-charging threshold, use force discharge to bring it down. Requires force discharge support.'
+            ),
         });
         settings.bind('auto-manage-battery-levels', autoManageRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         batteryManageGroup.add(autoManageRow);
@@ -182,14 +188,18 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         // Auto-Management Group
         const autoManageGroup = new Adw.PreferencesGroup({
             title: _('Automatic Scenario Switching'),
-            description: _('Scenarios with "Apply Automatically" enabled will activate based on their conditions and schedules. Manually selecting a scenario or mode pauses auto-switching. When no scenario matches, settings remain unchanged.'),
+            description: _(
+                'Scenarios with "Apply Automatically" enabled will activate based on their conditions and schedules. Manually selecting a scenario or mode pauses auto-switching. When no scenario matches, settings remain unchanged.'
+            ),
         });
         generalPage.add(autoManageGroup);
 
         // Auto-switch scenarios master toggle
         const autoSwitchRow = new Adw.SwitchRow({
             title: _('Auto-switch Scenarios'),
-            subtitle: _('Enable automatic scenario switching based on conditions and schedules. Manually selecting a scenario or mode will pause this.'),
+            subtitle: _(
+                'Enable automatic scenario switching based on conditions and schedules. Manually selecting a scenario or mode will pause this.'
+            ),
         });
         settings.bind('auto-switch-enabled', autoSwitchRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         autoManageGroup.add(autoSwitchRow);
@@ -197,7 +207,9 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         // Resume on state change toggle
         const resumeRow = new Adw.SwitchRow({
             title: _('Resume on State Change'),
-            subtitle: _('When paused by manual selection, automatically resume switching when system conditions change (display connected/disconnected, AC plugged/unplugged)'),
+            subtitle: _(
+                'When paused by manual selection, automatically resume switching when system conditions change (display connected/disconnected, AC plugged/unplugged)'
+            ),
         });
         settings.bind('resume-on-state-change', resumeRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         autoManageGroup.add(resumeRow);
@@ -214,7 +226,9 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
         // Introductory description
         const thresholdsIntro = new Adw.PreferencesGroup({
-            description: _('These thresholds define the three battery charging modes available in Quick Settings. Limiting the maximum charge extends your battery\'s overall lifespan.'),
+            description: _(
+                "These thresholds define the three battery charging modes available in Quick Settings. Limiting the maximum charge extends your battery's overall lifespan."
+            ),
         });
         thresholdsPage.add(thresholdsIntro);
 
@@ -249,9 +263,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             },
         ];
 
-        for (const config of thresholdConfigs) {
-            thresholdsPage.add(this._buildThresholdGroup(settings, config));
-        }
+        for (const config of thresholdConfigs) thresholdsPage.add(this._buildThresholdGroup(settings, config));
 
         // Scenarios Page
         const profilesPage = new Adw.PreferencesPage({
@@ -263,7 +275,9 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         // Scenario List Group
         const profileListGroup = new Adw.PreferencesGroup({
             title: _('Scenarios'),
-            description: _('Scenarios are saved combinations of power and battery modes that can activate automatically based on conditions.'),
+            description: _(
+                'Scenarios are saved combinations of power and battery modes that can activate automatically based on conditions.'
+            ),
         });
         profilesPage.add(profileListGroup);
 
@@ -414,13 +428,16 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
         // Check polkit rules
         const polkitRules = this._checkFileExists('/etc/polkit-1/rules.d/10-hara-hachi-bu.rules');
-        const polkitPolicy = this._checkFileExists('/usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy');
+        const polkitPolicy = this._checkFileExists(
+            '/usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy'
+        );
         const polkitInstalled = polkitRules || polkitPolicy;
         const polkitRow = new Adw.ActionRow({
             title: _('Polkit Configuration'),
-            subtitle: polkitInstalled
-                ? (polkitRules ? _('Rules installed') : _('Legacy policy installed'))
-                : _('Not installed - may require password for each change'),
+            subtitle: (() => {
+                if (!polkitInstalled) return _('Not installed - may require password for each change');
+                return polkitRules ? _('Rules installed') : _('Legacy policy installed');
+            })(),
         });
         const polkitIcon = new Gtk.Image({
             icon_name: polkitInstalled ? 'emblem-ok-symbolic' : 'dialog-warning-symbolic',
@@ -438,18 +455,21 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         let iconName = 'dialog-warning-symbolic';
 
         for (const bat of ['BAT0', 'BAT1', 'BAT2', 'BAT3']) {
-            const batEnd = Constants.THRESHOLD_END_FILES.some(
-                f => this._checkFileExists(`/sys/class/power_supply/${bat}/${f}`)
+            const batEnd = Constants.THRESHOLD_END_FILES.some((f) =>
+                this._checkFileExists(`/sys/class/power_supply/${bat}/${f}`)
             );
             if (batEnd) {
-                const batStart = Constants.THRESHOLD_START_FILES.some(
-                    f => this._checkFileExists(`/sys/class/power_supply/${bat}/${f}`)
+                const batStart = Constants.THRESHOLD_START_FILES.some((f) =>
+                    this._checkFileExists(`/sys/class/power_supply/${bat}/${f}`)
                 );
                 if (batStart) {
                     statusSubtitle = _('Compatible battery detected (%s) - Full threshold control').format(bat);
                 } else {
-                    statusSubtitle = _('Compatible battery detected (%s) - End threshold only (Start threshold ignored)').format(bat);
+                    statusSubtitle = _(
+                        'Compatible battery detected (%s) - End threshold only (Start threshold ignored)'
+                    ).format(bat);
                 }
+
                 iconName = 'emblem-ok-symbolic';
                 break;
             }
@@ -463,10 +483,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             icon_name: iconName,
             valign: Gtk.Align.CENTER,
         });
-        batteryIcon.update_property(
-            [Gtk.AccessibleProperty.LABEL],
-            [statusSubtitle]
-        );
+        batteryIcon.update_property([Gtk.AccessibleProperty.LABEL], [statusSubtitle]);
         batteryRow.add_suffix(batteryIcon);
         statusGroup.add(batteryRow);
 
@@ -537,8 +554,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         const startRow = new Adw.SpinRow({
             title: _('Start Charging At'),
             subtitle: hasStartThreshold
-                ? _('Battery will start charging when it drops to %d%%').format(
-                    settings.get_int(config.startKey))
+                ? _('Battery will start charging when it drops to %d%%').format(settings.get_int(config.startKey))
                 : _('Not supported on this device \u2013 only end threshold is used'),
             sensitive: hasStartThreshold,
             adjustment: new Gtk.Adjustment({
@@ -553,9 +569,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
         const endRow = new Adw.SpinRow({
             title: _('Stop Charging At'),
-            subtitle: _('Battery will stop charging when it reaches %d%%').format(
-                settings.get_int(config.endKey)
-            ),
+            subtitle: _('Battery will stop charging when it reaches %d%%').format(settings.get_int(config.endKey)),
             adjustment: new Gtk.Adjustment({
                 lower: config.endRange.lower,
                 upper: config.endRange.upper,
@@ -571,8 +585,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             const value = Math.round(startRow.adjustment.value);
             if (hasStartThreshold)
                 startRow.subtitle = _('Battery will start charging when it drops to %d%%').format(value);
-            if (endRow.adjustment.value <= value)
-                endRow.adjustment.value = value + 1;
+            if (endRow.adjustment.value <= value) endRow.adjustment.value = value + 1;
             endRow.adjustment.lower = value + 1;
         });
 
@@ -580,8 +593,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             const value = Math.round(endRow.adjustment.value);
             endRow.subtitle = _('Battery will stop charging when it reaches %d%%').format(value);
             if (hasStartThreshold) {
-                if (startRow.adjustment.value >= value)
-                    startRow.adjustment.value = value - 1;
+                if (startRow.adjustment.value >= value) startRow.adjustment.value = value - 1;
                 startRow.adjustment.upper = value - 1;
             }
         });
@@ -652,9 +664,13 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             restoreBtn.connect('clicked', () => {
                 for (const def of Object.values(Constants.DEFAULT_PROFILES)) {
                     ProfileMatcher.createProfile(
-                        settings, def.id, _(def.name),
-                        def.powerMode, def.batteryMode,
-                        def.rules, def.schedule
+                        settings,
+                        def.id,
+                        _(def.name),
+                        def.powerMode,
+                        def.batteryMode,
+                        def.rules,
+                        def.schedule
                     );
                 }
                 this._refreshProfileList(window, settings);
@@ -666,24 +682,26 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             for (const profile of profiles) {
                 const row = new ProfileRow(
                     profile,
-                    p => this._showProfileDialog(window, settings, p),
-                    p => this._showDeleteDialog(window, settings, p)
+                    (p) => this._showProfileDialog(window, settings, p),
+                    (p) => this._showDeleteDialog(window, settings, p)
                 );
                 this._profileListBox.append(row);
             }
         }
 
         // Update profile count label
-        if (this._profileCountLabel)
+        if (this._profileCountLabel) {
             this._profileCountLabel.label = Gettext.dngettext(
-                'hara-hachi-bu', '%d / %d scenario', '%d / %d scenarios', profiles.length
+                'hara-hachi-bu',
+                '%d / %d scenario',
+                '%d / %d scenarios',
+                profiles.length
             ).format(profiles.length, ProfileMatcher.MAX_PROFILES);
+        }
 
         // Disable action buttons when at limit
         const atLimit = profiles.length >= ProfileMatcher.MAX_PROFILES;
-        const limitTooltip = atLimit
-            ? _('Maximum of %d scenarios reached').format(ProfileMatcher.MAX_PROFILES)
-            : null;
+        const limitTooltip = atLimit ? _('Maximum of %d scenarios reached').format(ProfileMatcher.MAX_PROFILES) : null;
         if (this._addProfileButton) {
             this._addProfileButton.sensitive = !atLimit;
             this._addProfileButton.tooltip_text = limitTooltip;
@@ -699,9 +717,9 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
         // Build key arrays for DropDown index-based lookup
         const powerModeKeys = Object.keys(Constants.POWER_MODES);
-        const powerModeLabels = powerModeKeys.map(k => _(Constants.POWER_MODES[k].label));
+        const powerModeLabels = powerModeKeys.map((k) => _(Constants.POWER_MODES[k].label));
         const batteryModeKeys = Object.keys(Constants.BATTERY_MODES);
-        const batteryModeLabels = batteryModeKeys.map(k => _(Constants.BATTERY_MODES[k].label));
+        const batteryModeLabels = batteryModeKeys.map((k) => _(Constants.BATTERY_MODES[k].label));
         // --- Build dialog content using Adw widgets ---
         const mainGroup = new Adw.PreferencesGroup();
 
@@ -728,7 +746,10 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                     idPreviewLabel.remove_css_class('warning');
                     return;
                 }
-                const id = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+                const id = name
+                    .toLowerCase()
+                    .replace(/\s+/g, '-')
+                    .replace(/[^a-z0-9_-]/g, '');
                 if (id.length > 0) {
                     idPreviewLabel.label = _('ID: %s').format(id);
                     idPreviewLabel.remove_css_class('warning');
@@ -780,8 +801,9 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 restoreBtn.connect('clicked', () => {
                     const confirmDialog = new Adw.AlertDialog({
                         heading: _('Restore Defaults?'),
-                        body: _('This will reset "%s" to its original power mode, battery mode, conditions, and schedule.').format(
-                            ProfileMatcher.getProfileDisplayName(existingProfile)),
+                        body: _(
+                            'This will reset "%s" to its original power mode, battery mode, conditions, and schedule.'
+                        ).format(ProfileMatcher.getProfileDisplayName(existingProfile)),
                     });
                     confirmDialog.add_response('cancel', _('Cancel'));
                     confirmDialog.add_response('restore', _('Restore'));
@@ -805,15 +827,14 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                                     }
                                 }
                                 if (defaultProfile.rules) {
-                                    for (const rule of defaultProfile.rules)
-                                        addRuleRow(rule);
+                                    for (const rule of defaultProfile.rules) addRuleRow(rule);
                                 }
+
                                 updateMoveButtonSensitivity();
 
                                 // Reset schedule
                                 scheduleEnabledRow.active = false;
-                                for (let d = 1; d <= 7; d++)
-                                    dayButtons[d].active = false;
+                                for (let d = 1; d <= 7; d++) dayButtons[d].active = false;
                                 startHourSpin.value = 6;
                                 startMinuteSpin.value = 0;
                                 endHourSpin.value = 8;
@@ -834,7 +855,9 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         // --- Rules section ---
         const rulesGroup = new Adw.PreferencesGroup({
             title: _('Activation Conditions'),
-            description: _('Conditions determine when this scenario activates. All conditions must match. More conditions = higher priority over other scenarios.'),
+            description: _(
+                'Conditions determine when this scenario activates. All conditions must match. More conditions = higher priority over other scenarios.'
+            ),
         });
 
         // Track rule rows
@@ -843,14 +866,14 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         const initialRules = isEdit && existingProfile.rules ? [...existingProfile.rules] : [];
 
         // Rule row builder helper arrays
-        const paramKeys = Object.values(PARAMETERS).map(p => p.name);
-        const paramLabels = Object.values(PARAMETERS).map(p => _(p.label));
+        const paramKeys = Object.values(PARAMETERS).map((p) => p.name);
+        const paramLabels = Object.values(PARAMETERS).map((p) => _(p.label));
 
         // Operator helpers: build per-type operator lists
         const getOperatorsForParam = (paramName) => {
             const paramDef = PARAMETERS[paramName];
             const paramType = paramDef?.type || 'binary';
-            return Object.values(OPERATORS).filter(o => (o.type || 'binary') === paramType);
+            return Object.values(OPERATORS).filter((o) => (o.type || 'binary') === paramType);
         };
 
         const addRuleRow = (rule = null) => {
@@ -900,7 +923,10 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             valueSpinBox.hexpand = true;
             const valueSpin = new Gtk.SpinButton({
                 adjustment: new Gtk.Adjustment({
-                    lower: 0, upper: 100, step_increment: 1, page_increment: 5,
+                    lower: 0,
+                    upper: 100,
+                    step_increment: 1,
+                    page_increment: 5,
                 }),
                 numeric: true,
                 value: rule ? Number(rule.value) || 50 : 50,
@@ -919,8 +945,8 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             const updateOperatorModel = () => {
                 const paramName = paramKeys[paramDrop.selected];
                 const ops = getOperatorsForParam(paramName);
-                currentOpKeys = ops.map(o => o.name);
-                currentOpLabels = ops.map(o => _(o.label));
+                currentOpKeys = ops.map((o) => o.name);
+                currentOpLabels = ops.map((o) => _(o.label));
                 opDrop.model = Gtk.StringList.new(currentOpLabels);
 
                 // Restore selection if possible
@@ -948,15 +974,14 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                     // Set unit label
                     unitLabel.label = paramDef.unit || '';
                     // Restore value for numeric
-                    if (rule && rule.param === paramName)
-                        valueSpin.value = Number(rule.value) || 50;
+                    if (rule && rule.param === paramName) valueSpin.value = Number(rule.value) || 50;
                 } else {
                     valueDrop.visible = true;
                     valueSpinBox.visible = false;
                     // Populate value dropdown
                     if (paramDef) {
                         valueKeys = [...paramDef.values];
-                        valueLabelsArr = paramDef.values.map(v => _(paramDef.valueLabels[v]));
+                        valueLabelsArr = paramDef.values.map((v) => _(paramDef.valueLabels[v]));
                     } else {
                         valueKeys = [];
                         valueLabelsArr = [];
@@ -1041,10 +1066,8 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 const paramDef = PARAMETERS[paramName];
                 const paramType = paramDef?.type || 'binary';
                 let vLabel;
-                if (paramType === 'numeric')
-                    vLabel = `${Math.round(valueSpin.value)}${paramDef.unit || ''}`;
-                else
-                    vLabel = valueLabelsArr[valueDrop.selected] ?? '';
+                if (paramType === 'numeric') vLabel = `${Math.round(valueSpin.value)}${paramDef.unit || ''}`;
+                else vLabel = valueLabelsArr[valueDrop.selected] ?? '';
 
                 rowBox.update_property(
                     [Gtk.AccessibleProperty.LABEL],
@@ -1060,8 +1083,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                     const paramName = paramKeys[paramDrop.selected];
                     const paramDef = PARAMETERS[paramName];
                     const paramType = paramDef?.type || 'binary';
-                    if (paramType === 'numeric')
-                        return String(Math.round(valueSpin.value));
+                    if (paramType === 'numeric') return String(Math.round(valueSpin.value));
                     return valueKeys[valueDrop.selected] ?? null;
                 },
                 updateAccessibleName,
@@ -1083,7 +1105,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         };
 
         // Add existing rules
-        initialRules.forEach(rule => addRuleRow(rule));
+        initialRules.forEach((rule) => addRuleRow(rule));
 
         // Add rule button
         const addRuleBtn = new Gtk.Button({
@@ -1106,15 +1128,13 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 ruleRows[i].moveUpBtn.sensitive = i > 0;
                 ruleRows[i].moveDownBtn.sensitive = i < ruleRows.length - 1;
             }
-            ruleRows.forEach(r => r.updateAccessibleName());
+            ruleRows.forEach((r) => r.updateAccessibleName());
         };
 
         const rebuildRuleDisplay = () => {
-            for (const row of ruleRows)
-                rulesGroup.remove(row.box);
+            for (const row of ruleRows) rulesGroup.remove(row.box);
             rulesGroup.remove(addRuleBtn);
-            for (const row of ruleRows)
-                rulesGroup.add(row.box);
+            for (const row of ruleRows) rulesGroup.add(row.box);
             rulesGroup.add(addRuleBtn);
             updateMoveButtonSensitivity();
         };
@@ -1125,7 +1145,9 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         // --- Schedule section ---
         const scheduleGroup = new Adw.PreferencesGroup({
             title: _('Schedule'),
-            description: _('Limit this scenario to specific days and times. Both conditions AND schedule must match for activation. When a schedule ends, settings remain unchanged unless another scenario matches.'),
+            description: _(
+                'Limit this scenario to specific days and times. Both conditions AND schedule must match for activation. When a schedule ends, settings remain unchanged unless another scenario matches.'
+            ),
         });
 
         // Schedule enable switch
@@ -1145,10 +1167,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             margin_bottom: 6,
             accessible_role: Gtk.AccessibleRole.GROUP,
         });
-        dayBox.update_property(
-            [Gtk.AccessibleProperty.LABEL],
-            [_('Schedule day selection')]
-        );
+        dayBox.update_property([Gtk.AccessibleProperty.LABEL], [_('Schedule day selection')]);
         const dayButtons = {};
         const existingDays = new Set(existingProfile?.schedule?.days ?? []);
         for (let d = 1; d <= 7; d++) {
@@ -1172,25 +1191,21 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         });
         const weekdaysBtn = new Gtk.Button({label: _('Weekdays'), css_classes: ['pill']});
         weekdaysBtn.connect('clicked', () => {
-            for (let d = 1; d <= 7; d++)
-                dayButtons[d].active = d <= 5;
+            for (let d = 1; d <= 7; d++) dayButtons[d].active = d <= 5;
         });
         const weekendsBtn = new Gtk.Button({label: _('Weekends'), css_classes: ['pill']});
         weekendsBtn.connect('clicked', () => {
-            for (let d = 1; d <= 7; d++)
-                dayButtons[d].active = d >= 6;
+            for (let d = 1; d <= 7; d++) dayButtons[d].active = d >= 6;
         });
         // Translators: Button to select all days of the week
         const allDaysBtn = new Gtk.Button({label: _('All'), css_classes: ['pill']});
         allDaysBtn.connect('clicked', () => {
-            for (let d = 1; d <= 7; d++)
-                dayButtons[d].active = true;
+            for (let d = 1; d <= 7; d++) dayButtons[d].active = true;
         });
         // Translators: Button to deselect all days of the week
         const clearDaysBtn = new Gtk.Button({label: _('Clear'), css_classes: ['pill']});
         clearDaysBtn.connect('clicked', () => {
-            for (let d = 1; d <= 7; d++)
-                dayButtons[d].active = false;
+            for (let d = 1; d <= 7; d++) dayButtons[d].active = false;
         });
         quickSelectBox.append(weekdaysBtn);
         quickSelectBox.append(weekendsBtn);
@@ -1199,7 +1214,10 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         scheduleGroup.add(quickSelectBox);
 
         // Parse existing times or use defaults
-        const existingStart = ScheduleUtils.parseTime(existingProfile?.schedule?.startTime ?? '') ?? {hours: 6, minutes: 0};
+        const existingStart = ScheduleUtils.parseTime(existingProfile?.schedule?.startTime ?? '') ?? {
+            hours: 6,
+            minutes: 0,
+        };
         const existingEnd = ScheduleUtils.parseTime(existingProfile?.schedule?.endTime ?? '') ?? {hours: 8, minutes: 0};
 
         // Helper to create a zero-padded SpinButton
@@ -1351,17 +1369,22 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
             // Describe overlapping rules
             if (conflictProfile.rules?.length > 0 && newRules.length > 0) {
-                const sharedRules = newRules.filter(nr =>
-                    conflictProfile.rules.some(cr =>
-                        cr.param === nr.param && cr.op === nr.op && cr.value === nr.value
+                const sharedRules = newRules.filter((nr) =>
+                    conflictProfile.rules.some(
+                        (cr) => cr.param === nr.param && cr.op === nr.op && cr.value === nr.value
                     )
                 );
                 if (sharedRules.length > 0) {
-                    const ruleDescs = sharedRules.map(r => {
+                    const ruleDescs = sharedRules.map((r) => {
                         const paramDef = PARAMETERS[r.param];
                         const opDef = OPERATORS[r.op];
-                        if (paramDef && opDef)
-                            return _('%s %s %s').format(_(paramDef.label), _(opDef.label), _(paramDef.valueLabels[r.value]));
+                        if (paramDef && opDef) {
+                            return _('%s %s %s').format(
+                                _(paramDef.label),
+                                _(opDef.label),
+                                _(paramDef.valueLabels[r.value])
+                            );
+                        }
                         return `${r.param} ${r.op} ${r.value}`;
                     });
                     parts.push(_('Both match when: %s').format(ruleDescs.join(_(', '))));
@@ -1371,20 +1394,20 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             // Describe schedule overlap
             if (conflictProfile.schedule?.enabled && newSchedule?.enabled) {
                 const daysSummary = ScheduleUtils.formatDaysSummary(conflictProfile.schedule.days);
-                parts.push(_('Overlapping schedule: %s %s\u2013%s').format(
-                    daysSummary,
-                    conflictProfile.schedule.startTime,
-                    conflictProfile.schedule.endTime
-                ));
+                parts.push(
+                    _('Overlapping schedule: %s %s\u2013%s').format(
+                        daysSummary,
+                        conflictProfile.schedule.startTime,
+                        conflictProfile.schedule.endTime
+                    )
+                );
             }
 
-            if (parts.length === 0)
-                parts.push(_('Same priority and overlapping activation conditions'));
+            if (parts.length === 0) parts.push(_('Same priority and overlapping activation conditions'));
 
-            return _('Conflicts with \u201c%s\u201d \u2014 %s. Add more conditions to one, or give them non-overlapping schedules.').format(
-                ProfileMatcher.getProfileDisplayName(conflictProfile),
-                parts.join('. ')
-            );
+            return _(
+                'Conflicts with \u201c%s\u201d \u2014 %s. Add more conditions to one, or give them non-overlapping schedules.'
+            ).format(ProfileMatcher.getProfileDisplayName(conflictProfile), parts.join('. '));
         };
 
         // Real-time warning updater for conflict detection and zero-day prevention
@@ -1395,9 +1418,9 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             if (scheduleEnabledRow.active) {
                 let dayCount = 0;
                 for (let d = 1; d <= 7; d++) {
-                    if (dayButtons[d].active)
-                        dayCount++;
+                    if (dayButtons[d].active) dayCount++;
                 }
+
                 if (dayCount === 0) {
                     warningLabel.set_text(_('No days selected \u2014 schedule needs at least one day'));
                     warningLabel.show();
@@ -1407,16 +1430,14 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
             // Real-time conflict detection (non-blocking warning during editing)
             const currentRules = ruleRows
-                .map(row => ({param: row.getParam(), op: row.getOp(), value: row.getValue()}))
-                .filter(r => r.param && r.op && r.value);
+                .map((row) => ({param: row.getParam(), op: row.getOp(), value: row.getValue()}))
+                .filter((r) => r.param && r.op && r.value);
             const scheduleEnabled = scheduleEnabledRow.active;
-            if (currentRules.length === 0 && !scheduleEnabled)
-                return;
+            if (currentRules.length === 0 && !scheduleEnabled) return;
 
             const scheduleDays = [];
             for (let d = 1; d <= 7; d++) {
-                if (dayButtons[d].active)
-                    scheduleDays.push(d);
+                if (dayButtons[d].active) scheduleDays.push(d);
             }
 
             let schedule = null;
@@ -1425,10 +1446,12 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                     enabled: true,
                     days: scheduleDays,
                     startTime: ScheduleUtils.formatTimeHHMM(
-                        Math.round(startHourSpin.value), Math.round(startMinuteSpin.value)
+                        Math.round(startHourSpin.value),
+                        Math.round(startMinuteSpin.value)
                     ),
                     endTime: ScheduleUtils.formatTimeHHMM(
-                        Math.round(endHourSpin.value), Math.round(endMinuteSpin.value)
+                        Math.round(endHourSpin.value),
+                        Math.round(endMinuteSpin.value)
                     ),
                 };
             }
@@ -1440,9 +1463,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             };
 
             const profiles = ProfileMatcher.getCustomProfiles(settings);
-            const conflict = RuleEvaluator.findRuleConflict(
-                profiles, newProfile, isEdit ? existingProfile.id : null
-            );
+            const conflict = RuleEvaluator.findRuleConflict(profiles, newProfile, isEdit ? existingProfile.id : null);
             if (conflict) {
                 warningLabel.set_text(buildConflictDetail(conflict, currentRules, schedule));
                 warningLabel.show();
@@ -1450,18 +1471,19 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         };
 
         // Unsaved changes detection
-        const captureState = () => JSON.stringify({
-            name: nameRow.get_text().trim(),
-            power: powerRow.selected,
-            battery: batteryRow.selected,
-            rules: ruleRows.map(r => ({p: r.getParam(), o: r.getOp(), v: r.getValue()})),
-            schedEnabled: scheduleEnabledRow.active,
-            days: Object.keys(dayButtons).filter(d => dayButtons[d].active),
-            startH: Math.round(startHourSpin.value),
-            startM: Math.round(startMinuteSpin.value),
-            endH: Math.round(endHourSpin.value),
-            endM: Math.round(endMinuteSpin.value),
-        });
+        const captureState = () =>
+            JSON.stringify({
+                name: nameRow.get_text().trim(),
+                power: powerRow.selected,
+                battery: batteryRow.selected,
+                rules: ruleRows.map((r) => ({p: r.getParam(), o: r.getOp(), v: r.getValue()})),
+                schedEnabled: scheduleEnabledRow.active,
+                days: Object.keys(dayButtons).filter((d) => dayButtons[d].active),
+                startH: Math.round(startHourSpin.value),
+                startM: Math.round(startMinuteSpin.value),
+                endH: Math.round(endHourSpin.value),
+                endM: Math.round(endMinuteSpin.value),
+            });
         const initialState = captureState();
 
         // Clear save-time errors and update real-time warnings on any field change
@@ -1473,8 +1495,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         powerRow.connect('notify::selected', onFieldChanged);
         batteryRow.connect('notify::selected', onFieldChanged);
         scheduleEnabledRow.connect('notify::active', onFieldChanged);
-        for (const btn of Object.values(dayButtons))
-            btn.connect('toggled', onFieldChanged);
+        for (const btn of Object.values(dayButtons)) btn.connect('toggled', onFieldChanged);
         startHourSpin.connect('value-changed', onFieldChanged);
         startMinuteSpin.connect('value-changed', onFieldChanged);
         endHourSpin.connect('value-changed', onFieldChanged);
@@ -1497,8 +1518,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 confirmDialog.set_close_response('cancel');
                 confirmDialog.choose(window, null, (dlg, result) => {
                     try {
-                        if (dlg.choose_finish(result) === 'discard')
-                            dialog.close();
+                        if (dlg.choose_finish(result) === 'discard') dialog.close();
                     } catch (e) {
                         console.error(`Hara Hachi Bu: Confirm discard error: ${e.message}`);
                     }
@@ -1520,10 +1540,8 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 // --- Phase 1: Basic input validation (show all at once) ---
 
                 // Name validation
-                if (!name || name.length === 0)
-                    errors.push(_('Please enter a scenario name.'));
-                else if (name.length > 50)
-                    errors.push(_('Scenario name too long (max 50 characters)'));
+                if (!name || name.length === 0) errors.push(_('Please enter a scenario name.'));
+                else if (name.length > 50) errors.push(_('Scenario name too long (max 50 characters)'));
 
                 // Per-rule completeness check — identify which conditions are incomplete
                 const allRules = ruleRows.map((row, i) => ({
@@ -1533,20 +1551,23 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                     index: i,
                 }));
                 for (const r of allRules) {
-                    if (!r.value)
-                        errors.push(_('Condition %d: incomplete \u2014 fill in all fields or remove it').format(r.index + 1));
+                    if (!r.value) {
+                        errors.push(
+                            _('Condition %d: incomplete \u2014 fill in all fields or remove it').format(r.index + 1)
+                        );
+                    }
                 }
-                const completeRules = allRules.filter(r => r.param && r.op && r.value);
+                const completeRules = allRules.filter((r) => r.param && r.op && r.value);
                 const rules = completeRules.map(({param, op, value}) => ({param, op, value}));
 
                 // Collect schedule data (always preserve user input; set enabled=false when not active)
                 const scheduleDays = [];
                 for (let d = 1; d <= 7; d++) {
-                    if (dayButtons[d].active)
-                        scheduleDays.push(d);
+                    if (dayButtons[d].active) scheduleDays.push(d);
                 }
+
                 const scheduleEnabled = scheduleEnabledRow.active;
-                const hadSchedule = existingProfile?.schedule != null;
+                const hadSchedule = existingProfile?.schedule !== null && existingProfile?.schedule !== undefined;
                 let schedule = null;
                 if (scheduleEnabled || hadSchedule || scheduleDays.length > 0) {
                     schedule = {
@@ -1565,12 +1586,10 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
                 // Schedule validation (zero-day + format)
                 if (scheduleEnabled) {
-                    if (scheduleDays.length === 0)
-                        errors.push(_('Schedule must have at least one day selected'));
+                    if (scheduleDays.length === 0) errors.push(_('Schedule must have at least one day selected'));
                     if (schedule) {
                         const scheduleValidation = ScheduleUtils.validateSchedule(schedule);
-                        if (!scheduleValidation.valid)
-                            errors.push(scheduleValidation.error);
+                        if (!scheduleValidation.valid) errors.push(scheduleValidation.error);
                     }
                 }
 
@@ -1586,32 +1605,36 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 // Generate ID from name
                 const id = isEdit
                     ? existingProfile.id
-                    : name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+                    : name
+                          .toLowerCase()
+                          .replace(/\s+/g, '-')
+                          .replace(/[^a-z0-9_-]/g, '');
 
-                if (!isEdit && id.length === 0)
-                    errors.push(_('Scenario name must contain at least one letter or number (used to generate an internal ID).'));
+                if (!isEdit && id.length === 0) {
+                    errors.push(
+                        _('Scenario name must contain at least one letter or number (used to generate an internal ID).')
+                    );
+                }
 
                 // ID and limit checks for new profiles
                 const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
                 if (!isEdit) {
-                    if (id.length > 0 && existingProfiles.some(p => p.id === id))
+                    if (id.length > 0 && existingProfiles.some((p) => p.id === id))
                         errors.push(_('A scenario with a similar name already exists. Try a more distinct name.'));
                     if (existingProfiles.length >= ProfileMatcher.MAX_PROFILES)
                         errors.push(_('Maximum scenario limit reached'));
                 }
 
                 // Check for duplicate display name
-                const duplicateName = existingProfiles.some(p =>
-                    p.name.trim().toLowerCase() === name.toLowerCase() &&
-                    (!isEdit || p.id !== existingProfile.id)
+                const duplicateName = existingProfiles.some(
+                    (p) =>
+                        p.name.trim().toLowerCase() === name.toLowerCase() && (!isEdit || p.id !== existingProfile.id)
                 );
-                if (duplicateName)
-                    errors.push(_('A scenario with this name already exists'));
+                if (duplicateName) errors.push(_('A scenario with this name already exists'));
 
                 // Rule semantic validation (contradictions, duplicates)
                 const rulesValidation = RuleEvaluator.validateRules(rules);
-                if (!rulesValidation.valid)
-                    errors.push(...rulesValidation.errors);
+                if (!rulesValidation.valid) errors.push(...rulesValidation.errors);
 
                 // Show phase 2 errors if any
                 if (errors.length > 0) {
@@ -1623,7 +1646,9 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 // --- Phase 3: Conflict detection (blocking at save time) ---
                 const newProfile = {id, name, powerMode, batteryMode, rules, schedule};
                 const conflict = RuleEvaluator.findRuleConflict(
-                    existingProfiles, newProfile, isEdit ? existingProfile.id : null
+                    existingProfiles,
+                    newProfile,
+                    isEdit ? existingProfile.id : null
                 );
                 if (conflict) {
                     errorLabel.set_text(buildConflictDetail(conflict, rules, schedule));
@@ -1634,8 +1659,13 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 // --- Save ---
                 let success;
                 if (isEdit) {
-                    success = ProfileMatcher.updateProfile(settings, existingProfile.id,
-                        {name, powerMode, batteryMode, rules, schedule});
+                    success = ProfileMatcher.updateProfile(settings, existingProfile.id, {
+                        name,
+                        powerMode,
+                        batteryMode,
+                        rules,
+                        schedule,
+                    });
                 } else {
                     success = ProfileMatcher.createProfile(settings, id, name, powerMode, batteryMode, rules, schedule);
                 }
@@ -1667,16 +1697,16 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
     _showDeleteDialog(window, settings, profile) {
         // Check if this profile is currently active
-        const isActive = ProfileMatcher.detectProfile(
-            settings.get_string('current-power-mode'),
-            settings.get_string('current-battery-mode'),
-            settings
-        ) === profile.id;
+        const isActive =
+            ProfileMatcher.detectProfile(
+                settings.get_string('current-power-mode'),
+                settings.get_string('current-battery-mode'),
+                settings
+            ) === profile.id;
 
         let body = _('This action cannot be undone.');
-        if (isActive) {
-            body = _('This scenario is currently active. Deleting it will switch to manual mode.') + ' ' + body;
-        }
+        if (isActive)
+            body = `${_('This scenario is currently active. Deleting it will switch to manual mode.')} ${body}`;
 
         const dialog = new Adw.AlertDialog({
             heading: _('Delete "%s"?').format(ProfileMatcher.getProfileDisplayName(profile)),
@@ -1725,7 +1755,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         const exportData = {
             version: 1,
             exported: new Date().toISOString(),
-            profiles: profiles,
+            profiles,
         };
 
         try {
@@ -1739,8 +1769,13 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
             const json = JSON.stringify(exportData, null, 2);
             const bytes = new GLib.Bytes(new TextEncoder().encode(json));
-            const stream = await file.replace_async(null, false,
-                Gio.FileCreateFlags.REPLACE_DESTINATION, GLib.PRIORITY_DEFAULT, null);
+            const stream = await file.replace_async(
+                null,
+                false,
+                Gio.FileCreateFlags.REPLACE_DESTINATION,
+                GLib.PRIORITY_DEFAULT,
+                null
+            );
             await stream.write_bytes_async(bytes, GLib.PRIORITY_DEFAULT, null);
             await stream.close_async(GLib.PRIORITY_DEFAULT, null);
 
@@ -1755,8 +1790,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             });
             window.add_toast(toast);
         } catch (e) {
-            if (e.matches?.(Gtk.DialogError, Gtk.DialogError.DISMISSED))
-                return; // User cancelled
+            if (e.matches?.(Gtk.DialogError, Gtk.DialogError.DISMISSED)) return; // User cancelled
             console.error(`Hara Hachi Bu: Export error: ${e.message}`);
             const dialog = new Adw.AlertDialog({
                 heading: _('Export Failed'),
@@ -1812,7 +1846,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             }
 
             const existingProfiles = ProfileMatcher.getCustomProfiles(settings);
-            const existingIds = new Set(existingProfiles.map(p => p.id));
+            const existingIds = new Set(existingProfiles.map((p) => p.id));
 
             const toImport = [];
             const skippedDuplicate = [];
@@ -1843,10 +1877,8 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 let body;
                 if (skippedDuplicate.length > 0)
                     body = _('All scenarios already exist: %s').format(skippedDuplicate.join(', '));
-                else if (skippedInvalid.length > 0)
-                    body = _('No valid scenarios found in the file.');
-                else
-                    body = _('The file contains no scenarios.');
+                else if (skippedInvalid.length > 0) body = _('No valid scenarios found in the file.');
+                else body = _('The file contains no scenarios.');
 
                 const dialog = new Adw.AlertDialog({
                     heading: _('Nothing to Import'),
@@ -1864,28 +1896,36 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
             // Build summary
             let bodyParts = [];
-            bodyParts.push(Gettext.dngettext(
-                'hara-hachi-bu',
-                '%d scenario will be imported',
-                '%d scenarios will be imported',
-                importCount
-            ).format(importCount));
-
-            if (skippedDuplicate.length > 0)
-                bodyParts.push(Gettext.dngettext(
+            bodyParts.push(
+                Gettext.dngettext(
                     'hara-hachi-bu',
-                    '%d skipped (already exists)',
-                    '%d skipped (already exist)',
-                    skippedDuplicate.length
-                ).format(skippedDuplicate.length));
+                    '%d scenario will be imported',
+                    '%d scenarios will be imported',
+                    importCount
+                ).format(importCount)
+            );
 
-            if (skippedInvalid.length > 0)
-                bodyParts.push(Gettext.dngettext(
-                    'hara-hachi-bu',
-                    '%d skipped (invalid)',
-                    '%d skipped (invalid)',
-                    skippedInvalid.length
-                ).format(skippedInvalid.length));
+            if (skippedDuplicate.length > 0) {
+                bodyParts.push(
+                    Gettext.dngettext(
+                        'hara-hachi-bu',
+                        '%d skipped (already exists)',
+                        '%d skipped (already exist)',
+                        skippedDuplicate.length
+                    ).format(skippedDuplicate.length)
+                );
+            }
+
+            if (skippedInvalid.length > 0) {
+                bodyParts.push(
+                    Gettext.dngettext(
+                        'hara-hachi-bu',
+                        '%d skipped (invalid)',
+                        '%d skipped (invalid)',
+                        skippedInvalid.length
+                    ).format(skippedInvalid.length)
+                );
+            }
 
             if (limitReached)
                 bodyParts.push(_('Limit reached — only the first %d will be imported').format(importCount));
@@ -1902,8 +1942,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
             confirmDialog.choose(window, null, (dlg, result) => {
                 try {
-                    if (dlg.choose_finish(result) !== 'import')
-                        return;
+                    if (dlg.choose_finish(result) !== 'import') return;
 
                     const merged = [...existingProfiles, ...toImport.slice(0, importCount)];
                     ProfileMatcher.saveCustomProfiles(settings, merged);
@@ -1923,8 +1962,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                 }
             });
         } catch (e) {
-            if (e.matches?.(Gtk.DialogError, Gtk.DialogError.DISMISSED))
-                return;
+            if (e.matches?.(Gtk.DialogError, Gtk.DialogError.DISMISSED)) return;
             console.error(`Hara Hachi Bu: Import error: ${e.message}`);
             const dialog = new Adw.AlertDialog({
                 heading: _('Import Failed'),

@@ -5,7 +5,7 @@
 Search for **"Hara Hachi Bu"** on [extensions.gnome.org](https://extensions.gnome.org/) and click **Install**.
 
 !!! important
-    After installing the extension, you must also install the helper script to enable battery threshold control. See [Helper Script Installation](#helper-script-installation) below.
+After installing the extension, you must also install the helper script to enable battery threshold control. See [Helper Script Installation](#helper-script-installation) below.
 
 ## Manual Installation
 

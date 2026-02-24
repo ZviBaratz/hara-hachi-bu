@@ -4,11 +4,11 @@ Hara Hachi Bu controls your laptop's charging threshold — the maximum percenta
 
 ## The Modes
 
-| Mode | Charge Range | Optimised For |
-|------|-------------|---------------|
-| **Full Capacity** | 95–100% | Maximum runtime when you need it |
-| **Balanced** | 75–80% | Good runtime with improved longevity |
-| **Max Lifespan** | 55–60% | Maximum battery longevity |
+| Mode              | Charge Range | Optimised For                        |
+| ----------------- | ------------ | ------------------------------------ |
+| **Full Capacity** | 95–100%      | Maximum runtime when you need it     |
+| **Balanced**      | 75–80%       | Good runtime with improved longevity |
+| **Max Lifespan**  | 55–60%       | Maximum battery longevity            |
 
 These ranges are defaults. You can adjust the exact percentages in [Preferences → Thresholds](../preferences.md#thresholds).
 
@@ -20,11 +20,11 @@ Lithium-ion batteries degrade faster when kept at high charge levels. Limiting t
 
 Data from [Battery University](https://batteryuniversity.com/article/bu-808-how-to-prolong-lithium-based-batteries):
 
-| Peak Charge Voltage | Approx. Capacity | Cycle Life |
-|---|---|---|
-| 4.20 V (100%) | Full | 300–500 cycles |
-| 4.10 V (~75%) | ~85% | 600–1,000 cycles |
-| 4.00 V (~60%) | ~75% | 850–1,500 cycles |
+| Peak Charge Voltage | Approx. Capacity | Cycle Life       |
+| ------------------- | ---------------- | ---------------- |
+| 4.20 V (100%)       | Full             | 300–500 cycles   |
+| 4.10 V (~75%)       | ~85%             | 600–1,000 cycles |
+| 4.00 V (~60%)       | ~75%             | 850–1,500 cycles |
 
 Every 0.10 V reduction in peak charge voltage roughly doubles cycle life.
 

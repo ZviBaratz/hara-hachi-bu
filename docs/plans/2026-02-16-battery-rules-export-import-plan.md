@@ -13,6 +13,7 @@
 ### Task 1: Add battery_level parameter and numeric operators to constants.js
 
 **Files:**
+
 - Modify: `lib/constants.js:80-122` (PARAMETERS and OPERATORS objects)
 
 **Step 1: Add `type` field to existing operators**
@@ -94,6 +95,7 @@ git commit -m "feat(rules): add battery_level parameter and numeric operators"
 ### Task 2: Update ruleEvaluator.js for numeric evaluation, validation, and conflict detection
 
 **Files:**
+
 - Modify: `lib/ruleEvaluator.js` (evaluateCondition, findMatchingProfile, validateCondition, constraintsCanCoexist)
 
 **Step 1: Update `evaluateCondition` to support hysteresis**
@@ -182,35 +184,37 @@ Only the `const isCurrentlyActive` line and the `evaluateRules` call change. Eve
 Replace the value validation block at the end of `validateCondition`:
 
 ```javascript
-    const paramDef = PARAMETERS[param];
-    if (!paramDef) {
-        return {valid: false, error: _('Unknown parameter: %s').format(param)};
-    }
+const paramDef = PARAMETERS[param];
+if (!paramDef) {
+    return {valid: false, error: _('Unknown parameter: %s').format(param)};
+}
 
-    // Validate operator compatibility with parameter type
-    const paramType = paramDef.type || 'binary';
-    const operator = OPERATORS[op];
-    if (operator.type && operator.type !== paramType) {
-        return {valid: false, error: _('Operator "%s" cannot be used with parameter "%s"').format(op, param)};
-    }
+// Validate operator compatibility with parameter type
+const paramType = paramDef.type || 'binary';
+const operator = OPERATORS[op];
+if (operator.type && operator.type !== paramType) {
+    return {valid: false, error: _('Operator "%s" cannot be used with parameter "%s"').format(op, param)};
+}
 
-    // Validate value based on parameter type
-    if (paramType === 'numeric') {
-        const numVal = Number(value);
-        if (isNaN(numVal) || !Number.isInteger(numVal)) {
-            return {valid: false, error: _('Value must be a whole number for "%s"').format(param)};
-        }
-        if (numVal < paramDef.range[0] || numVal > paramDef.range[1]) {
-            return {valid: false, error: _('Value must be between %d and %d for "%s"').format(
-                paramDef.range[0], paramDef.range[1], param)};
-        }
-    } else {
-        if (!paramDef.values.includes(value)) {
-            return {valid: false, error: _('Invalid value "%s" for parameter "%s"').format(value, param)};
-        }
+// Validate value based on parameter type
+if (paramType === 'numeric') {
+    const numVal = Number(value);
+    if (isNaN(numVal) || !Number.isInteger(numVal)) {
+        return {valid: false, error: _('Value must be a whole number for "%s"').format(param)};
     }
+    if (numVal < paramDef.range[0] || numVal > paramDef.range[1]) {
+        return {
+            valid: false,
+            error: _('Value must be between %d and %d for "%s"').format(paramDef.range[0], paramDef.range[1], param),
+        };
+    }
+} else {
+    if (!paramDef.values.includes(value)) {
+        return {valid: false, error: _('Invalid value "%s" for parameter "%s"').format(value, param)};
+    }
+}
 
-    return {valid: true, error: null};
+return {valid: true, error: null};
 ```
 
 **Step 5: Update `constraintsCanCoexist` for numeric operators**
@@ -223,23 +227,19 @@ function constraintsCanCoexist(constraints1, constraints2, param) {
         for (const c2 of constraints2) {
             // Binary operator pairs (existing logic)
             if (c1.op === 'is' && c2.op === 'is') {
-                if (c1.value === c2.value)
-                    return true;
+                if (c1.value === c2.value) return true;
             } else if (c1.op === 'is' && c2.op === 'is_not') {
-                if (c1.value !== c2.value)
-                    return true;
+                if (c1.value !== c2.value) return true;
             } else if (c1.op === 'is_not' && c2.op === 'is') {
-                if (c1.value !== c2.value)
-                    return true;
+                if (c1.value !== c2.value) return true;
             } else if (c1.op === 'is_not' && c2.op === 'is_not') {
                 const paramDef = PARAMETERS[param];
                 if (paramDef && paramDef.values) {
                     const forbidden = new Set([c1.value, c2.value]);
-                    if (paramDef.values.every(v => forbidden.has(v)))
-                        return false;
+                    if (paramDef.values.every((v) => forbidden.has(v))) return false;
                 }
                 return true;
-            // Numeric operator pairs
+                // Numeric operator pairs
             } else if (c1.op === 'below' && c2.op === 'below') {
                 return true; // Both match for values below min(X, Y)
             } else if (c1.op === 'above' && c2.op === 'above') {
@@ -274,8 +274,9 @@ git commit -m "feat(rules): support numeric evaluation with hysteresis and confl
 ### Task 3: Update ParameterDetector and StateManager for battery level monitoring
 
 **Files:**
+
 - Modify: `lib/parameterDetector.js:29-42` (constructor), `:248-271` (getValue, getAllValues)
-- Modify: `lib/stateManager.js:392-427` (_evaluateAndApplyRules), `:193-235` (battery-status-changed handler)
+- Modify: `lib/stateManager.js:392-427` (\_evaluateAndApplyRules), `:193-235` (battery-status-changed handler)
 
 **Step 1: Add battery level tracking to ParameterDetector**
 
@@ -373,9 +374,7 @@ In `lib/stateManager.js`, in the `battery-status-changed` handler (inside the `t
 In the `_evaluateAndApplyRules` method, change the `findMatchingProfile` call:
 
 ```javascript
-            const matchingProfile = RuleEvaluator.findMatchingProfile(
-                profiles, currentParams, this._currentProfile
-            );
+const matchingProfile = RuleEvaluator.findMatchingProfile(profiles, currentParams, this._currentProfile);
 ```
 
 **Step 6: Update notification message for numeric rules**
@@ -404,12 +403,12 @@ In `_applyProfile` method (stateManager.js), update the rule description builder
 In `StateManager.initialize()`, after `_initializeParameterDetector()` completes and before initial rule evaluation, seed the battery level:
 
 ```javascript
-        await this._initializeParameterDetector();
-        if (this._destroyed) return;
+await this._initializeParameterDetector();
+if (this._destroyed) return;
 
-        // Seed battery level in parameter detector
-        if (this._batteryController && this._parameterDetector)
-            this._parameterDetector.setBatteryLevel(this._batteryController.batteryLevel);
+// Seed battery level in parameter detector
+if (this._batteryController && this._parameterDetector)
+    this._parameterDetector.setBatteryLevel(this._batteryController.batteryLevel);
 ```
 
 **Step 8: Commit**
@@ -424,7 +423,8 @@ git commit -m "feat(rules): wire battery level through parameter detector for ru
 ### Task 4: Update prefs.js rule editor for numeric parameters
 
 **Files:**
-- Modify: `prefs.js:819-966` (addRuleRow function in _showProfileDialog)
+
+- Modify: `prefs.js:819-966` (addRuleRow function in \_showProfileDialog)
 
 The rule editor currently has three dropdowns: parameter, operator, value. For numeric parameters, the operator dropdown must show only `below`/`above`, and the value widget must be a SpinButton instead of a dropdown.
 
@@ -433,255 +433,256 @@ The rule editor currently has three dropdowns: parameter, operator, value. For n
 Replace the static `opKeys`/`opLabels` arrays at the top of the rules section (around line 820):
 
 ```javascript
-        // Rule row builder helper arrays
-        const paramKeys = Object.values(PARAMETERS).map(p => p.name);
-        const paramLabels = Object.values(PARAMETERS).map(p => _(p.label));
+// Rule row builder helper arrays
+const paramKeys = Object.values(PARAMETERS).map((p) => p.name);
+const paramLabels = Object.values(PARAMETERS).map((p) => _(p.label));
 
-        // Operator helpers: build per-type operator lists
-        const getOperatorsForParam = (paramName) => {
-            const paramDef = PARAMETERS[paramName];
-            const paramType = paramDef?.type || 'binary';
-            return Object.values(OPERATORS).filter(o => (o.type || 'binary') === paramType);
-        };
+// Operator helpers: build per-type operator lists
+const getOperatorsForParam = (paramName) => {
+    const paramDef = PARAMETERS[paramName];
+    const paramType = paramDef?.type || 'binary';
+    return Object.values(OPERATORS).filter((o) => (o.type || 'binary') === paramType);
+};
 ```
 
 **Step 2: Rewrite `addRuleRow` for dynamic operators and value widget**
 
 Replace the entire `addRuleRow` function. Key changes:
+
 1. Operator dropdown rebuilds when parameter changes
 2. Value widget toggles between dropdown and SpinButton
 3. Getters return correct values from whichever widget is active
 
 ```javascript
-        const addRuleRow = (rule = null) => {
-            const rowBox = new Gtk.Box({
-                orientation: Gtk.Orientation.HORIZONTAL,
-                spacing: 6,
-                margin_start: 12,
-                margin_end: 12,
-                margin_top: 3,
-                margin_bottom: 3,
-                accessible_role: Gtk.AccessibleRole.GROUP,
-            });
+const addRuleRow = (rule = null) => {
+    const rowBox = new Gtk.Box({
+        orientation: Gtk.Orientation.HORIZONTAL,
+        spacing: 6,
+        margin_start: 12,
+        margin_end: 12,
+        margin_top: 3,
+        margin_bottom: 3,
+        accessible_role: Gtk.AccessibleRole.GROUP,
+    });
 
-            // --- Parameter dropdown ---
-            const paramDrop = new Gtk.DropDown({
-                model: Gtk.StringList.new(paramLabels),
-                selected: rule ? Math.max(0, paramKeys.indexOf(rule.param)) : 0,
-                tooltip_text: _('Condition parameter'),
-            });
-            paramDrop.hexpand = true;
-            rowBox.append(paramDrop);
+    // --- Parameter dropdown ---
+    const paramDrop = new Gtk.DropDown({
+        model: Gtk.StringList.new(paramLabels),
+        selected: rule ? Math.max(0, paramKeys.indexOf(rule.param)) : 0,
+        tooltip_text: _('Condition parameter'),
+    });
+    paramDrop.hexpand = true;
+    rowBox.append(paramDrop);
 
-            // --- Operator dropdown (dynamic model) ---
-            let currentOpKeys = [];
-            let currentOpLabels = [];
-            const opDrop = new Gtk.DropDown({
-                model: Gtk.StringList.new([]),
-                tooltip_text: _('Condition operator'),
-            });
-            rowBox.append(opDrop);
+    // --- Operator dropdown (dynamic model) ---
+    let currentOpKeys = [];
+    let currentOpLabels = [];
+    const opDrop = new Gtk.DropDown({
+        model: Gtk.StringList.new([]),
+        tooltip_text: _('Condition operator'),
+    });
+    rowBox.append(opDrop);
 
-            // --- Value widget: dropdown for binary, SpinButton for numeric ---
-            let valueKeys = [];
-            let valueLabelsArr = [];
+    // --- Value widget: dropdown for binary, SpinButton for numeric ---
+    let valueKeys = [];
+    let valueLabelsArr = [];
 
-            const valueDrop = new Gtk.DropDown({
-                model: Gtk.StringList.new([]),
-                tooltip_text: _('Condition value'),
-            });
-            valueDrop.hexpand = true;
-            rowBox.append(valueDrop);
+    const valueDrop = new Gtk.DropDown({
+        model: Gtk.StringList.new([]),
+        tooltip_text: _('Condition value'),
+    });
+    valueDrop.hexpand = true;
+    rowBox.append(valueDrop);
 
-            const valueSpinBox = new Gtk.Box({
-                orientation: Gtk.Orientation.HORIZONTAL,
-                spacing: 4,
-            });
-            valueSpinBox.hexpand = true;
-            const valueSpin = new Gtk.SpinButton({
-                adjustment: new Gtk.Adjustment({
-                    lower: 0, upper: 100, step_increment: 1, page_increment: 5,
-                }),
-                numeric: true,
-                value: rule ? Number(rule.value) || 50 : 50,
-                tooltip_text: _('Threshold value'),
-            });
-            valueSpin.hexpand = true;
-            const unitLabel = new Gtk.Label({
-                label: '%',
-                valign: Gtk.Align.CENTER,
-            });
-            valueSpinBox.append(valueSpin);
-            valueSpinBox.append(unitLabel);
-            rowBox.append(valueSpinBox);
+    const valueSpinBox = new Gtk.Box({
+        orientation: Gtk.Orientation.HORIZONTAL,
+        spacing: 4,
+    });
+    valueSpinBox.hexpand = true;
+    const valueSpin = new Gtk.SpinButton({
+        adjustment: new Gtk.Adjustment({
+            lower: 0,
+            upper: 100,
+            step_increment: 1,
+            page_increment: 5,
+        }),
+        numeric: true,
+        value: rule ? Number(rule.value) || 50 : 50,
+        tooltip_text: _('Threshold value'),
+    });
+    valueSpin.hexpand = true;
+    const unitLabel = new Gtk.Label({
+        label: '%',
+        valign: Gtk.Align.CENTER,
+    });
+    valueSpinBox.append(valueSpin);
+    valueSpinBox.append(unitLabel);
+    rowBox.append(valueSpinBox);
 
-            // --- Update functions ---
-            const updateOperatorModel = () => {
-                const paramName = paramKeys[paramDrop.selected];
-                const ops = getOperatorsForParam(paramName);
-                currentOpKeys = ops.map(o => o.name);
-                currentOpLabels = ops.map(o => _(o.label));
-                opDrop.model = Gtk.StringList.new(currentOpLabels);
+    // --- Update functions ---
+    const updateOperatorModel = () => {
+        const paramName = paramKeys[paramDrop.selected];
+        const ops = getOperatorsForParam(paramName);
+        currentOpKeys = ops.map((o) => o.name);
+        currentOpLabels = ops.map((o) => _(o.label));
+        opDrop.model = Gtk.StringList.new(currentOpLabels);
 
-                // Restore selection if possible
-                if (rule && rule.param === paramName) {
-                    const idx = currentOpKeys.indexOf(rule.op);
-                    opDrop.selected = idx >= 0 ? idx : 0;
-                } else {
-                    opDrop.selected = 0;
-                }
-            };
+        // Restore selection if possible
+        if (rule && rule.param === paramName) {
+            const idx = currentOpKeys.indexOf(rule.op);
+            opDrop.selected = idx >= 0 ? idx : 0;
+        } else {
+            opDrop.selected = 0;
+        }
+    };
 
-            const updateValueWidget = () => {
-                const paramName = paramKeys[paramDrop.selected];
-                const paramDef = PARAMETERS[paramName];
-                const paramType = paramDef?.type || 'binary';
+    const updateValueWidget = () => {
+        const paramName = paramKeys[paramDrop.selected];
+        const paramDef = PARAMETERS[paramName];
+        const paramType = paramDef?.type || 'binary';
 
-                if (paramType === 'numeric') {
-                    valueDrop.visible = false;
-                    valueSpinBox.visible = true;
-                    // Update range from param definition
-                    if (paramDef.range) {
-                        valueSpin.adjustment.lower = paramDef.range[0];
-                        valueSpin.adjustment.upper = paramDef.range[1];
-                    }
-                    // Set unit label
-                    unitLabel.label = paramDef.unit || '';
-                    // Restore value for numeric
-                    if (rule && rule.param === paramName) {
-                        valueSpin.value = Number(rule.value) || 50;
-                    }
-                } else {
-                    valueDrop.visible = true;
-                    valueSpinBox.visible = false;
-                    // Populate value dropdown
-                    if (paramDef) {
-                        valueKeys = [...paramDef.values];
-                        valueLabelsArr = paramDef.values.map(v => _(paramDef.valueLabels[v]));
-                    } else {
-                        valueKeys = [];
-                        valueLabelsArr = [];
-                    }
-                    valueDrop.model = Gtk.StringList.new(valueLabelsArr);
-                    if (rule && rule.param === paramName) {
-                        const idx = valueKeys.indexOf(rule.value);
-                        valueDrop.selected = idx >= 0 ? idx : 0;
-                    } else {
-                        valueDrop.selected = 0;
-                    }
-                }
-            };
+        if (paramType === 'numeric') {
+            valueDrop.visible = false;
+            valueSpinBox.visible = true;
+            // Update range from param definition
+            if (paramDef.range) {
+                valueSpin.adjustment.lower = paramDef.range[0];
+                valueSpin.adjustment.upper = paramDef.range[1];
+            }
+            // Set unit label
+            unitLabel.label = paramDef.unit || '';
+            // Restore value for numeric
+            if (rule && rule.param === paramName) {
+                valueSpin.value = Number(rule.value) || 50;
+            }
+        } else {
+            valueDrop.visible = true;
+            valueSpinBox.visible = false;
+            // Populate value dropdown
+            if (paramDef) {
+                valueKeys = [...paramDef.values];
+                valueLabelsArr = paramDef.values.map((v) => _(paramDef.valueLabels[v]));
+            } else {
+                valueKeys = [];
+                valueLabelsArr = [];
+            }
+            valueDrop.model = Gtk.StringList.new(valueLabelsArr);
+            if (rule && rule.param === paramName) {
+                const idx = valueKeys.indexOf(rule.value);
+                valueDrop.selected = idx >= 0 ? idx : 0;
+            } else {
+                valueDrop.selected = 0;
+            }
+        }
+    };
 
-            // Initial setup
-            updateOperatorModel();
-            updateValueWidget();
+    // Initial setup
+    updateOperatorModel();
+    updateValueWidget();
 
-            // React to parameter change
-            paramDrop.connect('notify::selected', () => {
-                updateOperatorModel();
-                updateValueWidget();
-                onFieldChanged?.();
-            });
+    // React to parameter change
+    paramDrop.connect('notify::selected', () => {
+        updateOperatorModel();
+        updateValueWidget();
+        onFieldChanged?.();
+    });
 
-            // Move up button
-            const moveUpBtn = new Gtk.Button({
-                icon_name: 'go-up-symbolic',
-                css_classes: ['flat', 'circular'],
-                tooltip_text: _('Move condition up'),
-            });
-            moveUpBtn.connect('clicked', () => {
-                const idx = ruleRows.indexOf(rowData);
-                if (idx > 0) {
-                    [ruleRows[idx - 1], ruleRows[idx]] = [ruleRows[idx], ruleRows[idx - 1]];
-                    rebuildRuleDisplay();
-                    onFieldChanged?.();
-                }
-            });
-            rowBox.append(moveUpBtn);
+    // Move up button
+    const moveUpBtn = new Gtk.Button({
+        icon_name: 'go-up-symbolic',
+        css_classes: ['flat', 'circular'],
+        tooltip_text: _('Move condition up'),
+    });
+    moveUpBtn.connect('clicked', () => {
+        const idx = ruleRows.indexOf(rowData);
+        if (idx > 0) {
+            [ruleRows[idx - 1], ruleRows[idx]] = [ruleRows[idx], ruleRows[idx - 1]];
+            rebuildRuleDisplay();
+            onFieldChanged?.();
+        }
+    });
+    rowBox.append(moveUpBtn);
 
-            // Move down button
-            const moveDownBtn = new Gtk.Button({
-                icon_name: 'go-down-symbolic',
-                css_classes: ['flat', 'circular'],
-                tooltip_text: _('Move condition down'),
-            });
-            moveDownBtn.connect('clicked', () => {
-                const idx = ruleRows.indexOf(rowData);
-                if (idx >= 0 && idx < ruleRows.length - 1) {
-                    [ruleRows[idx], ruleRows[idx + 1]] = [ruleRows[idx + 1], ruleRows[idx]];
-                    rebuildRuleDisplay();
-                    onFieldChanged?.();
-                }
-            });
-            rowBox.append(moveDownBtn);
+    // Move down button
+    const moveDownBtn = new Gtk.Button({
+        icon_name: 'go-down-symbolic',
+        css_classes: ['flat', 'circular'],
+        tooltip_text: _('Move condition down'),
+    });
+    moveDownBtn.connect('clicked', () => {
+        const idx = ruleRows.indexOf(rowData);
+        if (idx >= 0 && idx < ruleRows.length - 1) {
+            [ruleRows[idx], ruleRows[idx + 1]] = [ruleRows[idx + 1], ruleRows[idx]];
+            rebuildRuleDisplay();
+            onFieldChanged?.();
+        }
+    });
+    rowBox.append(moveDownBtn);
 
-            // Remove button
-            const removeBtn = new Gtk.Button({
-                icon_name: 'list-remove-symbolic',
-                css_classes: ['flat', 'circular'],
-                tooltip_text: _('Remove condition'),
-            });
-            removeBtn.connect('clicked', () => {
-                const index = ruleRows.indexOf(rowData);
-                if (index > -1) {
-                    ruleRows.splice(index, 1);
-                    rulesGroup.remove(rowBox);
-                    updateMoveButtonSensitivity();
-                    onFieldChanged?.();
-                }
-            });
-            rowBox.append(removeBtn);
+    // Remove button
+    const removeBtn = new Gtk.Button({
+        icon_name: 'list-remove-symbolic',
+        css_classes: ['flat', 'circular'],
+        tooltip_text: _('Remove condition'),
+    });
+    removeBtn.connect('clicked', () => {
+        const index = ruleRows.indexOf(rowData);
+        if (index > -1) {
+            ruleRows.splice(index, 1);
+            rulesGroup.remove(rowBox);
+            updateMoveButtonSensitivity();
+            onFieldChanged?.();
+        }
+    });
+    rowBox.append(removeBtn);
 
-            // Accessible name helper
-            const updateAccessibleName = () => {
-                const n = ruleRows.indexOf(rowData) + 1;
-                const pLabel = paramLabels[paramDrop.selected] ?? '';
-                const oLabel = currentOpLabels[opDrop.selected] ?? '';
+    // Accessible name helper
+    const updateAccessibleName = () => {
+        const n = ruleRows.indexOf(rowData) + 1;
+        const pLabel = paramLabels[paramDrop.selected] ?? '';
+        const oLabel = currentOpLabels[opDrop.selected] ?? '';
 
-                const paramName = paramKeys[paramDrop.selected];
-                const paramDef = PARAMETERS[paramName];
-                const paramType = paramDef?.type || 'binary';
-                let vLabel;
-                if (paramType === 'numeric')
-                    vLabel = `${Math.round(valueSpin.value)}${paramDef.unit || ''}`;
-                else
-                    vLabel = valueLabelsArr[valueDrop.selected] ?? '';
+        const paramName = paramKeys[paramDrop.selected];
+        const paramDef = PARAMETERS[paramName];
+        const paramType = paramDef?.type || 'binary';
+        let vLabel;
+        if (paramType === 'numeric') vLabel = `${Math.round(valueSpin.value)}${paramDef.unit || ''}`;
+        else vLabel = valueLabelsArr[valueDrop.selected] ?? '';
 
-                rowBox.update_property(
-                    [Gtk.AccessibleProperty.LABEL],
-                    [_('Condition %d: %s %s %s').format(n, pLabel, oLabel, vLabel)]
-                );
-            };
+        rowBox.update_property(
+            [Gtk.AccessibleProperty.LABEL],
+            [_('Condition %d: %s %s %s').format(n, pLabel, oLabel, vLabel)]
+        );
+    };
 
-            const rowData = {
-                box: rowBox,
-                getParam: () => paramKeys[paramDrop.selected],
-                getOp: () => currentOpKeys[opDrop.selected],
-                getValue: () => {
-                    const paramName = paramKeys[paramDrop.selected];
-                    const paramDef = PARAMETERS[paramName];
-                    const paramType = paramDef?.type || 'binary';
-                    if (paramType === 'numeric')
-                        return String(Math.round(valueSpin.value));
-                    return valueKeys[valueDrop.selected] ?? null;
-                },
-                updateAccessibleName,
-                moveUpBtn,
-                moveDownBtn,
-            };
-            ruleRows.push(rowData);
-            rulesGroup.add(rowBox);
+    const rowData = {
+        box: rowBox,
+        getParam: () => paramKeys[paramDrop.selected],
+        getOp: () => currentOpKeys[opDrop.selected],
+        getValue: () => {
+            const paramName = paramKeys[paramDrop.selected];
+            const paramDef = PARAMETERS[paramName];
+            const paramType = paramDef?.type || 'binary';
+            if (paramType === 'numeric') return String(Math.round(valueSpin.value));
+            return valueKeys[valueDrop.selected] ?? null;
+        },
+        updateAccessibleName,
+        moveUpBtn,
+        moveDownBtn,
+    };
+    ruleRows.push(rowData);
+    rulesGroup.add(rowBox);
 
-            // Set initial accessible name and update on changes
-            updateAccessibleName();
-            paramDrop.connect('notify::selected', updateAccessibleName);
-            opDrop.connect('notify::selected', updateAccessibleName);
-            valueDrop.connect('notify::selected', updateAccessibleName);
-            valueSpin.connect('value-changed', () => {
-                updateAccessibleName();
-                onFieldChanged?.();
-            });
-        };
+    // Set initial accessible name and update on changes
+    updateAccessibleName();
+    paramDrop.connect('notify::selected', updateAccessibleName);
+    opDrop.connect('notify::selected', updateAccessibleName);
+    valueDrop.connect('notify::selected', updateAccessibleName);
+    valueSpin.connect('value-changed', () => {
+        updateAccessibleName();
+        onFieldChanged?.();
+    });
+};
 ```
 
 **Step 3: Commit**
@@ -696,6 +697,7 @@ git commit -m "feat(prefs): support numeric parameters in rule editor with SpinB
 ### Task 5: Profile Export/Import
 
 **Files:**
+
 - Modify: `prefs.js:286-316` (action buttons area in Scenarios page)
 
 **Step 1: Add Export and Import buttons to the Scenarios page**
@@ -703,37 +705,37 @@ git commit -m "feat(prefs): support numeric parameters in rule editor with SpinB
 In `prefs.js`, in the `fillPreferencesWindow` method, add Export/Import buttons to the existing `profileButtonBox` (around line 287-316). Insert them before the existing "Add Scenario" button:
 
 ```javascript
-        // Action buttons
-        const profileButtonBox = new Gtk.Box({
-            orientation: Gtk.Orientation.HORIZONTAL,
-            spacing: 12,
-            halign: Gtk.Align.CENTER,
-            margin_top: 12,
-        });
+// Action buttons
+const profileButtonBox = new Gtk.Box({
+    orientation: Gtk.Orientation.HORIZONTAL,
+    spacing: 12,
+    halign: Gtk.Align.CENTER,
+    margin_top: 12,
+});
 
-        // Export button
-        const exportButton = new Gtk.Button({
-            label: _('Export All'),
-            css_classes: ['pill'],
-            tooltip_text: _('Export all scenarios to a JSON file'),
-        });
-        exportButton.connect('clicked', () => {
-            this._exportProfiles(window, settings);
-        });
-        profileButtonBox.append(exportButton);
+// Export button
+const exportButton = new Gtk.Button({
+    label: _('Export All'),
+    css_classes: ['pill'],
+    tooltip_text: _('Export all scenarios to a JSON file'),
+});
+exportButton.connect('clicked', () => {
+    this._exportProfiles(window, settings);
+});
+profileButtonBox.append(exportButton);
 
-        // Import button
-        const importButton = new Gtk.Button({
-            label: _('Import'),
-            css_classes: ['pill'],
-            tooltip_text: _('Import scenarios from a JSON file'),
-        });
-        importButton.connect('clicked', () => {
-            this._importProfiles(window, settings);
-        });
-        profileButtonBox.append(importButton);
+// Import button
+const importButton = new Gtk.Button({
+    label: _('Import'),
+    css_classes: ['pill'],
+    tooltip_text: _('Import scenarios from a JSON file'),
+});
+importButton.connect('clicked', () => {
+    this._importProfiles(window, settings);
+});
+profileButtonBox.append(importButton);
 
-        // (existing Add Scenario and Create from Current buttons follow)
+// (existing Add Scenario and Create from Current buttons follow)
 ```
 
 **Step 2: Implement `_exportProfiles` method**

@@ -30,7 +30,7 @@ sudo ./install-helper.sh
 ```
 
 !!! note
-    Without the helper script, you can still use power profiles — but battery threshold control (the core feature) will not work.
+Without the helper script, you can still use power profiles — but battery threshold control (the core feature) will not work.
 
 ## Step 3: Open Quick Settings
 
@@ -54,7 +54,7 @@ If you're at a desk with an external display connected, click **Docked**. The ex
 Going on a trip? Click **Travel** to switch to Balanced power mode and Full Capacity charging (up to 100%).
 
 !!! tip
-    The Docked and Travel profiles have built-in auto-switch rules. If auto-management is enabled, the extension activates the right profile automatically based on whether an external display is connected and whether you're on AC power.
+The Docked and Travel profiles have built-in auto-switch rules. If auto-management is enabled, the extension activates the right profile automatically based on whether an external display is connected and whether you're on AC power.
 
 ## Step 5: Configure Your Thresholds
 
@@ -66,11 +66,11 @@ gnome-extensions prefs hara-hachi-bu@ZviBaratz
 
 In the **Thresholds** tab, you'll see sliders (or spinners) for each battery mode:
 
-| Mode | Default Range | What to adjust |
-|------|--------------|----------------|
-| Full Capacity | 95–100% | Raise start if you want a wider window |
-| Balanced | 75–80% | Good default for most users |
-| Max Lifespan | 55–60% | Lower end if you're always at a desk |
+| Mode          | Default Range | What to adjust                         |
+| ------------- | ------------- | -------------------------------------- |
+| Full Capacity | 95–100%       | Raise start if you want a wider window |
+| Balanced      | 75–80%        | Good default for most users            |
+| Max Lifespan  | 55–60%        | Lower end if you're always at a desk   |
 
 ## What's Next?
 

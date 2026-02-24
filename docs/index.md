@@ -1,8 +1,8 @@
 ---
 title: Hara Hachi Bu
 hide:
-  - navigation
-  - toc
+    - navigation
+    - toc
 ---
 
 <div class="hhb-hero">
@@ -37,17 +37,17 @@ Hara Hachi Bu adds a unified section to your GNOME Quick Settings panel where yo
 
 ## Key Features
 
-| Feature | Description |
-|---------|-------------|
-| Power Profiles | Performance / Balanced / Power Saver via `power-profiles-daemon` |
-| Battery Modes | Full Capacity (95–100%), Balanced (75–80%), Max Lifespan (55–60%) |
-| Custom Scenarios | Named combinations of power + battery mode + optional force discharge |
-| Rule-Based Auto-Switch | External display, power source, lid state, battery level |
-| Scheduled Profiles | Per-day + time range, overnight support, DST-safe |
-| Boost Charge | AC-only, auto-reverts on full battery / timeout / AC disconnect |
-| Battery Health | Color-coded maximum capacity display |
-| Force Discharge | ThinkPad and compatible hardware |
-| Multi-Battery | BAT0 through BAT3 supported |
+| Feature                | Description                                                           |
+| ---------------------- | --------------------------------------------------------------------- |
+| Power Profiles         | Performance / Balanced / Power Saver via `power-profiles-daemon`      |
+| Battery Modes          | Full Capacity (95–100%), Balanced (75–80%), Max Lifespan (55–60%)     |
+| Custom Scenarios       | Named combinations of power + battery mode + optional force discharge |
+| Rule-Based Auto-Switch | External display, power source, lid state, battery level              |
+| Scheduled Profiles     | Per-day + time range, overnight support, DST-safe                     |
+| Boost Charge           | AC-only, auto-reverts on full battery / timeout / AC disconnect       |
+| Battery Health         | Color-coded maximum capacity display                                  |
+| Force Discharge        | ThinkPad and compatible hardware                                      |
+| Multi-Battery          | BAT0 through BAT3 supported                                           |
 
 ## Quick Install
 
@@ -62,15 +62,15 @@ See [Installation](installation.md) for full details — manual install, polkit 
 
 ## Where to Go Next
 
-| Goal | Page |
-|------|------|
-| New user, first time setup | [Quick Start](quick-start.md) |
-| Understand battery modes and the science | [Battery Modes](user-guide/battery-modes.md) |
-| Set up Docked / Travel scenarios | [Scenarios](user-guide/profiles.md) |
-| Auto-switch based on display or power source | [Auto-Switch Rules](user-guide/rules.md) |
-| Schedule charging windows | [Scheduled Profiles](user-guide/schedules.md) |
-| Configure thresholds and preferences | [Preferences](preferences.md) |
-| Check if your hardware is supported | [Hardware Compatibility](hardware/compatibility.md) |
+| Goal                                         | Page                                                |
+| -------------------------------------------- | --------------------------------------------------- |
+| New user, first time setup                   | [Quick Start](quick-start.md)                       |
+| Understand battery modes and the science     | [Battery Modes](user-guide/battery-modes.md)        |
+| Set up Docked / Travel scenarios             | [Scenarios](user-guide/profiles.md)                 |
+| Auto-switch based on display or power source | [Auto-Switch Rules](user-guide/rules.md)            |
+| Schedule charging windows                    | [Scheduled Profiles](user-guide/schedules.md)       |
+| Configure thresholds and preferences         | [Preferences](preferences.md)                       |
+| Check if your hardware is supported          | [Hardware Compatibility](hardware/compatibility.md) |
 
 ## Compatibility
 

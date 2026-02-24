@@ -1,51 +1,51 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 permissions:
-  contents: read
+    contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+    validate:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libglib2.0-dev-bin gettext
+            - name: Install dependencies
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y libglib2.0-dev-bin gettext
 
-      - name: Compile schemas (strict)
-        run: glib-compile-schemas --strict schemas/
+            - name: Compile schemas (strict)
+              run: glib-compile-schemas --strict schemas/
 
-      - name: Build package
-        run: ./package.sh
+            - name: Build package
+              run: ./package.sh
 
-      - name: Verify package contents
-        run: |
-          unzip -t hara-hachi-bu@ZviBaratz.zip
-          echo "--- Package contents ---"
-          unzip -l hara-hachi-bu@ZviBaratz.zip
+            - name: Verify package contents
+              run: |
+                  unzip -t hara-hachi-bu@ZviBaratz.zip
+                  echo "--- Package contents ---"
+                  unzip -l hara-hachi-bu@ZviBaratz.zip
 
-      - name: Check translation template is up-to-date
-        run: |
-          make pot
-          if ! git diff --quiet hara-hachi-bu.pot; then
-            echo "::warning::Translation template (hara-hachi-bu.pot) is out of date. Run 'make pot' to regenerate."
-          fi
+            - name: Check translation template is up-to-date
+              run: |
+                  make pot
+                  if ! git diff --quiet hara-hachi-bu.pot; then
+                    echo "::warning::Translation template (hara-hachi-bu.pot) is out of date. Run 'make pot' to regenerate."
+                  fi
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: hara-hachi-bu-${{ github.sha }}
-          path: hara-hachi-bu@ZviBaratz.zip
-          retention-days: 30
+            - name: Upload build artifact
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              with:
+                  name: hara-hachi-bu-${{ github.sha }}
+                  path: hara-hachi-bu@ZviBaratz.zip
+                  retention-days: 30

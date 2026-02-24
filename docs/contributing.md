@@ -11,8 +11,8 @@ Thank you for your interest in contributing! This guide covers development setup
 - `power-profiles-daemon` (for power profile features)
 
 !!! note
-    If you already have the extension installed from extensions.gnome.org, disable and remove it first to avoid conflicts:
-    `gnome-extensions disable hara-hachi-bu@ZviBaratz`
+If you already have the extension installed from extensions.gnome.org, disable and remove it first to avoid conflicts:
+`gnome-extensions disable hara-hachi-bu@ZviBaratz`
 
 ```bash
 # Clone the repository
@@ -39,15 +39,15 @@ This activates an in-memory device backend that simulates threshold and force-di
 
 ### Makefile Targets
 
-| Target | Description |
-|--------|-------------|
-| `make dev` | Compile schemas and start a nested GNOME Shell session |
-| `make nested` | Start a nested GNOME Shell session only |
-| `make schemas` | Compile GSettings schemas |
+| Target         | Description                                                   |
+| -------------- | ------------------------------------------------------------- |
+| `make dev`     | Compile schemas and start a nested GNOME Shell session        |
+| `make nested`  | Start a nested GNOME Shell session only                       |
+| `make schemas` | Compile GSettings schemas                                     |
 | `make install` | Install extension to `~/.local/share/gnome-shell/extensions/` |
-| `make pack` | Create release zip via `package.sh` |
-| `make logs` | Follow GNOME Shell logs (`journalctl`) |
-| `make clean` | Remove temporary/build files |
+| `make pack`    | Create release zip via `package.sh`                           |
+| `make logs`    | Follow GNOME Shell logs (`journalctl`)                        |
+| `make clean`   | Remove temporary/build files                                  |
 
 ### Testing on X11 vs Wayland
 
@@ -88,33 +88,33 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/).
 
 ### Types
 
-| Type | Description |
-|------|-------------|
-| `feat` | New feature or user-facing functionality |
-| `fix` | Bug fix |
-| `refactor` | Code change that neither fixes a bug nor adds a feature |
-| `perf` | Performance improvement |
-| `style` | Formatting, whitespace, missing semicolons (no logic change) |
-| `docs` | Documentation only |
-| `chore` | Build process, packaging, dependencies, tooling |
-| `ci` | CI/CD changes |
-| `test` | Adding or updating tests |
+| Type       | Description                                                  |
+| ---------- | ------------------------------------------------------------ |
+| `feat`     | New feature or user-facing functionality                     |
+| `fix`      | Bug fix                                                      |
+| `refactor` | Code change that neither fixes a bug nor adds a feature      |
+| `perf`     | Performance improvement                                      |
+| `style`    | Formatting, whitespace, missing semicolons (no logic change) |
+| `docs`     | Documentation only                                           |
+| `chore`    | Build process, packaging, dependencies, tooling              |
+| `ci`       | CI/CD changes                                                |
+| `test`     | Adding or updating tests                                     |
 
 ### Scopes
 
-| Scope | Component |
-|-------|-----------|
-| `prefs` | Preferences UI (`prefs.js`) |
-| `panel` | Quick Settings panel (`quickSettingsPanel.js`) |
-| `state` | StateManager |
-| `power` | PowerProfileController |
-| `battery` | BatteryThresholdController |
-| `device` | Device backends |
-| `profiles` | ProfileMatcher, profile management |
-| `rules` | RuleEvaluator, ParameterDetector |
-| `helper` | Helper script and utilities |
-| `schema` | GSettings schema |
-| `i18n` | Translations and internationalization |
+| Scope      | Component                                      |
+| ---------- | ---------------------------------------------- |
+| `prefs`    | Preferences UI (`prefs.js`)                    |
+| `panel`    | Quick Settings panel (`quickSettingsPanel.js`) |
+| `state`    | StateManager                                   |
+| `power`    | PowerProfileController                         |
+| `battery`  | BatteryThresholdController                     |
+| `device`   | Device backends                                |
+| `profiles` | ProfileMatcher, profile management             |
+| `rules`    | RuleEvaluator, ParameterDetector               |
+| `helper`   | Helper script and utilities                    |
+| `schema`   | GSettings schema                               |
+| `i18n`     | Translations and internationalization          |
 
 ### Examples
 

@@ -6,21 +6,21 @@ Rules let profiles activate automatically based on system state. When conditions
 
 Each rule checks one system parameter:
 
-| Parameter | Description | Values |
-|-----------|-------------|--------|
+| Parameter          | Description                              | Values                        |
+| ------------------ | ---------------------------------------- | ----------------------------- |
 | `external_display` | Whether an external monitor is connected | `connected` / `not_connected` |
-| `power_source` | Whether the laptop is on AC or battery | `ac` / `battery` |
-| `lid` | Whether the lid is open or closed | `open` / `closed` |
-| `battery_level` | Current battery percentage | Number (0–100) |
+| `power_source`     | Whether the laptop is on AC or battery   | `ac` / `battery`              |
+| `lid`              | Whether the lid is open or closed        | `open` / `closed`             |
+| `battery_level`    | Current battery percentage               | Number (0–100)                |
 
 ## Operators
 
-| Operator | Description | Example |
-|----------|-------------|---------|
-| `is` | Exact match | `power_source is ac` |
-| `is_not` | Negation | `power_source is_not battery` |
-| `above` | Greater than (battery level) | `battery_level above 20` |
-| `below` | Less than (battery level) | `battery_level below 20` |
+| Operator | Description                  | Example                       |
+| -------- | ---------------------------- | ----------------------------- |
+| `is`     | Exact match                  | `power_source is ac`          |
+| `is_not` | Negation                     | `power_source is_not battery` |
+| `above`  | Greater than (battery level) | `battery_level above 20`      |
+| `below`  | Less than (battery level)    | `battery_level below 20`      |
 
 Battery level rules include a ±2% hysteresis to prevent rapid switching at the threshold boundary.
 
@@ -30,15 +30,15 @@ A profile activates when **all** of its rules match simultaneously. A profile wi
 
 ### Specificity
 
-When multiple profiles have matching rules, the one with the **most conditions** wins — this is called *most-specific-wins*.
+When multiple profiles have matching rules, the one with the **most conditions** wins — this is called _most-specific-wins_.
 
 Examples:
 
-| Profile | Rules | Specificity |
-|---------|-------|-------------|
-| Docked | external_display is connected AND power_source is ac | 2 |
-| Travel | power_source is battery | 1 |
-| Quiet Work | (no rules) | 0 |
+| Profile    | Rules                                                | Specificity |
+| ---------- | ---------------------------------------------------- | ----------- |
+| Docked     | external_display is connected AND power_source is ac | 2           |
+| Travel     | power_source is battery                              | 1           |
+| Quiet Work | (no rules)                                           | 0           |
 
 If an external display is connected and you're on AC, Docked (specificity 2) wins over Travel (specificity 1), even though Travel's rule also matches.
 

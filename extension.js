@@ -8,7 +8,7 @@ import Gettext from 'gettext';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-const _ = s => Gettext.dgettext('hara-hachi-bu', s);
+const _ = (s) => Gettext.dgettext('hara-hachi-bu', s);
 
 import {PowerProfileController} from './lib/powerProfileController.js';
 import {BatteryThresholdController} from './lib/batteryThresholdController.js';
@@ -40,13 +40,11 @@ export default class HaraHachiBuExtension extends Extension {
         ProfileMatcher.runMigrations(this._settings);
 
         // Do not create panel if enable is triggered in lockscreen state
-        if (!Main.sessionMode.isLocked && this._powerManager === null)
-            this._initializePowerManager();
+        if (!Main.sessionMode.isLocked && this._powerManager === null) this._initializePowerManager();
     }
 
     async _initializePowerManager() {
-        if (this._initializing || this._powerManager !== null)
-            return;
+        if (this._initializing || this._powerManager !== null) return;
         this._initializing = true;
 
         try {
@@ -60,41 +58,34 @@ export default class HaraHachiBuExtension extends Extension {
             if (this._pendingDestroy) return;
 
             // Initialize state manager
-            this._stateManager = new StateManager(
-                this._settings,
-                this._powerController,
-                this._batteryController
-            );
+            this._stateManager = new StateManager(this._settings, this._powerController, this._batteryController);
             await this._stateManager.initialize();
             if (this._pendingDestroy) return;
 
             // Create UI
-            this._powerManager = new PowerManagerIndicator(
-                this._settings,
-                this,
-                this._stateManager
-            );
+            this._powerManager = new PowerManagerIndicator(this._settings, this, this._stateManager);
             if (this._pendingDestroy) return;
 
             // Initialize UI Patcher
             this._uiPatcher = new UIPatcher();
 
             // Hide built-in power profile if configured
-            if (this._settings.get_boolean('hide-builtin-power-profile'))
-                this._uiPatcher.hideBuiltinPowerProfile();
+            if (this._settings.get_boolean('hide-builtin-power-profile')) this._uiPatcher.hideBuiltinPowerProfile();
 
             // Watch for setting changes
-            this._settings.connectObject('changed::hide-builtin-power-profile', () => {
-                if (!this._uiPatcher) return;
-                if (this._settings.get_boolean('hide-builtin-power-profile'))
-                    this._uiPatcher.hideBuiltinPowerProfile();
-                else
-                    this._uiPatcher.showBuiltinPowerProfile();
-            }, this);
+            this._settings.connectObject(
+                'changed::hide-builtin-power-profile',
+                () => {
+                    if (!this._uiPatcher) return;
+                    if (this._settings.get_boolean('hide-builtin-power-profile'))
+                        this._uiPatcher.hideBuiltinPowerProfile();
+                    else this._uiPatcher.showBuiltinPowerProfile();
+                },
+                this
+            );
 
             // Show one-time notification if helper script is missing
-            if (this._stateManager.batteryNeedsHelper &&
-                !this._settings.get_boolean('helper-notification-shown')) {
+            if (this._stateManager.batteryNeedsHelper && !this._settings.get_boolean('helper-notification-shown')) {
                 this._settings.set_boolean('helper-notification-shown', true);
                 Main.notify(
                     _('Hara Hachi Bu'),
@@ -134,8 +125,7 @@ export default class HaraHachiBuExtension extends Extension {
         }
 
         // Disconnect hide-builtin setting watcher (prevent accumulation on lock/unlock)
-        if (this._settings)
-            this._settings.disconnectObject(this);
+        if (this._settings) this._settings.disconnectObject(this);
 
         if (this._uiPatcher) {
             this._uiPatcher.destroy();
@@ -184,9 +174,11 @@ export default class HaraHachiBuExtension extends Extension {
 
         // Warn about persistent thresholds when user disables the extension
         // (not during lock screen, which also triggers disable)
-        if (Main.sessionMode.currentMode === 'user' &&
+        if (
+            Main.sessionMode.currentMode === 'user' &&
             this._batteryController?.canControlThresholds &&
-            this._stateManager?.currentBatteryMode !== 'full-capacity') {
+            this._stateManager?.currentBatteryMode !== 'full-capacity'
+        ) {
             Main.notify(
                 _('Hara Hachi Bu'),
                 _('Battery thresholds remain at current values. Set Full Capacity mode before disabling to reset them.')

@@ -1,0 +1,6 @@
+node_modules
+schemas
+resources
+*.pot
+*.mo
+*.zip

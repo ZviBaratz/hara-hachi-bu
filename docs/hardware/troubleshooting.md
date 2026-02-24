@@ -137,9 +137,9 @@ If auto-switching isn't working as expected:
 If the extension is enabled but the Quick Settings section is missing:
 
 1. Disable and re-enable the extension:
-   ```bash
-   gnome-extensions disable hara-hachi-bu@ZviBaratz
-   gnome-extensions enable hara-hachi-bu@ZviBaratz
-   ```
+    ```bash
+    gnome-extensions disable hara-hachi-bu@ZviBaratz
+    gnome-extensions enable hara-hachi-bu@ZviBaratz
+    ```
 2. Log out and log back in (especially on Wayland — JS changes require a full session restart)
 3. Check the journal for initialization errors

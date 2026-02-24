@@ -5,6 +5,7 @@ Thank you for your interest in contributing! This guide covers development setup
 ## Quick Start
 
 **Prerequisites:**
+
 - GNOME Shell 46, 47, 48, or 49
 - `glib-compile-schemas` (from `libglib2.0-dev` or equivalent)
 - `power-profiles-daemon` (for power profile features)
@@ -37,15 +38,15 @@ This activates an in-memory device backend that simulates threshold and force-di
 
 ### Makefile Targets
 
-| Target | Description |
-|--------|-------------|
-| `make dev` | Compile schemas and start a nested GNOME Shell session |
-| `make nested` | Start a nested GNOME Shell session only |
-| `make schemas` | Compile GSettings schemas |
+| Target         | Description                                                   |
+| -------------- | ------------------------------------------------------------- |
+| `make dev`     | Compile schemas and start a nested GNOME Shell session        |
+| `make nested`  | Start a nested GNOME Shell session only                       |
+| `make schemas` | Compile GSettings schemas                                     |
 | `make install` | Install extension to `~/.local/share/gnome-shell/extensions/` |
-| `make pack` | Create release zip via `package.sh` |
-| `make logs` | Follow GNOME Shell logs (`journalctl`) |
-| `make clean` | Remove temporary/build files |
+| `make pack`    | Create release zip via `package.sh`                           |
+| `make logs`    | Follow GNOME Shell logs (`journalctl`)                        |
+| `make clean`   | Remove temporary/build files                                  |
 
 ### Testing on X11 vs Wayland
 
@@ -88,35 +89,35 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/).
 
 ### Types
 
-| Type | Description |
-|------|-------------|
-| `feat` | New feature or user-facing functionality |
-| `fix` | Bug fix |
-| `refactor` | Code change that neither fixes a bug nor adds a feature |
-| `perf` | Performance improvement |
-| `style` | Formatting, whitespace, missing semicolons (no logic change) |
-| `docs` | Documentation only |
-| `chore` | Build process, packaging, dependencies, tooling |
-| `ci` | CI/CD changes |
-| `test` | Adding or updating tests |
+| Type       | Description                                                  |
+| ---------- | ------------------------------------------------------------ |
+| `feat`     | New feature or user-facing functionality                     |
+| `fix`      | Bug fix                                                      |
+| `refactor` | Code change that neither fixes a bug nor adds a feature      |
+| `perf`     | Performance improvement                                      |
+| `style`    | Formatting, whitespace, missing semicolons (no logic change) |
+| `docs`     | Documentation only                                           |
+| `chore`    | Build process, packaging, dependencies, tooling              |
+| `ci`       | CI/CD changes                                                |
+| `test`     | Adding or updating tests                                     |
 
 ### Scopes
 
 Scopes are optional. Use one when it clarifies which component is affected.
 
-| Scope | Component |
-|-------|-----------|
-| `prefs` | Preferences UI (`prefs.js`) |
-| `panel` | Quick Settings panel (`quickSettingsPanel.js`) |
-| `state` | StateManager |
-| `power` | PowerProfileController |
-| `battery` | BatteryThresholdController |
-| `device` | Device backends (GenericSysfsDevice, MockDevice, DeviceManager) |
-| `profiles` | ProfileMatcher, profile management |
-| `rules` | RuleEvaluator, ParameterDetector |
-| `helper` | Helper script and utilities |
-| `schema` | GSettings schema |
-| `i18n` | Translations and internationalization |
+| Scope      | Component                                                       |
+| ---------- | --------------------------------------------------------------- |
+| `prefs`    | Preferences UI (`prefs.js`)                                     |
+| `panel`    | Quick Settings panel (`quickSettingsPanel.js`)                  |
+| `state`    | StateManager                                                    |
+| `power`    | PowerProfileController                                          |
+| `battery`  | BatteryThresholdController                                      |
+| `device`   | Device backends (GenericSysfsDevice, MockDevice, DeviceManager) |
+| `profiles` | ProfileMatcher, profile management                              |
+| `rules`    | RuleEvaluator, ParameterDetector                                |
+| `helper`   | Helper script and utilities                                     |
+| `schema`   | GSettings schema                                                |
+| `i18n`     | Translations and internationalization                           |
 
 ### Examples
 
@@ -165,11 +166,11 @@ We welcome translation contributions! The extension uses GNU gettext for interna
 ### Adding a New Language
 
 1. Copy the translation template to a new `.po` file:
-   ```bash
-   mkdir -p po
-   cp hara-hachi-bu.pot po/<LANG>.po
-   # e.g., po/de.po for German, po/fr.po for French
-   ```
+    ```bash
+    mkdir -p po
+    cp hara-hachi-bu.pot po/<LANG>.po
+    # e.g., po/de.po for German, po/fr.po for French
+    ```
 2. Edit the `.po` file with a translation editor (e.g., [Poedit](https://poedit.net/), [GNOME Translation Editor](https://wiki.gnome.org/Apps/Gtranslator), or a text editor).
 3. Submit a pull request with your `.po` file.
 

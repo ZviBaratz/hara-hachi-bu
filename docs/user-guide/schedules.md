@@ -25,11 +25,11 @@ This lets you create a "charge overnight" schedule that spans the day boundary c
 
 A schedule adds **+1 to profile specificity** when it is currently active. This means:
 
-| Profile | Rules | Schedule Active | Effective Specificity |
-|---------|-------|-----------------|----------------------|
-| Docked | 2 rules | No | 2 |
-| Morning Charge | 1 rule | Yes | 2 |
-| Overnight | No rules | Yes | 1 |
+| Profile        | Rules    | Schedule Active | Effective Specificity |
+| -------------- | -------- | --------------- | --------------------- |
+| Docked         | 2 rules  | No              | 2                     |
+| Morning Charge | 1 rule   | Yes             | 2                     |
+| Overnight      | No rules | Yes             | 1                     |
 
 A schedule-only profile (no rules) reaches specificity 1 when active — enough to match if no rule-based profile is competing.
 
@@ -37,12 +37,12 @@ A schedule-only profile (no rules) reaches specificity 1 when active — enough 
 
 The extension checks for conflicts when you save a profile's schedule:
 
-| Situation | Outcome |
-|-----------|---------|
-| Same rules, one scheduled / one not | **No conflict** — scheduled profile wins during its window |
-| Same rules, both scheduled, non-overlapping times | **No conflict** |
-| Same rules, both scheduled, overlapping times | **Conflict** — adjust time ranges to fix |
-| Same rules, both unscheduled | **Conflict** — add a schedule or extra rule |
+| Situation                                         | Outcome                                                    |
+| ------------------------------------------------- | ---------------------------------------------------------- |
+| Same rules, one scheduled / one not               | **No conflict** — scheduled profile wins during its window |
+| Same rules, both scheduled, non-overlapping times | **No conflict**                                            |
+| Same rules, both scheduled, overlapping times     | **Conflict** — adjust time ranges to fix                   |
+| Same rules, both unscheduled                      | **Conflict** — add a schedule or extra rule                |
 
 ## Example: Morning Charge
 

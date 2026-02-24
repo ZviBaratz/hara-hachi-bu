@@ -6,12 +6,12 @@ Hara Hachi Bu works with any laptop that exposes battery charge control via the 
 
 ## Minimum Requirements
 
-| Feature | Requirement |
-|---------|-------------|
-| Battery threshold control | `charge_control_end_threshold` in `/sys/class/power_supply/BAT*/` |
-| Full threshold control (start + end) | Also requires `charge_control_start_threshold` |
-| Force discharge | `charge_behaviour` in `/sys/class/power_supply/BAT*/` |
-| Power profiles | `power-profiles-daemon` installed and running |
+| Feature                              | Requirement                                                       |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| Battery threshold control            | `charge_control_end_threshold` in `/sys/class/power_supply/BAT*/` |
+| Full threshold control (start + end) | Also requires `charge_control_start_threshold`                    |
+| Force discharge                      | `charge_behaviour` in `/sys/class/power_supply/BAT*/`             |
+| Power profiles                       | `power-profiles-daemon` installed and running                     |
 
 ## Device Detection
 
@@ -32,7 +32,7 @@ Multi-battery systems (BAT0 through BAT3) are fully supported with synchronized 
 - **ASUS** — many models expose only `charge_control_end_threshold`; end-only devices are fully supported including battery mode auto-detection based on the end threshold value
 
 !!! note
-    End-only devices display a simplified view in Preferences → Thresholds (no start threshold slider).
+End-only devices display a simplified view in Preferences → Thresholds (no start threshold slider).
 
 ## Checking Your Hardware
 
@@ -88,26 +88,29 @@ If your device exposes `/sys/class/power_supply/BAT0/charge_control_end_threshol
 2. Inherit from `BaseDevice` and implement the required methods:
 
 ```javascript
-import { BaseDevice } from './BaseDevice.js';
+import {BaseDevice} from './BaseDevice.js';
 
-export const MyLaptopDevice = GObject.registerClass({
-    GTypeName: 'HHBMyLaptopDevice',
-}, class MyLaptopDevice extends BaseDevice {
-    async initialize() {
-        // Check for specific files or DMI strings
-        // Return true if compatible
-    }
+export const MyLaptopDevice = GObject.registerClass(
+    {
+        GTypeName: 'HHBMyLaptopDevice',
+    },
+    class MyLaptopDevice extends BaseDevice {
+        async initialize() {
+            // Check for specific files or DMI strings
+            // Return true if compatible
+        }
 
-    static isSupported() {
-        // Synchronous check — return true if this is a MyLaptop
-        return false;
-    }
+        static isSupported() {
+            // Synchronous check — return true if this is a MyLaptop
+            return false;
+        }
 
-    async setThresholds(start, end) {
-        // Write to sysfs
-        // Use hhb-power-ctl if root permissions are required
+        async setThresholds(start, end) {
+            // Write to sysfs
+            // Use hhb-power-ctl if root permissions are required
+        }
     }
-});
+);
 ```
 
 3. Register your device in `lib/device/DeviceManager.js` before the `GenericSysfsDevice` catch-all.

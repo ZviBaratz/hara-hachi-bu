@@ -17,23 +17,24 @@ The helper script implements defense-in-depth validation to prevent injection an
 1. **Input Sanitization**: All inputs are validated against the regex `[a-zA-Z0-9_-]` (alphanumeric, underscore, hyphen). Any invalid character is rejected immediately.
 
 2. **Filename Whitelist**: Only three sysfs filenames are allowed:
-   - `charge_control_start_threshold`
-   - `charge_control_end_threshold`
-   - `charge_behaviour`
+    - `charge_control_start_threshold`
+    - `charge_control_end_threshold`
+    - `charge_behaviour`
 
-   This prevents writing to other sysfs files or unintended battery attributes.
+    This prevents writing to other sysfs files or unintended battery attributes.
 
 3. **Path Canonicalization**: The resolved path is computed using `realpath -e`, which:
-   - Resolves all symbolic links
-   - Verifies the file exists
-   - Returns the absolute canonical path
-   - Fails if the path does not exist (protecting against TOCTOU attacks)
+    - Resolves all symbolic links
+    - Verifies the file exists
+    - Returns the absolute canonical path
+    - Fails if the path does not exist (protecting against TOCTOU attacks)
 
 4. **Prefix Validation**: The canonical path is verified to begin with `/sys/` before writing. This prevents the helper from writing to other parts of the filesystem.
 
 ### Polkit Authorization
 
 The polkit rules (`10-hara-hachi-bu.rules`) enforce:
+
 - User must be in the `sudo` or `wheel` group
 - Session must be active (not locked or suspended)
 - Authentication occurs in the user's local session only
@@ -46,15 +47,16 @@ The polkit rules (`10-hara-hachi-bu.rules`) enforce:
 
 1. Visit: https://github.com/ZviBaratz/hara-hachi-bu/security/advisories/new
 2. Provide the following information:
-   - **Vulnerability Description**: Clear explanation of the issue
-   - **Reproduction Steps**: Steps to reproduce the vulnerability
-   - **Affected Versions**: Which extension versions are impacted
-   - **Potential Impact**: What an attacker could accomplish
-   - **Suggested Fix** (optional): If you have a mitigation in mind
+    - **Vulnerability Description**: Clear explanation of the issue
+    - **Reproduction Steps**: Steps to reproduce the vulnerability
+    - **Affected Versions**: Which extension versions are impacted
+    - **Potential Impact**: What an attacker could accomplish
+    - **Suggested Fix** (optional): If you have a mitigation in mind
 
 ### Response Timeline
 
 You can expect a response within **7 days** of submission. The maintainers will:
+
 - Acknowledge receipt of your report
 - Confirm or dispute the vulnerability
 - Discuss a timeline for patching (if applicable)
