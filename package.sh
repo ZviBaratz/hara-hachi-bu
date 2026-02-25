@@ -24,7 +24,6 @@ zip -r "$OUTPUT_FILE" \
     metadata.json \
     stylesheet.css \
     LICENSE \
-    README.md \
     install-helper.sh \
     schemas/org.gnome.shell.extensions.hara-hachi-bu.gschema.xml \
     schemas/gschemas.compiled \
