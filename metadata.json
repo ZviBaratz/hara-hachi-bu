@@ -2,7 +2,7 @@
     "uuid": "hara-hachi-bu@ZviBaratz",
     "name": "Hara Hachi Bu",
     "description": "Control power profiles and battery charging limits from Quick Settings. Set charge thresholds to extend battery lifespan, create profiles for different scenarios (docked, travel), and let them switch automatically based on conditions and schedules. Supports ThinkPad, Framework, ASUS, and other laptops with kernel-level battery control. Uses polkit (pkexec) for privileged battery threshold writes. Uses clipboard to copy install command.",
-    "shell-version": ["46", "47", "48", "49"],
+    "shell-version": ["46", "47", "48"],
     "settings-schema": "org.gnome.shell.extensions.hara-hachi-bu",
     "gettext-domain": "hara-hachi-bu",
     "url": "https://github.com/ZviBaratz/hara-hachi-bu"

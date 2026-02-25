@@ -1,0 +1,31 @@
+Notes for EGO reviewers — Hara Hachi Bu
+========================================
+
+pkexec/polkit usage
+-------------------
+This extension writes battery charging thresholds to sysfs paths
+(/sys/class/power_supply/BAT*/charge_control_{start,end}_threshold) which
+require root privileges. A helper script (hhb-power-ctl) is executed via
+pkexec with:
+- Strict input validation (integers 0-100, whitelisted sysfs filenames)
+- Path traversal prevention (realpath -e with /sys/ prefix check)
+- set -eu for fail-fast behavior
+- Polkit rules restrict to active local sessions in the sudo/wheel group
+
+Private API usage
+-----------------
+lib/uiPatcher.js accesses QuickSettingsMenu._indicators to manage the
+built-in power profile indicator visibility. No public API exists for this.
+Tested on GNOME 46-48. Fallback strategies handle API changes.
+
+Clipboard usage
+---------------
+Extension copies the helper installation command to clipboard when the user
+clicks "Copy" in the setup prompt. Uses St.Clipboard with visual
+confirmation feedback.
+
+MockDevice
+----------
+lib/device/MockDevice.js is included for developer testing. It is only
+activated when ~/.config/hara-hachi-bu/use_mock exists; isSupported()
+returns false by default.
