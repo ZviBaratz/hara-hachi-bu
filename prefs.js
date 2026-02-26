@@ -22,6 +22,7 @@ const _ = (s) => Gettext.dgettext('hara-hachi-bu', s);
 
 // ProfileRow widget for displaying profile in the list
 const ProfileRow = GObject.registerClass(
+    {GTypeName: 'HhbProfileRow'},
     class ProfileRow extends Adw.ActionRow {
         _init(profile, onEdit, onDelete) {
             // Build subtitle with human-readable mode labels
