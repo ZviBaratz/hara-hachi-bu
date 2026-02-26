@@ -37,7 +37,8 @@
 }
 
 /* Loading state styling - applied to the toggle widget */
-.quick-menu-toggle.hhb-loading-state .subtitle {
+.quick-menu-toggle.hhb-loading-state .subtitle,
+.quick-toggle-has-menu.hhb-loading-state .subtitle {
     font-style: italic;
     opacity: 0.7;
 }
@@ -119,6 +120,7 @@
 }
 
 /* Success confirmation on subtitle */
-.quick-menu-toggle.hhb-success-state .subtitle {
+.quick-menu-toggle.hhb-success-state .subtitle,
+.quick-toggle-has-menu.hhb-success-state .subtitle {
     color: #57e389; /* Adwaita @success_color (dark) */
 }
