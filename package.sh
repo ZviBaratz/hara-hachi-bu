@@ -32,7 +32,8 @@ zip -r "$OUTPUT_FILE" \
     -x "*.pyc" \
     -x "*__pycache__*" \
     -x "*.swp" \
-    -x "*~"
+    -x "*~" \
+    -x "lib/device/MockDevice.js"
 
 echo "Package created: $OUTPUT_FILE"
 echo ""
