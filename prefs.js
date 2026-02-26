@@ -496,7 +496,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         aboutPage.add(installGroup);
 
         const extDir = this.path;
-        const installCmd = `sudo ${extDir}/install-helper.sh`;
+        const installCmd = `pkexec ${extDir}/install-helper.sh`;
         const installRow = new Adw.ActionRow({
             title: _('Helper Installation'),
             subtitle: installCmd,

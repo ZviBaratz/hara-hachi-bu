@@ -1,6 +1,6 @@
 #!/bin/bash
 # Installation script for Hara Hachi Bu helper components
-# Run with: sudo ./install-helper.sh [options]
+# Run with: pkexec ./install-helper.sh [options]
 
 set -eu
 
@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 function show_help() {
     echo "Hara Hachi Bu Helper Installer"
     echo ""
-    echo "Usage: sudo ./install-helper.sh [options]"
+    echo "Usage: pkexec ./install-helper.sh [options]"
     echo ""
     echo "Options:"
     echo "  --uninstall   Remove the helper script and polkit rules"
@@ -20,7 +20,7 @@ function show_help() {
 function uninstall() {
     if [ "$EUID" -ne 0 ]; then
         echo "Error: Uninstall must be run as root."
-        echo "Please run with sudo: sudo ./install-helper.sh --uninstall"
+        echo "Please run with: pkexec ./install-helper.sh --uninstall"
         exit 1
     fi
 
@@ -59,7 +59,7 @@ fi
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then
     echo "Error: This script must be run as root."
-    echo "Please run with sudo: sudo ./install-helper.sh"
+    echo "Please run with: pkexec ./install-helper.sh"
     exit 1
 fi
 

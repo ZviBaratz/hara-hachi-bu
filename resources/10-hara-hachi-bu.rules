@@ -19,7 +19,7 @@
 //   4. subject.active — Session must be the active foreground session. Prevents
 //                       background processes or inactive sessions from writing.
 //
-// Installation: sudo cp this file to /etc/polkit-1/rules.d/
+// Installation: copy this file to /etc/polkit-1/rules.d/ (requires root)
 
 polkit.addRule(function(action, subject) {
     if (action.id == "org.gnome.shell.extensions.hara-hachi-bu.setthreshold" &&
