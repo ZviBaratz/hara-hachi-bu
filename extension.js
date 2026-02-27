@@ -78,8 +78,6 @@ export default class HaraHachiBuExtension extends Extension {
                     _('Battery threshold control requires setup. Open Quick Settings \u2192 Power for instructions.')
                 );
             }
-
-            console.debug('Hara Hachi Bu: Extension initialized successfully');
         } catch (e) {
             this._powerController?.destroy();
             this._powerController = null;
@@ -120,21 +118,7 @@ export default class HaraHachiBuExtension extends Extension {
     }
 
     disable() {
-        console.debug('Hara Hachi Bu: Disabling extension');
         this._destroyed = true;
-
-        // Warn about persistent thresholds when user disables the extension
-        // (not during lock screen, which also triggers disable)
-        if (
-            Main.sessionMode.currentMode === 'user' &&
-            this._batteryController?.canControlThresholds &&
-            this._stateManager?.currentBatteryMode !== 'full-capacity'
-        ) {
-            Main.notify(
-                _('Hara Hachi Bu'),
-                _('Battery thresholds remain at current values. Set Full Capacity mode before disabling to reset them.')
-            );
-        }
 
         if (!this._initializing)
             this._destroyPowerManager();

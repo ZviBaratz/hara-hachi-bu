@@ -537,8 +537,8 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
         if (this._profileSettingsId && this._settings) {
             try {
                 this._settings.disconnect(this._profileSettingsId);
-            } catch (e) {
-                console.debug(`Hara Hachi Bu: Could not disconnect settings signal: ${e.message}`);
+            } catch {
+                // Signal already disconnected
             }
             this._profileSettingsId = null;
         }
