@@ -26,6 +26,5 @@ confirmation feedback.
 
 MockDevice
 ----------
-lib/device/MockDevice.js is included for developer testing. It is only
-activated when ~/.config/hara-hachi-bu/use_mock exists; isSupported()
-returns false by default.
+lib/device/MockDevice.js is excluded from the distribution package. It
+exists in the source repository for developer testing only.
