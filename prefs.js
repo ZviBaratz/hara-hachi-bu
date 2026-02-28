@@ -28,7 +28,7 @@ const ProfileRow = GObject.registerClass(
             let subtitle = _('%s + %s').format(powerLabel, batteryLabel);
             if (profile.rules?.length > 0) {
                 const count = profile.rules.length;
-                const conditionText = Gettext.dngettext('hara-hachi-bu', '%d condition', '%d conditions', count).format(
+                const conditionText = GLib.dngettext('hara-hachi-bu', '%d condition', '%d conditions', count).format(
                     count
                 );
                 subtitle = _('%s \u00b7 %s').format(subtitle, conditionText);
@@ -689,7 +689,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
         // Update profile count label
         if (this._profileCountLabel) {
-            this._profileCountLabel.label = Gettext.dngettext(
+            this._profileCountLabel.label = GLib.dngettext(
                 'hara-hachi-bu',
                 '%d / %d scenario',
                 '%d / %d scenarios',
@@ -1778,7 +1778,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             await stream.close_async(GLib.PRIORITY_DEFAULT, null);
 
             const toast = new Adw.Toast({
-                title: Gettext.dngettext(
+                title: GLib.dngettext(
                     'hara-hachi-bu',
                     'Exported %d scenario',
                     'Exported %d scenarios',
@@ -1895,7 +1895,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             // Build summary
             let bodyParts = [];
             bodyParts.push(
-                Gettext.dngettext(
+                GLib.dngettext(
                     'hara-hachi-bu',
                     '%d scenario will be imported',
                     '%d scenarios will be imported',
@@ -1905,7 +1905,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
             if (skippedDuplicate.length > 0) {
                 bodyParts.push(
-                    Gettext.dngettext(
+                    GLib.dngettext(
                         'hara-hachi-bu',
                         '%d skipped (already exists)',
                         '%d skipped (already exist)',
@@ -1916,7 +1916,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
             if (skippedInvalid.length > 0) {
                 bodyParts.push(
-                    Gettext.dngettext(
+                    GLib.dngettext(
                         'hara-hachi-bu',
                         '%d skipped (invalid)',
                         '%d skipped (invalid)',
@@ -1946,7 +1946,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                     ProfileMatcher.saveCustomProfiles(settings, merged);
 
                     const toast = new Adw.Toast({
-                        title: Gettext.dngettext(
+                        title: GLib.dngettext(
                             'hara-hachi-bu',
                             'Imported %d scenario',
                             'Imported %d scenarios',
