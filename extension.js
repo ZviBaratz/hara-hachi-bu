@@ -4,11 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 'use strict';
-import Gettext from 'gettext';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
-
-const _ = (s) => Gettext.dgettext('hara-hachi-bu', s);
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import {PowerProfileController} from './lib/powerProfileController.js';
 import {BatteryThresholdController} from './lib/batteryThresholdController.js';

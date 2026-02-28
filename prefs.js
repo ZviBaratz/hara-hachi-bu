@@ -9,16 +9,13 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Gtk from 'gi://Gtk';
 import GObject from 'gi://GObject';
-import Gettext from 'gettext';
-import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import * as ProfileMatcher from './lib/profileMatcher.js';
 import * as RuleEvaluator from './lib/ruleEvaluator.js';
 import * as ScheduleUtils from './lib/scheduleUtils.js';
 import * as Constants from './lib/constants.js';
 
 const {PARAMETERS, OPERATORS} = Constants;
-
-const _ = (s) => Gettext.dgettext('hara-hachi-bu', s);
 
 // ProfileRow widget for displaying profile in the list
 const ProfileRow = GObject.registerClass(
