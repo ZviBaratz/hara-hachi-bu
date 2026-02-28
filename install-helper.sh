@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright (C) 2024-2026 zvi
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 # Installation script for Hara Hachi Bu helper components
 # Run with: pkexec ./install-helper.sh [options]
 
