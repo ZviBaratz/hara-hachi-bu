@@ -17,7 +17,7 @@ jobs:
     validate:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+            - uses: actions/checkout@v6
 
             - name: Install dependencies
               run: |
@@ -44,7 +44,7 @@ jobs:
                   fi
 
             - name: Upload build artifact
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              uses: actions/upload-artifact@v6
               with:
                   name: hara-hachi-bu-${{ github.sha }}
                   path: hara-hachi-bu@ZviBaratz.zip
