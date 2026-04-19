@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "gsd-workflow": {
+      "command": "/home/zvi/.local/share/mise/installs/node/24.13.0/bin/node",
+      "args": [
+        "/home/zvi/.local/share/mise/installs/node/24.13.0/lib/node_modules/gsd-pi/packages/mcp-server/dist/cli.js"
+      ],
+      "cwd": "/home/zvi/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz",
+      "env": {
+        "GSD_CLI_PATH": "/home/zvi/.local/share/mise/installs/node/24.13.0/bin/gsd",
+        "GSD_WORKFLOW_EXECUTORS_MODULE": "/home/zvi/.gsd/agent/extensions/gsd/tools/workflow-tool-executors.js",
+        "GSD_WORKFLOW_WRITE_GATE_MODULE": "/home/zvi/.gsd/agent/extensions/gsd/bootstrap/write-gate.js",
+        "GSD_PERSIST_WRITE_GATE_STATE": "1",
+        "GSD_WORKFLOW_PROJECT_ROOT": "/home/zvi/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz"
+      }
+    }
+  }
+}
