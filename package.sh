@@ -11,12 +11,8 @@ OUTPUT_FILE="${SCRIPT_DIR}/${EXTENSION_UUID}.zip"
 # Remove existing package
 rm -f "$OUTPUT_FILE"
 
-# Compile schemas so manual installs work without glib-compile-schemas
-echo "Compiling schemas..."
-glib-compile-schemas schemas/
-
 # Create zip excluding development files and helper scripts
-# Note: resources/ contains helper scripts that require manual installation
+# Note: resources/ contains helper files that require manual installation
 cd "$SCRIPT_DIR"
 zip -r "$OUTPUT_FILE" \
     extension.js \
@@ -24,7 +20,6 @@ zip -r "$OUTPUT_FILE" \
     metadata.json \
     stylesheet.css \
     LICENSE \
-    install-helper.sh \
     schemas/org.gnome.shell.extensions.hara-hachi-bu.gschema.xml \
     icons/ \
     lib/ \
@@ -37,10 +32,10 @@ zip -r "$OUTPUT_FILE" \
 
 echo "Package created: $OUTPUT_FILE"
 echo ""
-echo "Note: The resources/ directory IS included in the package, but the following files"
-echo "require manual installation to system paths for battery threshold control to work:"
+echo "The resources/ directory is shipped inside the zip. Battery threshold control"
+echo "requires installing these three files to system paths (done by the one-liner"
+echo "the extension copies to your clipboard from the Quick Settings panel, or see"
+echo "README.md):"
 echo "  - resources/hhb-power-ctl -> /usr/local/bin/hhb-power-ctl"
 echo "  - resources/10-hara-hachi-bu.rules -> /etc/polkit-1/rules.d/"
 echo "  - resources/org.gnome.shell.extensions.hara-hachi-bu.policy -> /usr/share/polkit-1/actions/"
-echo ""
-echo "Run 'pkexec ./install-helper.sh' or see README.md for installation instructions."

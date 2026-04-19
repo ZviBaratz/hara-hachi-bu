@@ -33,8 +33,12 @@ which hhb-power-ctl
 If not found, run the installer:
 
 ```bash
-cd ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
-sudo ./install-helper.sh
+EXT_DIR=~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
+pkexec sh -c '
+  install -D -m 755 "$0/resources/hhb-power-ctl" /usr/local/bin/hhb-power-ctl &&
+  install -D -m 644 "$0/resources/10-hara-hachi-bu.rules" /etc/polkit-1/rules.d/10-hara-hachi-bu.rules &&
+  install -D -m 644 "$0/resources/org.gnome.shell.extensions.hara-hachi-bu.policy" /usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy
+' "$EXT_DIR"
 ```
 
 **2. Check polkit rules**
@@ -66,8 +70,12 @@ If no files are shown, your laptop's kernel driver does not expose battery thres
 The helper script is not installed or not in PATH. Install it:
 
 ```bash
-cd ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
-sudo ./install-helper.sh
+EXT_DIR=~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
+pkexec sh -c '
+  install -D -m 755 "$0/resources/hhb-power-ctl" /usr/local/bin/hhb-power-ctl &&
+  install -D -m 644 "$0/resources/10-hara-hachi-bu.rules" /etc/polkit-1/rules.d/10-hara-hachi-bu.rules &&
+  install -D -m 644 "$0/resources/org.gnome.shell.extensions.hara-hachi-bu.policy" /usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy
+' "$EXT_DIR"
 ```
 
 If the installer reports a polkit warning, your system may use a non-standard polkit location. Check the install output for details.

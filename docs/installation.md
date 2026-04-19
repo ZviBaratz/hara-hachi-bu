@@ -26,30 +26,44 @@ Then log out and log back in (Wayland), or restart GNOME Shell with Alt+F2 → t
 
 ## Helper Script Installation
 
-Battery threshold control requires root privileges. GNOME extensions cannot install system files automatically, so you need to run a one-time setup script.
+Battery threshold control requires root privileges. GNOME extensions cannot install system files automatically, so you need to run a one-time install command.
 
-### Automated (recommended)
+### Recommended one-liner
 
 ```bash
-cd ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
-sudo ./install-helper.sh
+EXT_DIR=~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
+pkexec sh -c '
+  install -D -m 755 "$0/resources/hhb-power-ctl" /usr/local/bin/hhb-power-ctl &&
+  install -D -m 644 "$0/resources/10-hara-hachi-bu.rules" /etc/polkit-1/rules.d/10-hara-hachi-bu.rules &&
+  install -D -m 644 "$0/resources/org.gnome.shell.extensions.hara-hachi-bu.policy" /usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy
+' "$EXT_DIR"
 ```
 
-The script copies `hhb-power-ctl` to `/usr/local/bin/` and installs the appropriate polkit rules for your system.
+The Quick Settings panel will offer to copy an equivalent command to your clipboard when it detects the helper is missing.
 
-### Manual
+What each file does:
+
+- `hhb-power-ctl` — the privileged helper invoked via `pkexec` to write battery thresholds.
+- `10-hara-hachi-bu.rules` — polkit rules (≥ 0.106) that let the active local session run the helper without a password prompt.
+- `org.gnome.shell.extensions.hara-hachi-bu.policy` — polkit policy action that maps the helper path to an action ID.
+
+### Step-by-step (equivalent)
 
 ```bash
 # Install the helper script
-sudo cp resources/hhb-power-ctl /usr/local/bin/
-sudo chmod +x /usr/local/bin/hhb-power-ctl
+sudo install -D -m 755 \
+    resources/hhb-power-ctl \
+    /usr/local/bin/hhb-power-ctl
 
-# Install polkit rules (modern polkit >= 0.106)
-sudo cp resources/10-hara-hachi-bu.rules /etc/polkit-1/rules.d/
+# Install polkit rules (polkit >= 0.106)
+sudo install -D -m 644 \
+    resources/10-hara-hachi-bu.rules \
+    /etc/polkit-1/rules.d/10-hara-hachi-bu.rules
 
-# OR for legacy polkit (< 0.106)
-sudo cp resources/org.gnome.shell.extensions.hara-hachi-bu.policy \
-    /usr/share/polkit-1/actions/
+# Install polkit policy action (always required)
+sudo install -D -m 644 \
+    resources/org.gnome.shell.extensions.hara-hachi-bu.policy \
+    /usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy
 ```
 
 ### Verify Installation
@@ -67,8 +81,7 @@ pkexec hhb-power-ctl BAT0_END_START 60 55
 To remove the helper script and polkit rules:
 
 ```bash
-cd ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
-sudo ./install-helper.sh --uninstall
+pkexec sh -c 'rm -f /usr/local/bin/hhb-power-ctl /etc/polkit-1/rules.d/10-hara-hachi-bu.rules /usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy'
 ```
 
 To remove the extension itself, disable it and delete the directory:
