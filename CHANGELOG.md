@@ -4,6 +4,17 @@ All notable changes to Hara Hachi Bu are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [Unreleased]
+
+### Compatibility
+
+- Added support for GNOME Shell 49 and 50 with version-conditional `St.BoxLayout` orientation handling
+- `shell-version` in `metadata.json` now covers `["46", "47", "48", "49", "50"]`
+
+### Code Quality
+
+- Gated 41 internal-diagnostic `console.*` calls behind a `DEBUG` flag in `lib/helper.js` (new `debugLog`/`debugWarn`/`debugError` helpers) across `stateManager`, `batteryThresholdController`, `device/GenericSysfsDevice`, and `profileMatcher`. User-actionable errors (D-Bus init failure, "install helper.sh" prompts, unexpected exceptions) remain unconditional. Removed 2 unreachable defensive logs in `profileMatcher`. Addresses shexli rule EGO-A-004 for shell-side files.
+
 ## [1.0.0] — 2026-02-23
 
 First public release of Hara Hachi Bu, a GNOME Shell extension for unified Quick Settings control of power profiles and battery charging thresholds.
