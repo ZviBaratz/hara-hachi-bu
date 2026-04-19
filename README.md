@@ -28,12 +28,17 @@ A GNOME Shell extension providing unified Quick Settings control for power profi
 ## Installation
 
 ```bash
-# Install from extensions.gnome.org (search "Hara Hachi Bu"), then:
-cd ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
-sudo ./install-helper.sh
+# Install from extensions.gnome.org (search "Hara Hachi Bu"), then install
+# the privileged helper so polkit can authorize battery threshold writes:
+EXT_DIR=~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
+pkexec sh -c '
+  install -D -m 755 "$0/resources/hhb-power-ctl" /usr/local/bin/hhb-power-ctl &&
+  install -D -m 644 "$0/resources/10-hara-hachi-bu.rules" /etc/polkit-1/rules.d/10-hara-hachi-bu.rules &&
+  install -D -m 644 "$0/resources/org.gnome.shell.extensions.hara-hachi-bu.policy" /usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy
+' "$EXT_DIR"
 ```
 
-The helper script enables privileged battery threshold control via polkit. It's a one-time setup.
+This is a one-time setup. The Quick Settings panel will offer to copy this command to your clipboard when it detects the helper is missing.
 
 **Manual installation:**
 

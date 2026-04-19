@@ -53,9 +53,13 @@ Hara Hachi Bu adds a unified section to your GNOME Quick Settings panel where yo
 
 ```bash
 # 1. Install from extensions.gnome.org (search "Hara Hachi Bu")
-# 2. Then install the required helper script:
-cd ~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
-sudo ./install-helper.sh
+# 2. Then install the privileged helper so polkit can authorize threshold writes:
+EXT_DIR=~/.local/share/gnome-shell/extensions/hara-hachi-bu@ZviBaratz
+pkexec sh -c '
+  install -D -m 755 "$0/resources/hhb-power-ctl" /usr/local/bin/hhb-power-ctl &&
+  install -D -m 644 "$0/resources/10-hara-hachi-bu.rules" /etc/polkit-1/rules.d/10-hara-hachi-bu.rules &&
+  install -D -m 644 "$0/resources/org.gnome.shell.extensions.hara-hachi-bu.policy" /usr/share/polkit-1/actions/org.gnome.shell.extensions.hara-hachi-bu.policy
+' "$EXT_DIR"
 ```
 
 See [Installation](installation.md) for full details — manual install, polkit setup, and uninstallation.
