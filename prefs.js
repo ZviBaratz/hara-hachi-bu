@@ -14,6 +14,7 @@ import * as ProfileMatcher from './lib/profileMatcher.js';
 import * as RuleEvaluator from './lib/ruleEvaluator.js';
 import * as ScheduleUtils from './lib/scheduleUtils.js';
 import * as Constants from './lib/constants.js';
+import {debugError} from './lib/helper.js';
 
 const {PARAMETERS, OPERATORS} = Constants;
 
@@ -841,7 +842,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                                 onFieldChanged?.();
                             }
                         } catch (e) {
-                            console.error(`Hara Hachi Bu: Restore defaults error: ${e.message}`);
+                            debugError(`Restore defaults error: ${e.message}`);
                         }
                     });
                 });
@@ -1518,7 +1519,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                     try {
                         if (dlg.choose_finish(result) === 'discard') dialog.close();
                     } catch (e) {
-                        console.error(`Hara Hachi Bu: Confirm discard error: ${e.message}`);
+                        debugError(`Confirm discard error: ${e.message}`);
                     }
                 });
             } else {
@@ -1676,7 +1677,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
 
                 dialog.close();
             } catch (e) {
-                console.error(`Hara Hachi Bu: Profile dialog error: ${e.message}`);
+                debugError(`Profile dialog error: ${e.message}`);
                 errorLabel.set_text(_('An unexpected error occurred. Check logs for details.'));
                 errorLabel.show();
             }
@@ -1733,7 +1734,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                     }
                 }
             } catch (e) {
-                console.error(`Hara Hachi Bu: Delete dialog error: ${e.message}`);
+                debugError(`Delete dialog error: ${e.message}`);
             }
         });
     }
@@ -1789,7 +1790,7 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
             window.add_toast(toast);
         } catch (e) {
             if (e.matches?.(Gtk.DialogError, Gtk.DialogError.DISMISSED)) return; // User cancelled
-            console.error(`Hara Hachi Bu: Export error: ${e.message}`);
+            debugError(`Export error: ${e.message}`);
             const dialog = new Adw.AlertDialog({
                 heading: _('Export Failed'),
                 body: e.message,
@@ -1956,12 +1957,12 @@ export default class HaraHachiBuPreferences extends ExtensionPreferences {
                     });
                     window.add_toast(toast);
                 } catch (e) {
-                    console.error(`Hara Hachi Bu: Import save error: ${e.message}`);
+                    debugError(`Import save error: ${e.message}`);
                 }
             });
         } catch (e) {
             if (e.matches?.(Gtk.DialogError, Gtk.DialogError.DISMISSED)) return;
-            console.error(`Hara Hachi Bu: Import error: ${e.message}`);
+            debugError(`Import error: ${e.message}`);
             const dialog = new Adw.AlertDialog({
                 heading: _('Import Failed'),
                 body: e.message,
