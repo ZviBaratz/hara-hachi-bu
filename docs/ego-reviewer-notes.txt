@@ -16,7 +16,7 @@ Private API usage
 -----------------
 lib/uiPatcher.js accesses QuickSettingsMenu._indicators to manage the
 built-in power profile indicator visibility. No public API exists for this.
-Tested on GNOME 46-48. Fallback strategies handle API changes.
+Tested on GNOME 46-50. Fallback strategies handle API changes gracefully.
 
 Clipboard usage
 ---------------
@@ -28,3 +28,47 @@ MockDevice
 ----------
 lib/device/MockDevice.js is excluded from the distribution package. It
 exists in the source repository for developer testing only.
+
+Scheduled profiles
+------------------
+Profiles support optional time-based schedules (per-day, start/end time).
+GLib.timeout_add_seconds drives a schedule timer capped at 3600s to guard
+against clock drift. Overnight schedules (start > end) are supported.
+Suspend/resume detection uses org.freedesktop.login1.Manager PrepareForSleep
+D-Bus signal to re-evaluate schedules after waking from sleep.
+
+Boost charge
+------------
+One-click temporary charge to 100% via a state machine with auto-revert
+triggers: battery full, configurable safety timeout (1-12h), and AC
+disconnect. Temporarily overrides thresholds and pauses auto-management,
+restoring the previous state on deactivation.
+
+Multi-battery support
+---------------------
+The helper script (hhb-power-ctl) supports BAT0 through BAT3 for systems
+with multiple batteries. DeviceManager auto-detects available batteries by
+enumerating /sys/class/power_supply and falls back to BAT0-BAT3 if
+enumeration is unavailable.
+
+Force discharge
+---------------
+Controls the charge_behaviour sysfs file to enable force discharge on
+supported hardware (primarily ThinkPad). All writes go through the helper
+script with validated mode values. A file monitor tracks external changes.
+
+Logging convention (EGO-A-004)
+------------------------------
+A DEBUG flag in lib/helper.js gates all diagnostic logging through
+debugLog/debugWarn/debugError helpers that are no-ops when DEBUG is false.
+Only user-actionable failures (D-Bus proxy init errors, missing helper
+prompts) use ungated console.error calls. This keeps per-file ungated
+console.* call counts well under the EGO-A-004 threshold.
+
+Async patterns
+--------------
+Controllers use a _destroyed flag checked after every await point to prevent
+callbacks from executing on destroyed objects during extension reload.
+Gio._promisify wraps D-Bus proxy creation. Promise chains guard all
+continuations with _destroyed checks. These are standard GJS async safety
+patterns for extension lifecycle management.
