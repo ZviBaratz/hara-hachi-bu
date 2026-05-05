@@ -14,6 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ### Code Quality
 
 - Gated 41 internal-diagnostic `console.*` calls behind a `DEBUG` flag in `lib/helper.js` (new `debugLog`/`debugWarn`/`debugError` helpers) across `stateManager`, `batteryThresholdController`, `device/GenericSysfsDevice`, and `profileMatcher`. User-actionable errors (D-Bus init failure, "install helper.sh" prompts, unexpected exceptions) remain unconditional. Removed 2 unreachable defensive logs in `profileMatcher`. Addresses shexli rule EGO-A-004 for shell-side files.
+- Gated 7 defensive `console.error` calls in `prefs.js` catch blocks behind `debugError`, matching the shell-side convention. All sites remain inside catch blocks. Addresses shexli rule EGO-A-004 for prefs-side files.
+
+### Packaging
+
+- Removed `install-helper.sh` from the submission zip allowlist and dropped the `glib-compile-schemas` step from `package.sh`. Submission zip no longer ships developer artifacts (addresses shexli rule EGO-P-006) and no longer leaves a stale `schemas/gschemas.compiled` in the working tree.
+- Replaced the Quick Settings panel's copy-to-clipboard install command with a self-contained `pkexec sh -c '…'` one-liner, eliminating the dependency on `install-helper.sh` at runtime.
 
 ## [1.0.0] — 2026-02-23
 
