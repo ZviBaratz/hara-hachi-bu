@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 - Gated 41 internal-diagnostic `console.*` calls behind a `DEBUG` flag in `lib/helper.js` (new `debugLog`/`debugWarn`/`debugError` helpers) across `stateManager`, `batteryThresholdController`, `device/GenericSysfsDevice`, and `profileMatcher`. User-actionable errors (D-Bus init failure, "install helper.sh" prompts, unexpected exceptions) remain unconditional. Removed 2 unreachable defensive logs in `profileMatcher`. Addresses shexli rule EGO-A-004 for shell-side files.
 - Gated 7 defensive `console.error` calls in `prefs.js` catch blocks behind `debugError`, matching the shell-side convention. All sites remain inside catch blocks. Addresses shexli rule EGO-A-004 for prefs-side files.
+- Wrapped `getSettings()` in `extension.js` to log an actionable fix-it hint (`Run "glib-compile-schemas schemas/" (or "make schemas")…`) when `schemas/gschemas.compiled` is missing. The original `GLib.FileError` no longer surfaces as the only signal; the journal now points to the exact recovery command.
 
 ### Packaging
 
