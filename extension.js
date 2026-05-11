@@ -25,7 +25,17 @@ export default class HaraHachiBuExtension extends Extension {
         if (this._initializing)
             return;
 
-        this._settings = this.getSettings();
+        try {
+            this._settings = this.getSettings();
+        } catch (e) {
+            // getSettings() reads schemas/gschemas.compiled directly; if the
+            // file is missing the extension cannot load. Surface a fix-it
+            // hint instead of the bare GLib.FileError.
+            console.error(
+                'Hara Hachi Bu: Schema not compiled. Run "glib-compile-schemas schemas/" ' +
+                `(or "make schemas") in the extension directory. Original error: ${e}`);
+            throw e;
+        }
         this._powerManager = null;
         this._uiPatcher = null;
 
