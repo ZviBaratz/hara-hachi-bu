@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [1.0.2] — 2026-05-11
+
+### Code Quality
+
+- Wrapped `getSettings()` in `extension.js` to log an actionable fix-it hint (`Run "glib-compile-schemas schemas/" (or "make schemas")…`) when `schemas/gschemas.compiled` is missing. The original `GLib.FileError` no longer surfaces as the only signal; the journal now points to the exact recovery command.
+
+## [1.0.1] — 2026-05-07
+
 ### Compatibility
 
 - Added support for GNOME Shell 49 and 50 with version-conditional `St.BoxLayout` orientation handling
@@ -15,7 +23,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 - Gated 41 internal-diagnostic `console.*` calls behind a `DEBUG` flag in `lib/helper.js` (new `debugLog`/`debugWarn`/`debugError` helpers) across `stateManager`, `batteryThresholdController`, `device/GenericSysfsDevice`, and `profileMatcher`. User-actionable errors (D-Bus init failure, "install helper.sh" prompts, unexpected exceptions) remain unconditional. Removed 2 unreachable defensive logs in `profileMatcher`. Addresses shexli rule EGO-A-004 for shell-side files.
 - Gated 7 defensive `console.error` calls in `prefs.js` catch blocks behind `debugError`, matching the shell-side convention. All sites remain inside catch blocks. Addresses shexli rule EGO-A-004 for prefs-side files.
-- Wrapped `getSettings()` in `extension.js` to log an actionable fix-it hint (`Run "glib-compile-schemas schemas/" (or "make schemas")…`) when `schemas/gschemas.compiled` is missing. The original `GLib.FileError` no longer surfaces as the only signal; the journal now points to the exact recovery command.
 
 ### Packaging
 
@@ -121,4 +128,7 @@ First public release of Hara Hachi Bu, a GNOME Shell extension for unified Quick
 - Translated error messages and user-facing strings
 - RTL-safe styling in preferences and Quick Settings UI
 
+[Unreleased]: https://github.com/ZviBaratz/hara-hachi-bu/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/ZviBaratz/hara-hachi-bu/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/ZviBaratz/hara-hachi-bu/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ZviBaratz/hara-hachi-bu/releases/tag/v1.0.0
